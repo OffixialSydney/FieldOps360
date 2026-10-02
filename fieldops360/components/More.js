@@ -130,7 +130,7 @@ export function Platform() {
   const [f, setF] = useState({ name: '', plan: 'basic', subscription_until: '' });
   const load = useCallback(async () => {
     const { data: c } = await supabase.from('companies').select('*').order('created_at');
-    const { data: u } = await supabase.from('profiles').select('id,full_name,role,company_id').order('full_name');
+    const { data: u } = await supabase.from('profiles').select('id,full_name,role,company_id,requested_role').order('full_name');
     setCompanies(c || []);
     setUsers(u || []);
   }, []);
@@ -177,6 +177,20 @@ export function Platform() {
           </div>
         </div>
       ))}
+      {users.some((u) => u.requested_role === 'technician' && u.role === 'customer') && (
+        <>
+          <h2>Pending technician requests</h2>
+          {users.filter((u) => u.requested_role === 'technician' && u.role === 'customer').map((u) => (
+            <div className="card row" key={u.id} style={{ justifyContent: 'space-between' }}>
+              <span>{u.full_name}</span>
+              <span className="row">
+                <button style={{ marginTop: 0 }} onClick={() => upUser(u.id, { role: 'technician', requested_role: null })}>Approve</button>
+                <button className="ghost" onClick={() => upUser(u.id, { requested_role: null })}>Decline</button>
+              </span>
+            </div>
+          ))}
+        </>
+      )}
       <h2>Platform: users</h2>
       {users.map((u) => (
         <div className="card row" key={u.id}>
