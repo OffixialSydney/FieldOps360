@@ -8,6 +8,13 @@ export default function Login() {
   const [mode, setMode] = useState('login');
   const [f, setF] = useState({ email: '', password: '', full_name: '', phone: '', company_id: '', requested_role: 'customer' });
   const [msg, setMsg] = useState('');
+  const [checking, setChecking] = useState(true);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/dashboard');
+      else setChecking(false);
+    });
+  }, [router]);
   const [companies, setCompanies] = useState([]);
   useEffect(() => {
     supabase.from('companies').select('id,name').eq('status', 'active').then(({ data }) => setCompanies(data || []));
@@ -34,6 +41,8 @@ export default function Login() {
     const { error } = await supabase.auth.resetPasswordForEmail(f.email, { redirectTo: `${window.location.origin}/reset` });
     setMsg(error ? error.message : 'Password reset link sent. Check your email.');
   }
+
+  if (checking) return null;
 
   return (
     <div className="auth">
