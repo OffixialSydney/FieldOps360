@@ -29,6 +29,12 @@ export default function Login() {
     router.push('/dashboard');
   }
 
+  async function forgot() {
+    if (!f.email) return setMsg('Enter your email first');
+    const { error } = await supabase.auth.resetPasswordForEmail(f.email, { redirectTo: `${window.location.origin}/reset` });
+    setMsg(error ? error.message : 'Password reset link sent. Check your email.');
+  }
+
   return (
     <div className="auth">
       <h1>FieldOps 360</h1>
@@ -60,6 +66,7 @@ export default function Login() {
         <input type="password" minLength={6} required value={f.password} onChange={set('password')} />
         {msg && <p className="err">{msg}</p>}
         <button style={{ width: '100%' }}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>
+        {mode === 'login' && <button type="button" className="ghost" style={{ width: '100%' }} onClick={forgot}>Forgot password?</button>}
       </form>
       <button className="ghost" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
         {mode === 'login' ? 'New customer? Sign up' : 'Have an account? Log in'}
