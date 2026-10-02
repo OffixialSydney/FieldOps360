@@ -44,8 +44,9 @@ declare t text; cid uuid; cond text;
 begin
   insert into companies (name) values ('Default Company') returning id into cid;
   foreach t in array array['profiles','requests','invoices','attachments','items','assets','tickets','ratings','audit_log','addresses','extra_charges','notifications','technician_locations'] loop
-    execute format('alter table %I add column company_id uuid references companies(id) default my_company()', t);
-    execute format('update %I set company_id = %L where company_id is null', t, cid);
+    execute format('alter table %I add column company_id uuid references companies(id)', t);
+    execute format('update %I set company_id = %L', t, cid);
+    execute format('alter table %I alter column company_id set default my_company()', t);
     execute format('alter table %I enable row level security', t);
     cond := case when t = 'profiles' then 'id = auth.uid() or company_ok(company_id)' else 'company_ok(company_id)' end;
     execute format('create policy tenant on %I as restrictive for all using (%s) with check (%s)', t, cond, cond);
