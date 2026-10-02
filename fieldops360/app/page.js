@@ -44,6 +44,8 @@ export default function Login() {
             <select value={f.requested_role} onChange={set('requested_role')}>
               <option value="customer">Customer</option>
               <option value="technician">Technician (needs approval)</option>
+              <option value="manager">Manager (needs approval)</option>
+              <option value="accountant">Accountant (needs approval)</option>
             </select>
             <label>Company</label>
             <select required value={f.company_id} onChange={set('company_id')}>
