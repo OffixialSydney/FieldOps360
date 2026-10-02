@@ -130,7 +130,7 @@ export function Platform() {
   const [f, setF] = useState({ name: '', plan: 'basic', subscription_until: '' });
   const load = useCallback(async () => {
     const { data: c } = await supabase.from('companies').select('*').order('created_at');
-    const { data: u } = await supabase.from('profiles').select('id,full_name,role,company_id,requested_role').order('full_name');
+    const { data: u } = await supabase.from('profiles').select('id,full_name,email,role,company_id,requested_role').order('full_name');
     setCompanies(c || []);
     setUsers(u || []);
   }, []);
@@ -182,7 +182,7 @@ export function Platform() {
           <h2>Pending role requests</h2>
           {users.filter((u) => u.requested_role && u.role === 'customer').map((u) => (
             <div className="card row" key={u.id} style={{ justifyContent: 'space-between' }}>
-              <span>{u.full_name} wants to be a <b>{u.requested_role}</b></span>
+              <span>{u.full_name} <span className="muted">({u.email})</span> wants to be a <b>{u.requested_role}</b></span>
               <span className="row">
                 <button style={{ marginTop: 0 }} onClick={() => upUser(u.id, { role: u.requested_role, requested_role: null })}>Approve</button>
                 <button className="ghost" onClick={() => upUser(u.id, { requested_role: null })}>Decline</button>
@@ -194,7 +194,7 @@ export function Platform() {
       <h2>Platform: users</h2>
       {users.map((u) => (
         <div className="card row" key={u.id}>
-          <span style={{ flex: '1 1 140px' }}>{u.full_name}</span>
+          <span style={{ flex: '1 1 180px' }}>{u.full_name}<br /><span className="muted">{u.email}</span></span>
           <select style={{ width: 'auto' }} value={u.role} onChange={(e) => upUser(u.id, { role: e.target.value })}>
             {ROLES.map((r) => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
           </select>
