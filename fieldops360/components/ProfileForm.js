@@ -9,12 +9,19 @@ export default function ProfileForm({ me, onClose, onSaved }) {
 
   async function save(e) {
     e.preventDefault();
-    const { error } = await supabase.from('profiles').update(f).eq('id', me.id);
-    setMsg(error ? error.message : 'Profile saved');
-    if (!error) onSaved({ ...me, ...f });
+    const { data, error } = await supabase.from('profiles').update(f).eq('id', me.id).select();
+    if (error || !data?.length) return setMsg(error?.message || 'Could not save. Log out and log in again, then retry.');
+    setMsg('Profile saved');
+    onSaved({ ...me, ...f });
   }
   async function changePw(e) {
     e.preventDefault();
+    let { data: s } = await supabase.auth.getSession();
+    if (!s.session) {
+      const r = await supabase.auth.refreshSession();
+      s = r.data;
+    }
+    if (!s.session) return setMsg('Your login expired or was changed in another tab. Log out, log in again, then retry.');
     const { error } = await supabase.auth.updateUser({ password: pw });
     setMsg(error ? error.message : 'Password updated');
     if (!error) setPw('');
