@@ -142,8 +142,16 @@ export function Platform() {
     setF({ name: '', plan: 'basic', subscription_until: '' });
     load();
   }
-  const upCompany = async (id, patch) => { await supabase.from('companies').update(patch).eq('id', id); load(); };
-  const upUser = async (id, patch) => { await supabase.from('profiles').update(patch).eq('id', id); load(); };
+  const upCompany = async (id, patch) => {
+    const { data, error } = await supabase.from('companies').update(patch).eq('id', id).select();
+    if (error || !data?.length) alert(error?.message || 'Change not saved. Log out and log in again, then retry.');
+    load();
+  };
+  const upUser = async (id, patch) => {
+    const { data, error } = await supabase.from('profiles').update(patch).eq('id', id).select();
+    if (error || !data?.length) alert(error?.message || 'Change not saved. Your login may have changed in another tab. Log out and log in again, then retry.');
+    load();
+  };
   const companyName = (id) => companies.find((c) => c.id === id)?.name || 'no company';
 
   return (
