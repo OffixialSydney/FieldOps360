@@ -38,8 +38,13 @@ export default function Login() {
 
   async function forgot() {
     if (!f.email) return setMsg('Enter your email first');
-    const { error } = await supabase.auth.resetPasswordForEmail(f.email, { redirectTo: `${window.location.origin}/reset` });
-    setMsg(error ? error.message : 'Password reset link sent. Check your email.');
+    setMsg('Sending reset link...');
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(f.email, { redirectTo: `${window.location.origin}/reset` });
+      setMsg(error ? error.message : 'Reset link sent. Check your inbox and spam folder.');
+    } catch (e) {
+      setMsg('Could not send the email. Please try again.');
+    }
   }
 
   if (checking) return null;
@@ -73,7 +78,7 @@ export default function Login() {
         <input type="email" required value={f.email} onChange={set('email')} />
         <label>Password</label>
         <input type="password" minLength={6} required value={f.password} onChange={set('password')} />
-        {msg && <p className="err">{msg}</p>}
+        {msg && <p className="err" style={{ color: msg.startsWith('Reset link') || msg.startsWith('Sending') ? 'var(--accent-dark)' : undefined }}>{msg}</p>}
         <button style={{ width: '100%' }}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>
         {mode === 'login' && <button type="button" className="ghost" style={{ width: '100%' }} onClick={forgot}>Forgot password?</button>}
       </form>
