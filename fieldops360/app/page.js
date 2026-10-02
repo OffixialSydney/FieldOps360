@@ -1,0 +1,62 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../lib/supabase';
+
+export default function Login() {
+  const router = useRouter();
+  const [mode, setMode] = useState('login');
+  const [f, setF] = useState({ email: '', password: '', full_name: '', phone: '', company_id: '' });
+  const [msg, setMsg] = useState('');
+  const [companies, setCompanies] = useState([]);
+  useEffect(() => {
+    supabase.from('companies').select('id,name').eq('status', 'active').then(({ data }) => setCompanies(data || []));
+  }, []);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  async function submit(e) {
+    e.preventDefault();
+    setMsg('');
+    const { error } =
+      mode === 'login'
+        ? await supabase.auth.signInWithPassword({ email: f.email, password: f.password })
+        : await supabase.auth.signUp({
+            email: f.email,
+            password: f.password,
+            options: { data: { full_name: f.full_name, phone: f.phone, company_id: f.company_id || null } },
+          });
+    if (error) return setMsg(error.message);
+    router.push('/dashboard');
+  }
+
+  return (
+    <div className="auth">
+      <h1>FieldOps 360</h1>
+      <p className="muted">{mode === 'login' ? 'Log in to your account' : 'Create a customer account'}</p>
+      <form className="card" onSubmit={submit}>
+        {mode === 'signup' && (
+          <>
+            <label>Full name</label>
+            <input required value={f.full_name} onChange={set('full_name')} />
+            <label>Phone</label>
+            <input value={f.phone} onChange={set('phone')} />
+            <label>Company</label>
+            <select required value={f.company_id} onChange={set('company_id')}>
+              <option value="">Select company</option>
+              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </>
+        )}
+        <label>Email</label>
+        <input type="email" required value={f.email} onChange={set('email')} />
+        <label>Password</label>
+        <input type="password" minLength={6} required value={f.password} onChange={set('password')} />
+        {msg && <p className="err">{msg}</p>}
+        <button style={{ width: '100%' }}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>
+      </form>
+      <button className="ghost" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+        {mode === 'login' ? 'New customer? Sign up' : 'Have an account? Log in'}
+      </button>
+    </div>
+  );
+}
