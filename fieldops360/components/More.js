@@ -177,14 +177,14 @@ export function Platform() {
           </div>
         </div>
       ))}
-      {users.some((u) => u.requested_role === 'technician' && u.role === 'customer') && (
+      {users.some((u) => u.requested_role && u.role === 'customer') && (
         <>
-          <h2>Pending technician requests</h2>
-          {users.filter((u) => u.requested_role === 'technician' && u.role === 'customer').map((u) => (
+          <h2>Pending role requests</h2>
+          {users.filter((u) => u.requested_role && u.role === 'customer').map((u) => (
             <div className="card row" key={u.id} style={{ justifyContent: 'space-between' }}>
-              <span>{u.full_name}</span>
+              <span>{u.full_name} wants to be a <b>{u.requested_role}</b></span>
               <span className="row">
-                <button style={{ marginTop: 0 }} onClick={() => upUser(u.id, { role: 'technician', requested_role: null })}>Approve</button>
+                <button style={{ marginTop: 0 }} onClick={() => upUser(u.id, { role: u.requested_role, requested_role: null })}>Approve</button>
                 <button className="ghost" onClick={() => upUser(u.id, { requested_role: null })}>Decline</button>
               </span>
             </div>
