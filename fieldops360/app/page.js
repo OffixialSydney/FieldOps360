@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 export default function Login() {
   const router = useRouter();
   const [mode, setMode] = useState('login');
-  const [f, setF] = useState({ email: '', password: '', full_name: '', phone: '', company_id: '' });
+  const [f, setF] = useState({ email: '', password: '', full_name: '', phone: '', company_id: '', requested_role: 'customer' });
   const [msg, setMsg] = useState('');
   const [companies, setCompanies] = useState([]);
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function Login() {
         : await supabase.auth.signUp({
             email: f.email,
             password: f.password,
-            options: { data: { full_name: f.full_name, phone: f.phone, company_id: f.company_id || null } },
+            options: { data: { full_name: f.full_name, phone: f.phone, company_id: f.company_id || null, requested_role: f.requested_role } },
           });
     if (error) return setMsg(error.message);
     router.push('/dashboard');
@@ -40,6 +40,11 @@ export default function Login() {
             <input required value={f.full_name} onChange={set('full_name')} />
             <label>Phone</label>
             <input value={f.phone} onChange={set('phone')} />
+            <label>I am signing up as</label>
+            <select value={f.requested_role} onChange={set('requested_role')}>
+              <option value="customer">Customer</option>
+              <option value="technician">Technician (needs approval)</option>
+            </select>
             <label>Company</label>
             <select required value={f.company_id} onChange={set('company_id')}>
               <option value="">Select company</option>
