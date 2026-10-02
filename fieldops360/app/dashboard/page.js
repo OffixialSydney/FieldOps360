@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { Customer, Manager, Technician, Accountant } from '../../components/Views';
 import { Bell, Platform } from '../../components/More';
+import ProfileForm from '../../components/ProfileForm';
 
 const SuperAdmin = (p) => (
   <>
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [confirmOut, setConfirmOut] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -42,10 +44,12 @@ export default function Dashboard() {
         <div className="row">
           <Bell me={profile} />
           <span className="muted">{profile.full_name} ({profile.role.replace('_', ' ')})</span>
+          <button className="ghost" onClick={() => setShowProfile(true)}>Profile</button>
           <button className="ghost" onClick={() => setConfirmOut(true)}>Log out</button>
         </div>
       </div>
       <div className="wrap"><View me={profile} /></div>
+      {showProfile && <ProfileForm me={profile} onSaved={setProfile} onClose={() => setShowProfile(false)} />}
       {confirmOut && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 20 }}>
           <div className="card" style={{ maxWidth: 360, width: '100%', marginBottom: 0 }}>
