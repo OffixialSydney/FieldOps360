@@ -15,6 +15,12 @@ const SuperAdmin = (p) => (
 export default function Dashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
+  const [confirmOut, setConfirmOut] = useState(false);
+
+  async function logout() {
+    await supabase.auth.signOut();
+    router.push('/');
+  }
 
   useEffect(() => {
     (async () => {
@@ -36,10 +42,22 @@ export default function Dashboard() {
         <div className="row">
           <Bell me={profile} />
           <span className="muted">{profile.full_name} ({profile.role.replace('_', ' ')})</span>
-          <button className="ghost" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Log out</button>
+          <button className="ghost" onClick={() => setConfirmOut(true)}>Log out</button>
         </div>
       </div>
       <div className="wrap"><View me={profile} /></div>
+      {confirmOut && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 20 }}>
+          <div className="card" style={{ maxWidth: 360, width: '100%', marginBottom: 0 }}>
+            <h3>Log out?</h3>
+            <p className="muted">Are you sure you want to log out?</p>
+            <div className="row">
+              <button className="danger" onClick={logout}>Yes, log out</button>
+              <button className="ghost" onClick={() => setConfirmOut(false)}>No, stay</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
