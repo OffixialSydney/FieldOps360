@@ -6,4 +6,4 @@ Next.js + Supabase. Deploy on Vercel.
 2. Copy `.env.example` to `.env.local` and fill in your Supabase URL and anon key (Project Settings > API).
 3. `npm install` then `npm run dev`.
 4. Push to GitHub, import the repo in Vercel, add the same two environment variables, deploy.
-5. Sign up, then promote your account to super_admin with the SQL at the bottom of `schema.sql`.
+5. Sign up, then promote your account to super_admin with the SQL at the bottom of `schema.sql`.  
