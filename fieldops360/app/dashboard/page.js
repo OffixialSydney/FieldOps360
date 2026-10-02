@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { Customer, Manager, Technician, Accountant } from '../../components/Views';
@@ -16,6 +16,7 @@ const SuperAdmin = (p) => (
 export default function Dashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
+  const idRef = useRef(null);
   const [confirmOut, setConfirmOut] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -29,10 +30,12 @@ export default function Dashboard() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) return router.replace('/');
       const { data: p } = await supabase.from('profiles').select('*').eq('id', data.session.user.id).single();
+      idRef.current = data.session.user.id;
       setProfile(p);
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') router.replace('/');
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) router.replace('/');
+      else if (idRef.current && session.user.id !== idRef.current) window.location.reload();
     });
     return () => sub.subscription.unsubscribe();
   }, [router]);
