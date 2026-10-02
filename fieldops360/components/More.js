@@ -144,6 +144,7 @@ export function Platform() {
   }
   const upCompany = async (id, patch) => { await supabase.from('companies').update(patch).eq('id', id); load(); };
   const upUser = async (id, patch) => { await supabase.from('profiles').update(patch).eq('id', id); load(); };
+  const companyName = (id) => companies.find((c) => c.id === id)?.name || 'no company';
 
   return (
     <>
@@ -182,7 +183,7 @@ export function Platform() {
           <h2>Pending role requests</h2>
           {users.filter((u) => u.requested_role && u.role === 'customer').map((u) => (
             <div className="card row" key={u.id} style={{ justifyContent: 'space-between' }}>
-              <span>{u.full_name} <span className="muted">({u.email})</span> wants to be a <b>{u.requested_role}</b></span>
+              <span>{u.full_name} <span className="muted">({u.email})</span> from <b>{companyName(u.company_id)}</b> wants to be a <b>{u.requested_role}</b></span>
               <span className="row">
                 <button style={{ marginTop: 0 }} onClick={() => upUser(u.id, { role: u.requested_role, requested_role: null })}>Approve</button>
                 <button className="ghost" onClick={() => upUser(u.id, { requested_role: null })}>Decline</button>
@@ -194,7 +195,7 @@ export function Platform() {
       <h2>Platform: users</h2>
       {users.map((u) => (
         <div className="card row" key={u.id}>
-          <span style={{ flex: '1 1 180px' }}>{u.full_name}<br /><span className="muted">{u.email}</span></span>
+          <span style={{ flex: '1 1 180px' }}>{u.full_name}<br /><span className="muted">{u.email}</span><br /><span className="muted">Company: <b>{companyName(u.company_id)}</b></span></span>
           <select style={{ width: 'auto' }} value={u.role} onChange={(e) => upUser(u.id, { role: e.target.value })}>
             {ROLES.map((r) => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
           </select>
