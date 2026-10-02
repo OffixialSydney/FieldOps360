@@ -29,8 +29,10 @@ create table technician_locations (
   updated_at timestamptz default now()
 );
 
-create function my_company() returns uuid language sql stable security definer set search_path = public as
-$$ select company_id from profiles where id = auth.uid() $$;
+create function my_company() returns uuid language plpgsql stable security definer set search_path = public as $$
+begin
+  return (select company_id from profiles where id = auth.uid());
+end $$;
 
 create function company_ok(c uuid) returns boolean language sql stable security definer set search_path = public as
 $$ select my_role() = 'super_admin'
