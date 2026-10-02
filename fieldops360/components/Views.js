@@ -93,49 +93,84 @@ export function Customer({ me }) {
 
 /* ---------- MANAGER / SUPER ADMIN ---------- */
 export function Manager() {
+  const [view, setView] = useState('live');
+  const [tab, setTab] = useState('pending');
   const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
   const [techs] = useRows('profiles', (t) => t.select('id,full_name').eq('role', 'technician'));
+
+  const groups = {
+    pending: ['new', 'rejected'],
+    active: ['assigned', 'accepted', 'en_route', 'in_progress'],
+    history: ['completed', 'cancelled'],
+  };
+  const live = view === 'live';
+  const shown = reqs.filter((r) => groups[live ? tab : 'history'].includes(r.status));
 
   async function update(id, patch) {
     await supabase.from('requests').update(patch).eq('id', id);
     reload();
   }
 
+  const list = shown.map((r) => (
+    <div className="card" key={r.id}>
+      <div className="row" style={{ justifyContent: 'space-between' }}><h3>{r.service_type}</h3><Badge s={r.status} /></div>
+      <p>{r.description}</p>
+      <p className="muted">{r.customer?.full_name} · {r.customer?.phone} · {r.address}</p>
+      <Files requestId={r.id} />
+      {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
+      {live && (
+        <div className="row">
+          <span className="muted">Scheduled for (change to reschedule)</span>
+          <input type="date" style={{ width: 'auto' }} value={r.scheduled_date || ''} onChange={(e) => update(r.id, { scheduled_date: e.target.value || null })} />
+        </div>
+      )}
+      {['new', 'assigned', 'rejected'].includes(r.status) && (
+        <div className="row">
+          <select value={r.technician_id || ''} onChange={(e) => update(r.id, { technician_id: e.target.value || null, status: e.target.value ? 'assigned' : 'new' })}>
+            <option value="">Assign technician</option>
+            {techs.map((t) => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+          </select>
+          <button className="danger" onClick={() => update(r.id, { status: 'cancelled' })}>Cancel</button>
+        </div>
+      )}
+    </div>
+  ));
+
   return (
     <>
-      <Stats />
-      <h2>All service requests</h2>
-      {reqs.length === 0 && <p className="muted">No requests yet.</p>}
-      {reqs.map((r) => (
-        <div className="card" key={r.id}>
-          <div className="row" style={{ justifyContent: 'space-between' }}><h3>{r.service_type}</h3><Badge s={r.status} /></div>
-          <p>{r.description}</p>
-          <p className="muted">{r.customer?.full_name} · {r.customer?.phone} · {r.address}</p>
-          <Files requestId={r.id} />
-          {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
-          <div className="row">
-            <span className="muted">Scheduled for (change to reschedule)</span>
-            <input type="date" style={{ width: 'auto' }} value={r.scheduled_date || ''} onChange={(e) => update(r.id, { scheduled_date: e.target.value || null })} />
+      <div className="row" style={{ margin: '12px 0' }}>
+        <button className={live ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setView('live')}>Dashboard</button>
+        <button className={live ? 'ghost' : ''} style={{ marginTop: 0 }} onClick={() => setView('history')}>History and inventory</button>
+      </div>
+      {live ? (
+        <>
+          <Stats />
+          <h2>Service requests</h2>
+          <div className="row" style={{ marginBottom: 12 }}>
+            {[['pending', 'Pending'], ['active', 'Active']].map(([k, label]) => (
+              <button key={k} className={tab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setTab(k)}>
+                {label} ({reqs.filter((r) => groups[k].includes(r.status)).length})
+              </button>
+            ))}
           </div>
-          {['new', 'assigned', 'rejected'].includes(r.status) && (
-            <div className="row">
-              <select value={r.technician_id || ''} onChange={(e) => update(r.id, { technician_id: e.target.value || null, status: e.target.value ? 'assigned' : 'new' })}>
-                <option value="">Assign technician</option>
-                {techs.map((t) => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-              </select>
-              <button className="danger" onClick={() => update(r.id, { status: 'cancelled' })}>Cancel</button>
-            </div>
-          )}
-        </div>
-      ))}
-      <h2>Technician locations</h2>
-      <TechMap />
-      <h2>Inventory</h2>
-      <Inventory />
-      <h2>Support tickets</h2>
-      <Tickets staff />
-      <h2>Activity log</h2>
-      <Audit />
+          {shown.length === 0 && <p className="muted">Nothing here.</p>}
+          {list}
+          <h2>Technician locations</h2>
+          <TechMap />
+          <h2>Support tickets</h2>
+          <Tickets staff />
+        </>
+      ) : (
+        <>
+          <h2>Finished and cancelled jobs</h2>
+          {shown.length === 0 && <p className="muted">No finished or cancelled jobs yet.</p>}
+          {list}
+          <h2>Inventory</h2>
+          <Inventory />
+          <h2>Activity log</h2>
+          <Audit />
+        </>
+      )}
     </>
   );
 }
