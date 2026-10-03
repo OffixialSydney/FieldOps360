@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { WarrantyBadge } from './Ops';
 
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
 
@@ -111,9 +112,12 @@ export function Tickets({ me, staff }) {
 }
 
 /* Inventory management */
+const IFIELDS = [['name', 'Item name', 'text'], ['sku', 'SKU', 'text'], ['category', 'Category', 'text'], ['quantity', 'Opening quantity', 'number'], ['unit', 'Unit (pcs, m, kg)', 'text'], ['cost', 'Cost price', 'number'], ['unit_price', 'Selling price', 'number'], ['min_stock', 'Minimum stock', 'number'], ['supplier', 'Supplier', 'text'], ['location', 'Storage location', 'text']];
+
 export function Inventory() {
   const [items, setItems] = useState([]);
-  const [f, setF] = useState({ name: '', quantity: '', unit_price: '' });
+  const empty = Object.fromEntries(IFIELDS.map(([k]) => [k, '']));
+  const [f, setF] = useState(empty);
   const load = useCallback(async () => {
     const { data } = await supabase.from('items').select('*').order('name');
     setItems(data || []);
@@ -122,36 +126,78 @@ export function Inventory() {
 
   async function add(e) {
     e.preventDefault();
-    await supabase.from('items').insert({ name: f.name, quantity: Number(f.quantity || 0), unit_price: Number(f.unit_price || 0) });
-    setF({ name: '', quantity: '', unit_price: '' });
-    load();
-  }
-  async function adjust(i, d) {
-    await supabase.from('items').update({ quantity: Math.max(0, i.quantity + d) }).eq('id', i.id);
+    const n = (v) => Number(v || 0);
+    const { error } = await supabase.from('items').insert({ ...f, unit: f.unit || 'pcs', quantity: n(f.quantity), cost: n(f.cost), unit_price: n(f.unit_price), min_stock: n(f.min_stock) });
+    if (error) return alert(error.message);
+    setF(empty);
     load();
   }
 
   return (
     <>
       <form className="card" onSubmit={add}>
-        <div className="row">
-          <input required placeholder="Item name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} style={{ flex: 2 }} />
-          <input type="number" min="0" placeholder="Qty" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} style={{ flex: 1 }} />
-          <input type="number" min="0" placeholder="Unit price" value={f.unit_price} onChange={(e) => setF({ ...f, unit_price: e.target.value })} style={{ flex: 1 }} />
-        </div>
+        {IFIELDS.map(([k, label, type]) => (
+          <div key={k}>
+            <label>{label}</label>
+            <input required={k === 'name'} type={type} min="0" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
+          </div>
+        ))}
         <button>Add item</button>
       </form>
-      {items.map((i) => (
-        <div className="card row" key={i.id} style={{ justifyContent: 'space-between' }}>
-          <span>{i.name} · {money(i.unit_price)} {i.quantity <= 3 && <span className="badge">low stock</span>}</span>
-          <span className="row">
-            <button className="ghost" onClick={() => adjust(i, -1)}>-</button>
-            <b>{i.quantity}</b>
-            <button className="ghost" onClick={() => adjust(i, 1)}>+</button>
-          </span>
-        </div>
-      ))}
+      {items.length === 0 && <p className="muted">No items yet.</p>}
+      {items.map((i) => <ItemRow key={i.id} it={i} reload={load} />)}
     </>
+  );
+}
+
+function ItemRow({ it, reload }) {
+  const [qty, setQty] = useState('');
+  const [reason, setReason] = useState('purchased');
+  const [ledger, setLedger] = useState(null);
+  const low = it.quantity < it.min_stock;
+
+  async function apply() {
+    const n = Math.round(Number(qty));
+    if (!n) return;
+    const change = reason === 'purchased' ? Math.abs(n) : reason === 'damaged' ? -Math.abs(n) : n;
+    const { error } = await supabase.rpc('inventory_move', { p_item: it.id, p_change: change, p_reason: reason });
+    if (error) return alert(error.message);
+    setQty('');
+    setLedger(null);
+    reload();
+  }
+  async function showLedger() {
+    if (ledger) return setLedger(null);
+    const { data } = await supabase.from('inventory_transactions').select('*').eq('item_id', it.id).order('created_at', { ascending: false }).limit(30);
+    setLedger(data || []);
+  }
+
+  return (
+    <div className="card">
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <h3>{it.name} {low && <span className="badge" style={{ background: '#fde8e8', color: '#b42318' }}>LOW STOCK</span>}</h3>
+        <b>{it.quantity} {it.unit}</b>
+      </div>
+      <p className="muted">
+        {it.sku ? `SKU ${it.sku} · ` : ''}{it.category ? `${it.category} · ` : ''}Minimum {it.min_stock} · Cost {money(it.cost)} · Price {money(it.unit_price)}
+        {it.supplier ? ` · Supplier ${it.supplier}` : ''}{it.location ? ` · ${it.location}` : ''}
+      </p>
+      <div className="row">
+        <input type="number" placeholder="Quantity" value={qty} onChange={(e) => setQty(e.target.value)} style={{ width: 110 }} />
+        <select value={reason} onChange={(e) => setReason(e.target.value)} style={{ width: 'auto' }}>
+          <option value="purchased">Purchased (+)</option>
+          <option value="damaged">Damaged (-)</option>
+          <option value="adjustment">Correction (+ or -)</option>
+        </select>
+        <button style={{ marginTop: 0 }} onClick={apply}>Apply</button>
+        <button className="ghost" onClick={showLedger}>{ledger ? 'Hide ledger' : 'Ledger'}</button>
+      </div>
+      {ledger && ledger.map((t) => (
+        <p key={t.id} className="muted" style={{ margin: '4px 0' }}>
+          {new Date(t.created_at).toLocaleString()} · {t.reason} · <b>{t.change > 0 ? `+${t.change}` : t.change}</b> · balance {t.balance}
+        </p>
+      ))}
+    </div>
   );
 }
 
@@ -177,15 +223,14 @@ export function Assets() {
   const [rows, setRows] = useState([]);
   useEffect(() => { supabase.from('assets').select('*').order('created_at', { ascending: false }).then(({ data }) => setRows(data || [])); }, []);
   if (!rows.length) return <p className="muted">Equipment installed or serviced for you will appear here.</p>;
-  return rows.map((a) => {
-    const active = a.warranty_until && new Date(a.warranty_until) >= new Date();
-    return (
-      <div className="card row" key={a.id} style={{ justifyContent: 'space-between' }}>
-        <span>{a.name}</span>
-        <span className="muted">{a.warranty_until ? `${active ? 'Warranty until' : 'Warranty ended'} ${a.warranty_until}` : 'No warranty'}</span>
-      </div>
-    );
-  });
+  return rows.map((a) => (
+    <div className="card" key={a.id}>
+      <div className="row" style={{ justifyContent: 'space-between' }}><h3>{a.name}</h3><WarrantyBadge a={a} /></div>
+      <p className="muted">
+        {a.serial_number ? `Serial ${a.serial_number} · ` : ''}Installed {a.installation_date || '-'} · {a.warranty_until ? `Warranty until ${a.warranty_until}` : 'No warranty'}
+      </p>
+    </div>
+  ));
 }
 
 /* Activity log */
