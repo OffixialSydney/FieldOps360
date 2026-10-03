@@ -26,6 +26,9 @@ export function Customer({ me }) {
   const [reqs, reload] = useRows('requests', (t) => t.select('*, tech:profiles!requests_technician_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
   const [invs, reloadInv] = useRows('invoices', (t) => t.select('*, job:requests(request_no,service_type)').order('created_at', { ascending: false }));
   const [assets] = useRows('assets', (t) => t.select('*'));
+  const [ctab, setCtab] = useState('active');
+  const past = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
+  const myReqs = reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
 
   return (
     <>
@@ -35,8 +38,13 @@ export function Customer({ me }) {
       <RequestForm me={me} onCreated={reload} />
 
       <h2>My requests</h2>
-      {reqs.length === 0 && <p className="muted">No requests yet. Submit one above.</p>}
-      {reqs.map((r) => (
+      <div className="row" style={{ marginBottom: 12 }}>
+        {[['active', 'Active'], ['history', 'History']].map(([k, label]) => (
+          <button key={k} className={ctab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setCtab(k)}>{label}</button>
+        ))}
+      </div>
+      {myReqs.length === 0 && <p className="muted">{ctab === 'history' ? 'No finished jobs yet.' : 'No active requests. Submit one above.'}</p>}
+      {myReqs.map((r) => (
         <div className="card" key={r.id}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h3>{r.service_type}</h3>
@@ -76,7 +84,7 @@ const GROUPS = {
   history: ['completed', 'invoiced', 'paid', 'closed', 'cancelled'],
 };
 
-export function Manager() {
+export function Manager({ readOnly }) {
   const [view, setView] = useState('live');
   const [tab, setTab] = useState('pending');
   const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
@@ -118,18 +126,19 @@ export function Manager() {
         <Timeline requestId={r.id} />
         <Diagnosis requestId={r.id} />
         <Materials requestId={r.id} />
-        <Extras requestId={r.id} mode="customer" />
+        <Extras requestId={r.id} mode={readOnly ? 'view' : 'customer'} />
         <Files requestId={r.id} />
-        {live && (
+        {readOnly && r.technician_id && <p className="muted">Assigned technician: {techs.find((t) => t.id === r.technician_id)?.full_name || '-'}</p>}
+        {live && !readOnly && (
           <div className="row">
             <span className="muted">Scheduled for (change to reschedule)</span>
             <input type="date" style={{ width: 'auto' }} value={r.scheduled_date || ''} onChange={(e) => update(r.id, { scheduled_date: e.target.value || null })} />
           </div>
         )}
-        {open && (
+        {open && !readOnly && (
           <Suggestions req={r} techs={techs} reqs={reqs} locs={locs} ratings={ratings} onAssign={(tid) => assign(r.id, tid)} />
         )}
-        {(open || r.status === 'assigned') && (
+        {!readOnly && (open || r.status === 'assigned') && (
           <div className="row">
             <select value={r.technician_id || ''} onChange={(e) => assign(r.id, e.target.value)}>
               <option value="">Choose a technician yourself</option>
@@ -139,7 +148,7 @@ export function Manager() {
             <button className="danger" onClick={() => update(r.id, { status: 'cancelled' })}>Cancel</button>
           </div>
         )}
-        {r.status === 'paid' && <button onClick={() => update(r.id, { status: 'closed' })}>Close job</button>}
+        {r.status === 'paid' && !readOnly && <button onClick={() => update(r.id, { status: 'closed' })}>Close job</button>}
       </div>
     );
   });
@@ -151,6 +160,8 @@ export function Manager() {
           <button key={k} className={view === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setView(k)}>{label}</button>
         ))}
       </div>
+
+      {readOnly && <p className="muted">View only: each company's manager assigns jobs, replies to tickets and manages stock and warranties. You can follow progress here.</p>}
 
       {view === 'live' && (
         <>
@@ -166,7 +177,7 @@ export function Manager() {
           {shown.length === 0 && <p className="muted">Nothing here.</p>}
           {list}
           <h2>Support tickets</h2>
-          <Tickets staff />
+          <Tickets staff readOnly={readOnly} />
         </>
       )}
 
@@ -203,9 +214,9 @@ export function Manager() {
           {shown.length === 0 && <p className="muted">No finished or cancelled jobs yet.</p>}
           {list}
           <h2>Assets and warranties</h2>
-          <AssetsAdmin />
+          <AssetsAdmin readOnly={readOnly} />
           <h2>Inventory</h2>
-          <Inventory />
+          <Inventory readOnly={readOnly} />
           <h2>Activity log</h2>
           <Audit />
         </>
@@ -230,6 +241,13 @@ export function Technician({ me }) {
   const [form, setForm] = useState({});
   const [avail, setAvail] = useState(me.availability || 'available');
   const [skills, setSkills] = useState(me.skills || '');
+  const [skillMsg, setSkillMsg] = useState('');
+  const [finishing, setFinishing] = useState(false);
+
+  async function saveSkills() {
+    const { data, error } = await supabase.from('profiles').update({ skills }).eq('id', me.id).select();
+    setSkillMsg(error ? error.message : data?.length ? 'Skills saved' : 'Could not save. Log out and log in again.');
+  }
   const upd = (id, k) => (e) => setForm({ ...form, [id]: { ...form[id], [k]: e.target.value } });
 
   async function setStatus(r, status, extra = {}) {
@@ -244,10 +262,12 @@ export function Technician({ me }) {
   }
 
   async function complete(r) {
+    if (finishing) return;
+    setFinishing(true);
     const d = form[r.id] || {};
     const n = (x) => Number(x || 0);
     const { error } = await supabase.from('requests').update({ status: 'completed', work_done: d.work_done, signature: d.signature }).eq('id', r.id);
-    if (error) return alert(error.message);
+    if (error) { setFinishing(false); return alert(error.message); }
     const { data: mats } = await supabase.from('job_materials').select('*').eq('request_id', r.id);
     const { data: ex } = await supabase.from('extra_charges').select('*').eq('request_id', r.id).eq('status', 'approved');
     const items = [];
@@ -265,6 +285,7 @@ export function Technician({ me }) {
       customer_id: r.customer_id, request_id: r.id, name: r.service_type, serial_number: d.serial || null, technician_id: me.id,
       installation_date: start, warranty_months: d.warranty ? n(d.warranty) : null, warranty_start: d.warranty ? start : null, warranty_until: until,
     });
+    setFinishing(false);
     reload();
   }
 
@@ -280,7 +301,9 @@ export function Technician({ me }) {
           <option value="offline">Offline</option>
         </select>
         <label>My skills (separate with commas, e.g. Solar, Electrical)</label>
-        <input value={skills} onChange={(e) => setSkills(e.target.value)} onBlur={() => supabase.from('profiles').update({ skills }).eq('id', me.id)} />
+        <input value={skills} onChange={(e) => { setSkills(e.target.value); setSkillMsg(''); }} />
+        <button type="button" onClick={saveSkills}>Save skills</button>
+        {skillMsg && <p className="muted">{skillMsg}</p>}
       </div>
 
       <h2>My jobs</h2>
@@ -330,7 +353,7 @@ export function Technician({ me }) {
                 <label>Customer signature</label>
                 <SignaturePad onChange={(v) => setForm({ ...form, [r.id]: { ...form[r.id], signature: v } })} />
                 <p className="muted">The invoice is built from materials, approved additional work, labour and fees.</p>
-                <button onClick={() => complete(r)}>Complete job</button>
+                <button disabled={finishing} onClick={() => complete(r)}>{finishing ? 'Completing...' : 'Complete job'}</button>
               </>
             )}
           </div>
