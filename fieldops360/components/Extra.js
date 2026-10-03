@@ -60,11 +60,14 @@ export function Tickets({ me, staff }) {
   const [rows, setRows] = useState([]);
   const [f, setF] = useState({ subject: '', message: '' });
   const [reply, setReply] = useState({});
+  const [showClosed, setShowClosed] = useState(false);
   const load = useCallback(async () => {
     const { data } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
     setRows(data || []);
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  const visible = staff && !showClosed ? rows.filter((t) => t.status === 'open') : rows;
 
   async function create(e) {
     e.preventDefault();
@@ -88,8 +91,9 @@ export function Tickets({ me, staff }) {
           <button>Send ticket</button>
         </form>
       )}
-      {rows.length === 0 && <p className="muted">No tickets.</p>}
-      {rows.map((t) => (
+      {staff && <button className="ghost" onClick={() => setShowClosed(!showClosed)}>{showClosed ? 'Hide closed tickets' : 'Show closed tickets'}</button>}
+      {visible.length === 0 && <p className="muted">No tickets.</p>}
+      {visible.map((t) => (
         <div className="card" key={t.id}>
           <div className="row" style={{ justifyContent: 'space-between' }}><h3>{t.subject}</h3><span className="badge">{t.status}</span></div>
           <p>{t.message}</p>
@@ -204,8 +208,8 @@ export function Stats() {
       const rs = r || [], gs = g || [];
       setS({
         total: rs.length,
-        done: rs.filter((x) => x.status === 'completed').length,
-        open: rs.filter((x) => !['completed', 'cancelled', 'rejected'].includes(x.status)).length,
+        done: rs.filter((x) => ['completed', 'invoiced', 'paid', 'closed'].includes(x.status)).length,
+        open: rs.filter((x) => !['completed', 'invoiced', 'paid', 'closed', 'cancelled', 'rejected'].includes(x.status)).length,
         avg: gs.length ? (gs.reduce((a, b) => a + b.stars, 0) / gs.length).toFixed(1) : '-',
       });
     })();
