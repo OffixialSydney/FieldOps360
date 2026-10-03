@@ -226,7 +226,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
 /* ---------- Asset register (manager) ---------- */
 const addMonths = (d, m) => { const x = new Date(d); x.setMonth(x.getMonth() + Number(m)); return x.toISOString().slice(0, 10); };
 
-export function AssetsAdmin() {
+export function AssetsAdmin({ readOnly }) {
   const [assets, setAssets] = useState([]);
   const [custs, setCusts] = useState([]);
   const [techs, setTechs] = useState([]);
@@ -262,7 +262,7 @@ export function AssetsAdmin() {
 
   return (
     <>
-      <form className="card" onSubmit={add}>
+      <form className="card" onSubmit={add} hidden={readOnly}>
         <input required placeholder="Asset (e.g. Solar Inverter)" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         <input placeholder="Serial number" style={{ marginTop: 6 }} value={f.serial} onChange={(e) => setF({ ...f, serial: e.target.value })} />
         <select required style={{ marginTop: 6 }} value={f.customer} onChange={(e) => setF({ ...f, customer: e.target.value })}>
@@ -287,7 +287,7 @@ export function AssetsAdmin() {
             {a.serial_number ? `Serial ${a.serial_number} · ` : ''}{a.customer?.full_name}{a.tech?.full_name ? ` · Technician ${a.tech.full_name}` : ''}<br />
             Installed {a.installation_date || '-'} · Warranty {a.warranty_months ? `${a.warranty_months} months, until ${a.warranty_until}` : 'none'} · {a.status.toUpperCase()}
           </p>
-          <select value={a.status} style={{ width: 'auto' }} onChange={(e) => setStatus(a.id, e.target.value)}>
+          <select value={a.status} disabled={readOnly} style={{ width: 'auto' }} onChange={(e) => setStatus(a.id, e.target.value)}>
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="retired">Retired</option>
           </select>
         </div>
