@@ -108,33 +108,46 @@ export function Extras({ requestId, mode, meId }) {
 /* Technician shares live location while this page is open */
 export function ShareLocation({ me }) {
   const [on, setOn] = useState(false);
+  const [status, setStatus] = useState('');
   useEffect(() => {
-    if (!on || !navigator.geolocation) return;
+    if (!on) return;
+    if (!navigator.geolocation) { setStatus('This device does not support location.'); return; }
     let last = 0;
-    const id = navigator.geolocation.watchPosition((p) => {
-      if (Date.now() - last < 30000) return;
+    async function send(p) {
+      if (Date.now() - last < 20000) return;
       last = Date.now();
-      supabase.from('technician_locations').upsert({ technician_id: me.id, lat: p.coords.latitude, lng: p.coords.longitude, updated_at: new Date().toISOString() });
-    });
+      const { error } = await supabase.from('technician_locations').upsert({ technician_id: me.id, lat: p.coords.latitude, lng: p.coords.longitude, updated_at: new Date().toISOString() });
+      setStatus(error ? `Could not share location: ${error.message}` : `Location shared at ${new Date().toLocaleTimeString()}`);
+    }
+    setStatus('Getting your location...');
+    const id = navigator.geolocation.watchPosition(send, (err) => setStatus(`Location blocked: ${err.message}. Allow location for this site in your browser settings.`), { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     return () => navigator.geolocation.clearWatch(id);
   }, [on, me.id]);
   return (
-    <label className="row" style={{ color: 'inherit' }}>
-      <input type="checkbox" style={{ width: 'auto' }} checked={on} onChange={(e) => setOn(e.target.checked)} />
-      Share my live location with dispatch
-    </label>
+    <div style={{ margin: '8px 0' }}>
+      <label className="row" style={{ color: 'inherit' }}>
+        <input type="checkbox" style={{ width: 'auto' }} checked={on} onChange={(e) => { setOn(e.target.checked); if (!e.target.checked) setStatus(''); }} />
+        Share my live location with dispatch
+      </label>
+      {status && <p className="muted">{status}</p>}
+    </div>
   );
 }
 
 /* Manager view of technician locations */
 export function TechMap() {
   const [rows, setRows] = useState([]);
+  const [err, setErr] = useState('');
   useEffect(() => {
-    const load = () => supabase.from('technician_locations').select('*, tech:profiles!technician_locations_technician_id_fkey(full_name)').then(({ data }) => setRows(data || []));
+    const load = () => supabase.from('technician_locations').select('*, tech:profiles!technician_locations_technician_id_fkey(full_name)').then(({ data, error }) => {
+      setRows(data || []);
+      setErr(error ? error.message : '');
+    });
     load();
     const t = setInterval(load, 30000);
     return () => clearInterval(t);
   }, []);
+  if (err) return <p className="err">{err}</p>;
   if (!rows.length) return <p className="muted">No technician is sharing a location right now.</p>;
   return rows.map((r) => (
     <div className="card row" key={r.technician_id} style={{ justifyContent: 'space-between' }}>
@@ -174,6 +187,19 @@ export function Platform() {
     load();
   };
   const companyName = (id) => companies.find((c) => c.id === id)?.name || 'no company';
+
+  const userCard = (u) => (
+    <div className="card row" key={u.id}>
+      <span style={{ flex: '1 1 180px' }}>{u.full_name}<br /><span className="muted">{u.email}</span></span>
+      <select style={{ width: 'auto' }} value={u.role} onChange={(e) => upUser(u.id, { role: e.target.value })}>
+        {ROLES.map((r) => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
+      </select>
+      <select style={{ width: 'auto' }} value={u.company_id || ''} onChange={(e) => upUser(u.id, { company_id: e.target.value || null })}>
+        <option value="">No company</option>
+        {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+    </div>
+  );
 
   return (
     <>
@@ -221,19 +247,17 @@ export function Platform() {
           ))}
         </>
       )}
-      <h2>Platform: users</h2>
-      {users.map((u) => (
-        <div className="card row" key={u.id}>
-          <span style={{ flex: '1 1 180px' }}>{u.full_name}<br /><span className="muted">{u.email}</span><br /><span className="muted">Company: <b>{companyName(u.company_id)}</b></span></span>
-          <select style={{ width: 'auto' }} value={u.role} onChange={(e) => upUser(u.id, { role: e.target.value })}>
-            {ROLES.map((r) => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
-          </select>
-          <select style={{ width: 'auto' }} value={u.company_id || ''} onChange={(e) => upUser(u.id, { company_id: e.target.value || null })}>
-            <option value="">No company</option>
-            {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-      ))}
+      <h2>Platform: users by company</h2>
+      {[...companies.map((c) => ({ id: c.id, name: c.name })), { id: null, name: 'No company' }].map((g) => {
+        const members = users.filter((u) => (u.company_id || null) === g.id);
+        if (!members.length) return null;
+        return (
+          <div key={g.id || 'none'}>
+            <h3>{g.name} ({members.length})</h3>
+            {members.map(userCard)}
+          </div>
+        );
+      })}
     </>
   );
 }
