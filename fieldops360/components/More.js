@@ -36,48 +36,69 @@ export function Bell({ me }) {
   );
 }
 
-/* Extra charges: technician requests, customer approves */
+/* Additional work: technician requests, customer or manager decides */
 export function Extras({ requestId, mode, meId }) {
   const [rows, setRows] = useState([]);
-  const [f, setF] = useState({ description: '', amount: '' });
+  const [lines, setLines] = useState([{ label: '', amount: '' }]);
   const load = useCallback(async () => {
     const { data } = await supabase.from('extra_charges').select('*').eq('request_id', requestId).order('created_at');
     setRows(data || []);
   }, [requestId]);
   useEffect(() => { load(); }, [load]);
 
+  const total = lines.reduce((s, l) => s + Number(l.amount || 0), 0);
+  const setLine = (i, k, v) => setLines(lines.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
+
   async function add() {
-    if (!f.description || !f.amount) return;
-    await supabase.from('extra_charges').insert({ request_id: requestId, technician_id: meId, description: f.description, amount: Number(f.amount) });
-    setF({ description: '', amount: '' });
+    const clean = lines.filter((l) => l.label && Number(l.amount) > 0).map((l) => ({ label: l.label, amount: Number(l.amount) }));
+    if (!clean.length) return;
+    await supabase.from('extra_charges').insert({
+      request_id: requestId, technician_id: meId, description: clean.map((l) => l.label).join(', '),
+      amount: clean.reduce((s, l) => s + l.amount, 0), lines: clean,
+    });
+    setLines([{ label: '', amount: '' }]);
     load();
   }
   async function decide(id, status) {
-    await supabase.rpc('decide_extra', { p_id: id, p_status: status });
+    const { error } = await supabase.rpc('decide_extra', { p_id: id, p_status: status });
+    if (error) alert(error.message);
     load();
   }
 
   if (!rows.length && mode !== 'tech') return null;
   return (
     <div style={{ margin: '8px 0' }}>
-      {rows.length > 0 && <h3>Extra charges</h3>}
+      {rows.length > 0 && <h3>Additional work requests</h3>}
       {rows.map((x) => (
-        <div className="row" key={x.id} style={{ justifyContent: 'space-between' }}>
-          <span>{x.description} · {money(x.amount)} <span className="badge">{x.status}</span></span>
-          {mode === 'customer' && x.status === 'pending' && (
-            <span className="row">
-              <button style={{ marginTop: 0 }} onClick={() => decide(x.id, 'approved')}>Approve</button>
-              <button className="danger" style={{ marginTop: 0 }} onClick={() => decide(x.id, 'rejected')}>Reject</button>
-            </span>
-          )}
+        <div key={x.id} style={{ margin: '8px 0' }}>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><b>Total {money(x.amount)}</b> <span className="badge">{x.status}</span></span>
+            {mode === 'customer' && x.status === 'pending' && (
+              <span className="row">
+                <button style={{ marginTop: 0 }} onClick={() => decide(x.id, 'approved')}>Approve</button>
+                <button className="danger" style={{ marginTop: 0 }} onClick={() => decide(x.id, 'rejected')}>Reject</button>
+              </span>
+            )}
+          </div>
+          {(x.lines?.length ? x.lines : [{ label: x.description, amount: x.amount }]).map((l, i) => (
+            <p key={i} className="muted" style={{ margin: '2px 0' }}>{l.label}: {money(l.amount)}</p>
+          ))}
         </div>
       ))}
       {mode === 'tech' && (
         <>
-          <label>Request approval for extra work</label>
-          <input placeholder="Description" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
-          <input type="number" min="0" placeholder="Amount" style={{ marginTop: 6 }} value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
-          <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={add}>Send to customer</button>
+          <label>Request approval for additional work</label>
+          {lines.map((l, i) => (
+            <div className="row" key={i} style={{ marginBottom: 6 }}>
+              <input placeholder="Item (e.g. Battery)" value={l.label} onChange={(e) => setLine(i, 'label', e.target.value)} style={{ flex: 2 }} />
+              <input type="number" min="0" placeholder="Amount" value={l.amount} onChange={(e) => setLine(i, 'amount', e.target.value)} style={{ flex: 1 }} />
+            </div>
+          ))}
+          <div className="row">
+            <button type="button" className="ghost" onClick={() => setLines([...lines, { label: '', amount: '' }])}>Add line</button>
+            <b>Total {money(total)}</b>
+          </div>
+          <button type="button" style={{ marginTop: 6 }} onClick={add}>Send to customer</button>
         </>
       )}
     </div>
