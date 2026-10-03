@@ -62,9 +62,13 @@ export function Rating({ request }) {
 /* Support tickets: customers create, staff reply */
 export function Tickets({ me, staff, readOnly }) {
   const [rows, setRows] = useState([]);
-  const [f, setF] = useState({ subject: '', message: '' });
+  const [f, setF] = useState({ subject: '', message: '', request_id: '' });
   const [reply, setReply] = useState({});
   const [showClosed, setShowClosed] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  useEffect(() => {
+    if (!staff) supabase.from('requests').select('id,request_no,service_type').not('company_id', 'is', null).then(({ data }) => setJobs(data || []));
+  }, [staff]);
   const load = useCallback(async () => {
     const { data } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
     setRows(data || []);
@@ -76,7 +80,7 @@ export function Tickets({ me, staff, readOnly }) {
   async function create(e) {
     e.preventDefault();
     await supabase.from('tickets').insert({ ...f, customer_id: me.id });
-    setF({ subject: '', message: '' });
+    setF({ subject: '', message: '', request_id: '' });
     load();
   }
   async function answer(t) {
@@ -88,6 +92,12 @@ export function Tickets({ me, staff, readOnly }) {
     <>
       {!staff && (
         <form className="card" onSubmit={create}>
+          <label>Which job is this about?</label>
+          <select required value={f.request_id} onChange={(e) => setF({ ...f, request_id: e.target.value })}>
+            <option value="">Choose a job</option>
+            {jobs.map((j) => <option key={j.id} value={j.id}>{j.request_no} · {j.service_type}</option>)}
+          </select>
+          {jobs.length === 0 && <p className="muted">You can open a ticket once a company has accepted one of your requests.</p>}
           <label>Subject</label>
           <input required value={f.subject} onChange={(e) => setF({ ...f, subject: e.target.value })} />
           <label>Message</label>
@@ -256,7 +266,7 @@ export function Stats() {
   const [s, setS] = useState({ total: 0, open: 0, done: 0, avg: '-' });
   useEffect(() => {
     (async () => {
-      const { data: r } = await supabase.from('requests').select('status');
+      const { data: r } = await supabase.from('requests').select('status').not('company_id', 'is', null);
       const { data: g } = await supabase.from('ratings').select('stars');
       const rs = r || [], gs = g || [];
       setS({
