@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { ServicesEditor } from './Ops';
 
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
 const ROLES = ['customer', 'technician', 'manager', 'accountant', 'super_admin'];
@@ -120,7 +121,12 @@ export function ShareLocation({ me }) {
       setStatus(error ? `Could not share location: ${error.message}` : `Location shared at ${new Date().toLocaleTimeString()}`);
     }
     setStatus('Getting your location...');
-    const id = navigator.geolocation.watchPosition(send, (err) => setStatus(`Location blocked: ${err.message}. Allow location for this site in your browser settings.`), { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    const fail = (err) => setStatus(
+      err.code === 1 ? 'Location permission denied. Allow location for this site in your browser settings.'
+        : err.code === 2 ? 'Your device could not find its position. Turn on Location Services and Wi-Fi or GPS.'
+          : 'Still looking for your position. Make sure Location Services are on for this browser. Retrying...'
+    );
+    const id = navigator.geolocation.watchPosition(send, fail, { enableHighAccuracy: false, maximumAge: 60000, timeout: 60000 });
     return () => navigator.geolocation.clearWatch(id);
   }, [on, me.id]);
   return (
@@ -222,6 +228,7 @@ export function Platform() {
       {companies.map((c) => (
         <div className="card" key={c.id}>
           <div className="row" style={{ justifyContent: 'space-between' }}><h3>{c.name}</h3><span className="badge">{c.status}</span></div>
+          <ServicesEditor company={c} admin onSaved={load} />
           <div className="row">
             <select value={c.plan} onChange={(e) => upCompany(c.id, { plan: e.target.value })} style={{ width: 'auto' }}>
               {['free', 'basic', 'pro'].map((p) => <option key={p}>{p}</option>)}
