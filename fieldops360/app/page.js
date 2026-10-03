@@ -30,7 +30,7 @@ export default function Login() {
         : await supabase.auth.signUp({
             email: f.email,
             password: f.password,
-            options: { data: { full_name: f.full_name, phone: f.phone, company_id: f.company_id || null, requested_role: f.requested_role } },
+            options: { data: { full_name: f.full_name, phone: f.phone, company_id: f.requested_role === 'customer' ? null : f.company_id || null, requested_role: f.requested_role } },
           });
     if (error) return setMsg(error.message);
     router.push('/dashboard');
@@ -67,11 +67,15 @@ export default function Login() {
               <option value="manager">Manager (needs approval)</option>
               <option value="accountant">Accountant (needs approval)</option>
             </select>
-            <label>Company</label>
-            <select required value={f.company_id} onChange={set('company_id')}>
-              <option value="">Select company</option>
-              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            {f.requested_role !== 'customer' && (
+              <>
+                <label>Company</label>
+                <select required value={f.company_id} onChange={set('company_id')}>
+                  <option value="">Select company</option>
+                  {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </>
+            )}
           </>
         )}
         <label>Email</label>
