@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, SignaturePad, Earnings } from './Extra';
 import { Extras, ShareLocation, TechMap } from './More';
-import { Diagnosis, Materials, InvoiceCard, AssetsAdmin } from './Ops';
+import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
@@ -23,7 +23,7 @@ const Badge = ({ s }) => <span className="badge">{STATUS[s] || s.replace('_', ' 
 
 /* ---------- CUSTOMER ---------- */
 export function Customer({ me }) {
-  const [reqs, reload] = useRows('requests', (t) => t.select('*, tech:profiles!requests_technician_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
+  const [reqs, reload] = useRows('requests', (t) => t.select('*, tech:profiles!requests_technician_id_fkey(full_name,phone), company:companies(name)').order('created_at', { ascending: false }));
   const [invs, reloadInv] = useRows('invoices', (t) => t.select('*, job:requests(request_no,service_type)').order('created_at', { ascending: false }));
   const [assets] = useRows('assets', (t) => t.select('*'));
   const [ctab, setCtab] = useState('active');
@@ -51,6 +51,7 @@ export function Customer({ me }) {
             <span className="row"><Prio p={r.priority} /><Badge s={r.status} /></span>
           </div>
           <p className="muted">{r.request_no}</p>
+          {r.company?.name ? <p className="muted">Company: {r.company.name}</p> : r.status === 'new' && <p className="muted">Open: waiting for a company that offers this service to accept your request.</p>}
           <p>{r.description}</p>
           <p className="muted">{r.address}</p>
           {(r.scheduled_date || r.preferred_date) && <p className="muted">Appointment: {r.scheduled_date || r.preferred_date} {r.preferred_time || ''}</p>}
@@ -84,17 +85,20 @@ const GROUPS = {
   history: ['completed', 'invoiced', 'paid', 'closed', 'cancelled'],
 };
 
-export function Manager({ readOnly }) {
+export function Manager({ readOnly, me }) {
   const [view, setView] = useState('live');
   const [tab, setTab] = useState('pending');
   const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
   const [techs] = useRows('profiles', (t) => t.select('id,full_name,skills,availability').eq('role', 'technician'));
   const [locs] = useRows('technician_locations', (t) => t.select('*'));
   const [ratings] = useRows('ratings', (t) => t.select('technician_id,stars'));
+  const [companies, reloadCo] = useRows('companies', (t) => t.select('*'));
+  const myCo = companies.find((c) => c.id === me?.company_id);
 
   const live = view === 'live';
+  const inTab = (r, k) => (k === 'open' ? !r.company_id && r.status === 'new' : !!r.company_id && GROUPS[k].includes(r.status));
   const shown = reqs
-    .filter((r) => GROUPS[view === 'history' ? 'history' : tab].includes(r.status))
+    .filter((r) => inTab(r, view === 'history' ? 'history' : tab))
     .sort((a, b) => (RANK[a.priority] ?? 2) - (RANK[b.priority] ?? 2));
 
   async function update(id, patch) {
@@ -103,10 +107,17 @@ export function Manager({ readOnly }) {
     reload();
   }
   const assign = (id, techId) => update(id, { technician_id: techId || null, status: techId ? 'assigned' : 'new' });
+  async function claim(id, techId) {
+    const { error } = await supabase.rpc('claim_request', { p_request: id, p_technician: techId || null });
+    if (error) alert(error.message);
+    reload();
+  }
 
   const list = shown.map((r) => {
     const dest = r.latitude != null ? `${r.latitude},${r.longitude}` : encodeURIComponent(r.address || '');
-    const open = ['new', 'reviewing', 'rejected'].includes(r.status);
+    const market = !r.company_id;
+    const offers = !!myCo?.services?.includes(r.service_type);
+    const open = !market && ['new', 'reviewing', 'rejected'].includes(r.status);
     return (
       <div className="card" key={r.id}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -134,6 +145,14 @@ export function Manager({ readOnly }) {
             <span className="muted">Scheduled for (change to reschedule)</span>
             <input type="date" style={{ width: 'auto' }} value={r.scheduled_date || ''} onChange={(e) => update(r.id, { scheduled_date: e.target.value || null })} />
           </div>
+        )}
+        {market && readOnly && <p className="muted">Open request: waiting for a company that offers this service to take it.</p>}
+        {market && !readOnly && !offers && <p style={{ color: '#b42318', fontWeight: 600 }}>You don't offer this service ({r.service_type}). Not your field.</p>}
+        {market && !readOnly && offers && (
+          <>
+            <Suggestions req={r} techs={techs} reqs={reqs} locs={locs} ratings={ratings} onAssign={(tid) => claim(r.id, tid)} />
+            <button className="ghost" onClick={() => claim(r.id, null)}>Take this job (assign a technician later)</button>
+          </>
         )}
         {open && !readOnly && (
           <Suggestions req={r} techs={techs} reqs={reqs} locs={locs} ratings={ratings} onAssign={(tid) => assign(r.id, tid)} />
@@ -166,11 +185,12 @@ export function Manager({ readOnly }) {
       {view === 'live' && (
         <>
           <Stats />
+          {!readOnly && myCo && <ServicesEditor company={myCo} onSaved={reloadCo} />}
           <h2>Service requests</h2>
           <div className="row" style={{ marginBottom: 12 }}>
-            {['pending', 'active'].map((k) => (
+            {['open', 'pending', 'active'].map((k) => (
               <button key={k} className={tab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setTab(k)}>
-                {k === 'pending' ? 'Pending' : 'Active'} ({reqs.filter((r) => GROUPS[k].includes(r.status)).length})
+                {k === 'open' ? 'Open requests' : k === 'pending' ? 'Pending' : 'Active'} ({reqs.filter((r) => inTab(r, k)).length})
               </button>
             ))}
           </div>
