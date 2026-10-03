@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, SignaturePad, Earnings } from './Extra';
 import { Extras, ShareLocation, TechMap } from './More';
+import { Diagnosis, Materials, InvoiceCard, AssetsAdmin } from './Ops';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
@@ -23,7 +24,7 @@ const Badge = ({ s }) => <span className="badge">{STATUS[s] || s.replace('_', ' 
 /* ---------- CUSTOMER ---------- */
 export function Customer({ me }) {
   const [reqs, reload] = useRows('requests', (t) => t.select('*, tech:profiles!requests_technician_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
-  const [invs] = useRows('invoices', (t) => t.select('*').order('created_at', { ascending: false }));
+  const [invs, reloadInv] = useRows('invoices', (t) => t.select('*, job:requests(request_no,service_type)').order('created_at', { ascending: false }));
   const [assets] = useRows('assets', (t) => t.select('*'));
 
   return (
@@ -47,7 +48,10 @@ export function Customer({ me }) {
           {(r.scheduled_date || r.preferred_date) && <p className="muted">Appointment: {r.scheduled_date || r.preferred_date} {r.preferred_time || ''}</p>}
           {r.tech?.full_name && <p className="muted">Technician: {r.tech.full_name}{r.status === 'en_route' && r.eta_minutes ? ` · ETA ${r.eta_minutes} min` : ''}</p>}
           {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
+          {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>WARRANTY CLAIM</p>}
           <Timeline requestId={r.id} />
+          <Diagnosis requestId={r.id} />
+          <Materials requestId={r.id} />
           <Files requestId={r.id} canUpload />
           <Extras requestId={r.id} mode="customer" />
           {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && <Rating request={r} />}
@@ -60,11 +64,7 @@ export function Customer({ me }) {
       <Tickets me={me} />
       <h2>Invoices and payments</h2>
       {invs.length === 0 && <p className="muted">Invoices appear here once a job is completed.</p>}
-      {invs.map((i) => (
-        <div className="card row" key={i.id} style={{ justifyContent: 'space-between' }}>
-          <span>{money(i.amount)}</span><Badge s={i.status} />
-        </div>
-      ))}
+      {invs.map((i) => <InvoiceCard key={i.id} inv={i} onChange={() => { reloadInv(); reload(); }} />)}
     </>
   );
 }
@@ -114,7 +114,11 @@ export function Manager() {
           <a href={`https://www.google.com/maps/search/?api=1&query=${dest}`} target="_blank" rel="noreferrer">Open location</a>
         </div>
         {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
+        {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>POTENTIAL WARRANTY CLAIM</p>}
         <Timeline requestId={r.id} />
+        <Diagnosis requestId={r.id} />
+        <Materials requestId={r.id} />
+        <Extras requestId={r.id} mode="customer" />
         <Files requestId={r.id} />
         {live && (
           <div className="row">
@@ -198,6 +202,8 @@ export function Manager() {
           <h2>Finished and cancelled jobs</h2>
           {shown.length === 0 && <p className="muted">No finished or cancelled jobs yet.</p>}
           {list}
+          <h2>Assets and warranties</h2>
+          <AssetsAdmin />
           <h2>Inventory</h2>
           <Inventory />
           <h2>Activity log</h2>
@@ -239,14 +245,26 @@ export function Technician({ me }) {
 
   async function complete(r) {
     const d = form[r.id] || {};
-    const { error } = await supabase.from('requests').update({ status: 'completed', diagnosis: d.diagnosis, work_done: d.work_done, materials: d.materials, signature: d.signature }).eq('id', r.id);
+    const n = (x) => Number(x || 0);
+    const { error } = await supabase.from('requests').update({ status: 'completed', work_done: d.work_done, signature: d.signature }).eq('id', r.id);
     if (error) return alert(error.message);
-    const { data: ex } = await supabase.from('extra_charges').select('amount').eq('request_id', r.id).eq('status', 'approved');
-    const extra = (ex || []).reduce((s, x) => s + Number(x.amount), 0);
-    await supabase.from('invoices').insert({ request_id: r.id, customer_id: r.customer_id, technician_id: me.id, amount: Number(d.amount || 0) + extra });
-    if (d.item && d.qty) await supabase.rpc('use_item', { p_item: d.item, p_qty: Number(d.qty) });
-    const until = d.warranty ? new Date(Date.now() + Number(d.warranty) * 30 * 864e5).toISOString().slice(0, 10) : null;
-    await supabase.from('assets').insert({ customer_id: r.customer_id, request_id: r.id, name: r.service_type, warranty_until: until });
+    const { data: mats } = await supabase.from('job_materials').select('*').eq('request_id', r.id);
+    const { data: ex } = await supabase.from('extra_charges').select('*').eq('request_id', r.id).eq('status', 'approved');
+    const items = [];
+    (mats || []).forEach((m) => items.push({ label: m.name, qty: m.qty, unit_price: m.unit_price }));
+    (ex || []).forEach((x) => (x.lines?.length ? x.lines : [{ label: x.description, amount: x.amount }]).forEach((l) => items.push({ label: l.label, qty: 1, unit_price: l.amount })));
+    if (n(d.labour) > 0) items.push({ label: 'Labour', qty: 1, unit_price: n(d.labour) });
+    if (n(d.fee) > 0) items.push({ label: 'Service fee', qty: 1, unit_price: n(d.fee) });
+    const subtotal = items.reduce((s, l) => s + l.qty * l.unit_price, 0);
+    const discount = Math.min(n(d.discount), subtotal);
+    const tax = Math.round(((subtotal - discount) * n(d.tax)) / 100);
+    await supabase.from('invoices').insert({ request_id: r.id, customer_id: r.customer_id, technician_id: me.id, items, subtotal, discount, tax, amount: subtotal - discount + tax });
+    const start = new Date().toISOString().slice(0, 10);
+    const until = d.warranty ? new Date(Date.now() + n(d.warranty) * 30 * 864e5).toISOString().slice(0, 10) : null;
+    await supabase.from('assets').insert({
+      customer_id: r.customer_id, request_id: r.id, name: r.service_type, serial_number: d.serial || null, technician_id: me.id,
+      installation_date: start, warranty_months: d.warranty ? n(d.warranty) : null, warranty_start: d.warranty ? start : null, warranty_until: until,
+    });
     reload();
   }
 
@@ -297,17 +315,21 @@ export function Technician({ me }) {
               </div>
             )}
             {r.status === 'in_progress' && <Extras requestId={r.id} mode="tech" meId={me.id} />}
+            {['arrived', 'diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && <Diagnosis requestId={r.id} canEdit meId={me.id} />}
+            {['diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && <Materials requestId={r.id} canEdit />}
             {r.status === 'in_progress' && (
               <>
-                <label>Diagnosis</label><textarea onChange={upd(r.id, 'diagnosis')} />
+                <h3>Complete job</h3>
                 <label>Work performed</label><textarea onChange={upd(r.id, 'work_done')} />
-                <label>Materials used</label><input onChange={upd(r.id, 'materials')} />
-                <ItemPicker onItem={upd(r.id, 'item')} onQty={upd(r.id, 'qty')} />
-                <label>Warranty (months)</label><input type="number" min="0" onChange={upd(r.id, 'warranty')} />
-                <label>Amount to charge (approved extra charges are added automatically)</label>
-                <input type="number" min="0" onChange={upd(r.id, 'amount')} />
+                <label>Labour charge (₦)</label><input type="number" min="0" onChange={upd(r.id, 'labour')} />
+                <label>Service fee (₦)</label><input type="number" min="0" onChange={upd(r.id, 'fee')} />
+                <label>Discount (₦)</label><input type="number" min="0" onChange={upd(r.id, 'discount')} />
+                <label>Tax (%)</label><input type="number" min="0" onChange={upd(r.id, 'tax')} />
+                <label>Equipment serial number (if installed)</label><input onChange={upd(r.id, 'serial')} />
+                <label>Warranty given (months)</label><input type="number" min="0" onChange={upd(r.id, 'warranty')} />
                 <label>Customer signature</label>
                 <SignaturePad onChange={(v) => setForm({ ...form, [r.id]: { ...form[r.id], signature: v } })} />
+                <p className="muted">The invoice is built from materials, approved additional work, labour and fees.</p>
                 <button onClick={() => complete(r)}>Complete job</button>
               </>
             )}
@@ -320,30 +342,22 @@ export function Technician({ me }) {
 
 /* ---------- ACCOUNTANT ---------- */
 export function Accountant() {
-  const [invs, reload] = useRows('invoices', (t) => t.select('*, customer:profiles!invoices_customer_id_fkey(full_name)').order('created_at', { ascending: false }));
-  const paid = invs.filter((i) => i.status === 'paid').reduce((s, i) => s + Number(i.amount), 0);
-  const owed = invs.filter((i) => i.status === 'unpaid').reduce((s, i) => s + Number(i.amount), 0);
-
-  async function confirm(id) {
-    await supabase.from('invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', id);
-    reload();
-  }
+  const [invs, reload] = useRows('invoices', (t) => t.select('*, customer:profiles!invoices_customer_id_fkey(full_name,email), job:requests(request_no,service_type)').order('created_at', { ascending: false }));
+  const revenue = invs.reduce((s, i) => s + Number(i.paid_amount || 0), 0);
+  const owed = invs.filter((i) => !['paid', 'refunded'].includes(i.status)).reduce((s, i) => s + Number(i.amount) - Number(i.paid_amount || 0), 0);
+  const awaiting = invs.filter((i) => i.status === 'pending').length;
 
   return (
     <>
       <h2>Finance</h2>
       <div className="grid">
-        <div className="card"><span className="muted">Revenue</span><div className="stat">{money(paid)}</div></div>
+        <div className="card"><span className="muted">Revenue received</span><div className="stat">{money(revenue)}</div></div>
         <div className="card"><span className="muted">Outstanding</span><div className="stat">{money(owed)}</div></div>
+        <div className="card"><span className="muted">Payments to review</span><div className="stat">{awaiting}</div></div>
       </div>
       <h2>Invoices</h2>
       {invs.length === 0 && <p className="muted">No invoices yet.</p>}
-      {invs.map((i) => (
-        <div className="card row" key={i.id} style={{ justifyContent: 'space-between' }}>
-          <span>{i.customer?.full_name} · {money(i.amount)}</span>
-          {i.status === 'unpaid' ? <button style={{ marginTop: 0 }} onClick={() => confirm(i.id)}>Confirm payment</button> : <Badge s="paid" />}
-        </div>
-      ))}
+      {invs.map((i) => <InvoiceCard key={i.id} inv={i} staff onChange={reload} />)}
     </>
   );
 }
