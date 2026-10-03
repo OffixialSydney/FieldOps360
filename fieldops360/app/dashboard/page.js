@@ -9,7 +9,7 @@ import ProfileForm from '../../components/ProfileForm';
 const SuperAdmin = (p) => (
   <>
     <Platform />
-    <Manager {...p} />
+    <Manager {...p} readOnly />
   </>
 );
 
