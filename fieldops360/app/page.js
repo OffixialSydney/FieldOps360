@@ -18,7 +18,7 @@ export default function Login() {
   const [companies, setCompanies] = useState([]);
   useEffect(() => {
     supabase.from('companies').select('id,name').eq('status', 'active').then(({ data }) => setCompanies(data || []));
-  }, []);
+  }, [mode]);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function submit(e) {
