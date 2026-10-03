@@ -44,20 +44,23 @@ export function Rating({ request }) {
     supabase.from('ratings').select('stars').eq('request_id', request.id).maybeSingle().then(({ data }) => setStars(data?.stars || null));
   }, [request.id]);
   async function rate(n) {
-    await supabase.from('ratings').insert({ request_id: request.id, customer_id: request.customer_id, technician_id: request.technician_id, stars: n });
+    const { error } = await supabase.from('ratings').insert({ request_id: request.id, customer_id: request.customer_id, technician_id: request.technician_id, stars: n });
+    if (error) return alert(error.message);
     setStars(n);
   }
-  if (stars) return <p className="muted">You rated this job {stars}/5</p>;
+  if (stars) return <p style={{ margin: '8px 0' }}>Your rating: {'★'.repeat(stars)}{'☆'.repeat(5 - stars)} ({stars}/5)</p>;
   return (
-    <div className="row">
-      <span className="muted">Rate this job:</span>
-      {[1, 2, 3, 4, 5].map((n) => <button key={n} className="ghost" onClick={() => rate(n)}>{n}</button>)}
+    <div style={{ margin: '8px 0' }}>
+      <h3>Rate this job</h3>
+      <div className="row">
+        {[1, 2, 3, 4, 5].map((n) => <button key={n} style={{ marginTop: 0 }} onClick={() => rate(n)}>{n} ★</button>)}
+      </div>
     </div>
   );
 }
 
 /* Support tickets: customers create, staff reply */
-export function Tickets({ me, staff }) {
+export function Tickets({ me, staff, readOnly }) {
   const [rows, setRows] = useState([]);
   const [f, setF] = useState({ subject: '', message: '' });
   const [reply, setReply] = useState({});
@@ -99,7 +102,8 @@ export function Tickets({ me, staff }) {
           <div className="row" style={{ justifyContent: 'space-between' }}><h3>{t.subject}</h3><span className="badge">{t.status}</span></div>
           <p>{t.message}</p>
           {t.reply && <p className="muted">Reply: {t.reply}</p>}
-          {staff && t.status === 'open' && (
+          {readOnly && t.status === 'open' && <p className="muted">Waiting for the company manager to reply.</p>}
+          {staff && !readOnly && t.status === 'open' && (
             <>
               <textarea placeholder="Write a reply" onChange={(e) => setReply({ ...reply, [t.id]: e.target.value })} />
               <button onClick={() => answer(t)}>Reply and close</button>
@@ -114,7 +118,7 @@ export function Tickets({ me, staff }) {
 /* Inventory management */
 const IFIELDS = [['name', 'Item name', 'text'], ['sku', 'SKU', 'text'], ['category', 'Category', 'text'], ['quantity', 'Opening quantity', 'number'], ['unit', 'Unit (pcs, m, kg)', 'text'], ['cost', 'Cost price', 'number'], ['unit_price', 'Selling price', 'number'], ['min_stock', 'Minimum stock', 'number'], ['supplier', 'Supplier', 'text'], ['location', 'Storage location', 'text']];
 
-export function Inventory() {
+export function Inventory({ readOnly }) {
   const [items, setItems] = useState([]);
   const empty = Object.fromEntries(IFIELDS.map(([k]) => [k, '']));
   const [f, setF] = useState(empty);
@@ -135,7 +139,7 @@ export function Inventory() {
 
   return (
     <>
-      <form className="card" onSubmit={add}>
+      <form className="card" onSubmit={add} hidden={readOnly}>
         {IFIELDS.map(([k, label, type]) => (
           <div key={k}>
             <label>{label}</label>
@@ -145,12 +149,12 @@ export function Inventory() {
         <button>Add item</button>
       </form>
       {items.length === 0 && <p className="muted">No items yet.</p>}
-      {items.map((i) => <ItemRow key={i.id} it={i} reload={load} />)}
+      {items.map((i) => <ItemRow key={i.id} it={i} reload={load} readOnly={readOnly} />)}
     </>
   );
 }
 
-function ItemRow({ it, reload }) {
+function ItemRow({ it, reload, readOnly }) {
   const [qty, setQty] = useState('');
   const [reason, setReason] = useState('purchased');
   const [ledger, setLedger] = useState(null);
@@ -183,13 +187,17 @@ function ItemRow({ it, reload }) {
         {it.supplier ? ` · Supplier ${it.supplier}` : ''}{it.location ? ` · ${it.location}` : ''}
       </p>
       <div className="row">
-        <input type="number" placeholder="Quantity" value={qty} onChange={(e) => setQty(e.target.value)} style={{ width: 110 }} />
-        <select value={reason} onChange={(e) => setReason(e.target.value)} style={{ width: 'auto' }}>
-          <option value="purchased">Purchased (+)</option>
-          <option value="damaged">Damaged (-)</option>
-          <option value="adjustment">Correction (+ or -)</option>
-        </select>
-        <button style={{ marginTop: 0 }} onClick={apply}>Apply</button>
+        {!readOnly && (
+          <>
+            <input type="number" placeholder="Quantity" value={qty} onChange={(e) => setQty(e.target.value)} style={{ width: 110 }} />
+            <select value={reason} onChange={(e) => setReason(e.target.value)} style={{ width: 'auto' }}>
+              <option value="purchased">Purchased (+)</option>
+              <option value="damaged">Damaged (-)</option>
+              <option value="adjustment">Correction (+ or -)</option>
+            </select>
+            <button style={{ marginTop: 0 }} onClick={apply}>Apply</button>
+          </>
+        )}
         <button className="ghost" onClick={showLedger}>{ledger ? 'Hide ledger' : 'Ledger'}</button>
       </div>
       {ledger && ledger.map((t) => (
