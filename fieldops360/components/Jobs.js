@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { warrantyStatus } from './Ops';
 
 export const STATUS = {
   new: 'Requested', reviewing: 'Reviewing', assigned: 'Assigned', rejected: 'Rejected', accepted: 'Accepted',
@@ -48,15 +49,19 @@ export function Timeline({ requestId }) {
 
 /* Customer creates a service request */
 export function RequestForm({ me, onCreated }) {
-  const empty = { service_type: CATEGORIES[0], description: '', priority: 'normal', address: '', preferred_date: '', preferred_time: '', notes: '', latitude: null, longitude: null };
+  const empty = { service_type: CATEGORIES[0], description: '', priority: 'normal', address: '', preferred_date: '', preferred_time: '', notes: '', latitude: null, longitude: null, asset_id: '' };
   const [f, setF] = useState(empty);
   const [files, setFiles] = useState([]);
   const [addrs, setAddrs] = useState([]);
+  const [assets, setAssets] = useState([]);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const loadAddrs = () => supabase.from('addresses').select('*').then(({ data }) => setAddrs(data || []));
-  useEffect(() => { loadAddrs(); }, []);
+  useEffect(() => {
+    loadAddrs();
+    supabase.from('assets').select('*').eq('status', 'active').then(({ data }) => setAssets(data || []));
+  }, []);
 
   async function locate() {
     const p = await getPos();
@@ -73,7 +78,7 @@ export function RequestForm({ me, onCreated }) {
     setBusy(true);
     setMsg('');
     const { data, error } = await supabase.from('requests')
-      .insert({ ...f, preferred_date: f.preferred_date || null, customer_id: me.id }).select().single();
+      .insert({ ...f, asset_id: f.asset_id || null, preferred_date: f.preferred_date || null, customer_id: me.id }).select().single();
     if (error) { setBusy(false); return setMsg(error.message); }
     for (const file of files) {
       const path = `${data.id}/${Date.now()}-${file.name.replace(/[^\w.-]/g, '_')}`;
@@ -93,6 +98,18 @@ export function RequestForm({ me, onCreated }) {
       <select value={f.service_type} onChange={set('service_type')}>{CATEGORIES.map((s) => <option key={s}>{s}</option>)}</select>
       <label>Priority</label>
       <select value={f.priority} onChange={set('priority')}>{PRIORITIES.map((p) => <option key={p} value={p}>{p.toUpperCase()}</option>)}</select>
+      {assets.length > 0 && (
+        <>
+          <label>Which equipment is this about? (optional)</label>
+          <select value={f.asset_id} onChange={set('asset_id')}>
+            <option value="">Not listed</option>
+            {assets.map((a) => <option key={a.id} value={a.id}>{a.name}{a.serial_number ? ` (${a.serial_number})` : ''} - {warrantyStatus(a).label}</option>)}
+          </select>
+          {assets.find((a) => a.id === f.asset_id)?.warranty_until >= new Date().toISOString().slice(0, 10) && (
+            <p style={{ color: '#0f766e', fontWeight: 600 }}>WARRANTY ACTIVE: this request will be flagged as a warranty claim.</p>
+          )}
+        </>
+      )}
       <label>Problem description</label>
       <textarea required value={f.description} onChange={set('description')} />
       <label>Address</label>
@@ -128,7 +145,7 @@ export function Overview({ reqs, invs, assets }) {
   const over = ['completed', 'invoiced', 'paid', 'closed', 'cancelled', 'rejected'];
   const active = reqs.filter((r) => !over.includes(r.status));
   const upcoming = active.filter((r) => (r.scheduled_date || r.preferred_date) >= today);
-  const owed = invs.filter((i) => i.status === 'unpaid').reduce((s, i) => s + Number(i.amount), 0);
+  const owed = invs.filter((i) => !['paid', 'refunded'].includes(i.status)).reduce((s, i) => s + Number(i.amount) - Number(i.paid_amount || 0), 0);
   const alerts = assets.filter((a) => a.warranty_until && a.warranty_until >= today && a.warranty_until <= soon);
   const recent = reqs.filter((r) => ['completed', 'invoiced', 'paid', 'closed'].includes(r.status)).slice(0, 3);
   const live = active.filter((r) => r.technician_id);
