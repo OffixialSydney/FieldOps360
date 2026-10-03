@@ -4,15 +4,17 @@ import { supabase } from '../lib/supabase';
 
 export default function ProfileForm({ me, onClose, onSaved }) {
   const [f, setF] = useState({ full_name: me.full_name || '', phone: me.phone || '' });
+  const [skills, setSkills] = useState(me.skills || '');
   const [pw, setPw] = useState('');
   const [msg, setMsg] = useState('');
 
   async function save(e) {
     e.preventDefault();
-    const { data, error } = await supabase.from('profiles').update(f).eq('id', me.id).select();
+    const payload = me.role === 'technician' ? { ...f, skills } : f;
+    const { data, error } = await supabase.from('profiles').update(payload).eq('id', me.id).select();
     if (error || !data?.length) return setMsg(error?.message || 'Could not save. Log out and log in again, then retry.');
     setMsg('Profile saved');
-    onSaved({ ...me, ...f });
+    onSaved({ ...me, ...payload });
   }
   async function changePw(e) {
     e.preventDefault();
@@ -37,6 +39,12 @@ export default function ProfileForm({ me, onClose, onSaved }) {
           <input required value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} />
           <label>Phone</label>
           <input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+          {me.role === 'technician' && (
+            <>
+              <label>My skills (separate with commas, e.g. Solar, Electrical)</label>
+              <input value={skills} onChange={(e) => setSkills(e.target.value)} />
+            </>
+          )}
           <button>Save profile</button>
         </form>
         <form onSubmit={changePw}>
