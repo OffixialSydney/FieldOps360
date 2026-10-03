@@ -295,3 +295,33 @@ export function AssetsAdmin({ readOnly }) {
     </>
   );
 }
+
+/* ---------- Services a company offers ---------- */
+const CATS = ['Solar', 'Electrical', 'Plumbing', 'AC', 'Generator', 'CCTV', 'Internet', 'Other'];
+
+export function ServicesEditor({ company, admin, onSaved }) {
+  const [sel, setSel] = useState(company.services || []);
+  const [msg, setMsg] = useState('');
+  const toggle = (c) => { setSel(sel.includes(c) ? sel.filter((x) => x !== c) : [...sel, c]); setMsg(''); };
+  async function save() {
+    const { error } = admin
+      ? await supabase.from('companies').update({ services: sel }).eq('id', company.id)
+      : await supabase.rpc('set_company_services', { p_services: sel });
+    setMsg(error ? error.message : 'Services saved');
+    if (!error && onSaved) onSaved();
+  }
+  return (
+    <div className="card">
+      <h3>Services {admin ? 'offered' : 'we offer'}</h3>
+      <div className="row">
+        {CATS.map((c) => (
+          <label key={c} className="row" style={{ color: 'inherit', margin: 0 }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={sel.includes(c)} onChange={() => toggle(c)} /> {c}
+          </label>
+        ))}
+      </div>
+      <button type="button" onClick={save}>Save services</button>
+      {msg && <p className="muted">{msg}</p>}
+    </div>
+  );
+}
