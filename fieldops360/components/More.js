@@ -16,6 +16,18 @@ export function Bell({ me }) {
   }, [me.id]);
   useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t); }, [load]);
   const unread = rows.filter((n) => !n.read).length;
+  function openJob(message) {
+    const no = (message.match(/REQ-\d{4}-\d{6}/) || [])[0];
+    if (!no) return;
+    setOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(no);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.outline = '2px solid var(--accent)';
+      setTimeout(() => { el.style.outline = ''; }, 2500);
+    }, 100);
+  }
 
   async function toggle() {
     setOpen(!open);
@@ -30,7 +42,7 @@ export function Bell({ me }) {
       {open && (
         <div className="card" style={{ position: 'fixed', top: 56, right: 8, left: 8, maxWidth: 360, marginLeft: 'auto', zIndex: 10, maxHeight: '70vh', overflow: 'auto' }}>
           {rows.length === 0 && <p className="muted">Nothing yet.</p>}
-          {rows.map((n) => <p key={n.id} style={{ margin: '8px 0' }}>{n.message}<br /><span className="muted">{new Date(n.created_at).toLocaleString()}</span></p>)}
+          {rows.map((n) => <p key={n.id} onClick={() => openJob(n.message)} style={{ margin: '8px 0', cursor: 'pointer' }}>{n.message}<br /><span className="muted">{new Date(n.created_at).toLocaleString()}</span></p>)}
         </div>
       )}
     </>
@@ -38,7 +50,7 @@ export function Bell({ me }) {
 }
 
 /* Additional work: technician requests, customer or manager decides */
-export function Extras({ requestId, mode, meId, onChange }) {
+export function Extras({ requestId, mode, meId, onChange, onlyPending }) {
   const [rows, setRows] = useState([]);
   const [lines, setLines] = useState([{ label: '', amount: '' }]);
   const [msg, setMsg] = useState('');
@@ -47,6 +59,11 @@ export function Extras({ requestId, mode, meId, onChange }) {
     setRows(data || []);
   }, [requestId]);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const h = () => load();
+    window.addEventListener('extras-changed', h);
+    return () => window.removeEventListener('extras-changed', h);
+  }, [load]);
 
   const total = lines.reduce((s, l) => s + Number(l.amount || 0), 0);
   const setLine = (i, k, v) => setLines(lines.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
@@ -67,14 +84,16 @@ export function Extras({ requestId, mode, meId, onChange }) {
     const { error } = await supabase.rpc('decide_extra', { p_id: id, p_status: status });
     if (error) alert(error.message);
     load();
+    window.dispatchEvent(new Event('extras-changed'));
     if (onChange) onChange();
   }
 
-  if (!rows.length && mode !== 'tech') return null;
+  const shownRows = onlyPending ? rows.filter((x) => x.status === 'pending') : rows;
+  if (!shownRows.length && mode !== 'tech') return null;
   return (
     <div style={{ margin: '8px 0' }}>
-      {rows.length > 0 && <h3>Additional work requests</h3>}
-      {rows.map((x) => (
+      {shownRows.length > 0 && <h3>Additional work requests</h3>}
+      {shownRows.map((x) => (
         <div key={x.id} style={{ margin: '8px 0' }}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <span><b>Total {money(x.amount)}</b> <span className="badge">{x.status}</span></span>
