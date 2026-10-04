@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, SignaturePad, Earnings } from './Extra';
 import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
-import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos } from './Jobs';
+import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
@@ -29,9 +29,14 @@ export function Customer({ me }) {
   const [ctab, setCtab] = useState('active');
   const past = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
   const myReqs = reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
+  useEffect(() => {
+    const t = setInterval(() => { reload(); reloadInv(); }, 15000);
+    return () => clearInterval(t);
+  }, [reload, reloadInv]);
 
   return (
     <>
+      <ActionNeeded reqs={reqs} onChange={() => { reload(); reloadInv(); }} />
       <Overview reqs={reqs} invs={invs} assets={assets} />
 
       <h2>New service request</h2>
@@ -289,7 +294,7 @@ export function Technician({ me }) {
     const { error } = await supabase.from('requests').update({ status: 'completed', work_done: d.work_done, signature: d.signature }).eq('id', r.id);
     if (error) { setFinishing(false); return alert(error.message); }
     const { data: mats } = await supabase.from('job_materials').select('*').eq('request_id', r.id);
-    const { data: ex } = await supabase.from('extra_charges').select('*').eq('request_id', r.id).eq('status', 'approved');
+    const { data: ex } = await supabase.from('extra_charges').select('*').eq('request_id', r.id).eq('status', 'approved').is('invoice_id', null);
     const items = [];
     (mats || []).forEach((m) => items.push({ label: m.name, qty: m.qty, unit_price: m.unit_price }));
     (ex || []).forEach((x) => (x.lines?.length ? x.lines : [{ label: x.description, amount: x.amount }]).forEach((l) => items.push({ label: l.label, qty: 1, unit_price: l.amount })));
@@ -351,6 +356,7 @@ export function Technician({ me }) {
             {r.status === 'assigned' && <button className="danger" onClick={() => setStatus(r, 'rejected', { technician_id: null })}>Reject job</button>}
             {r.status === 'accepted' && <input type="number" min="1" placeholder="ETA in minutes" style={{ marginTop: 8 }} onChange={upd(r.id, 'eta')} />}
             {step && <button onClick={() => setStatus(r, step[0], r.status === 'accepted' ? { eta_minutes: Number(form[r.id]?.eta) || null } : {})}>{step[1]}</button>}
+            {r.status === 'waiting_customer' && <p className="muted">You can resume once the customer approves and pays for the additional work and the accountant confirms the payment.</p>}
             {r.status === 'in_progress' && (
               <div className="row">
                 <button className="ghost" onClick={() => setStatus(r, 'waiting_parts')}>Waiting for parts</button>
