@@ -6,7 +6,7 @@ import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
 import { Analytics, Performance } from './Analytics';
 import { WalletCard, CreditForm } from './Wallet';
-import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded } from './Jobs';
+import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded, GoAhead } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
@@ -54,7 +54,7 @@ export function Customer({ me }) {
       </div>
       {myReqs.length === 0 && <p className="muted">{ctab === 'history' ? 'No finished jobs yet.' : 'No active requests. Submit one above.'}</p>}
       {myReqs.map((r) => (
-        <div className="card" key={r.id}>
+        <div className="card" key={r.id} id={r.request_no}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h3>{r.service_type}</h3>
             <span className="row"><Prio p={r.priority} /><Badge s={r.status} /></span>
@@ -67,6 +67,7 @@ export function Customer({ me }) {
           {r.tech?.full_name && <p className="muted">Technician: {r.tech.full_name}{r.status === 'en_route' && r.eta_minutes ? ` · ETA ${r.eta_minutes} min` : ''}</p>}
           {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
           {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>WARRANTY CLAIM</p>}
+          {r.status === 'waiting_customer' && <GoAhead request={r} onChange={reload} />}
           <Timeline requestId={r.id} />
           <Diagnosis requestId={r.id} />
           <Materials requestId={r.id} />
@@ -128,7 +129,7 @@ export function Manager({ readOnly, me }) {
     const offers = !!myCo?.services?.includes(r.service_type);
     const open = !market && ['new', 'reviewing', 'rejected'].includes(r.status);
     return (
-      <div className="card" key={r.id}>
+      <div className="card" key={r.id} id={r.request_no}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <h3>{r.service_type}</h3>
           <span className="row"><Prio p={r.priority} /><Badge s={r.status} /></span>
@@ -348,7 +349,7 @@ export function Technician({ me }) {
         const dest = r.latitude != null ? `${r.latitude},${r.longitude}` : encodeURIComponent(r.address || '');
         const step = FLOW[r.status];
         return (
-          <div className="card" key={r.id}>
+          <div className="card" key={r.id} id={r.request_no}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <h3>{r.service_type}</h3>
               <span className="row"><Prio p={r.priority} /><Badge s={r.status} /></span>
@@ -367,7 +368,7 @@ export function Technician({ me }) {
             {r.status === 'assigned' && <button className="danger" onClick={() => setStatus(r, 'rejected', { technician_id: null })}>Reject job</button>}
             {r.status === 'accepted' && <input type="number" min="1" placeholder="ETA in minutes" style={{ marginTop: 8 }} onChange={upd(r.id, 'eta')} />}
             {step && <button onClick={() => setStatus(r, step[0], r.status === 'accepted' ? { eta_minutes: Number(form[r.id]?.eta) || null } : {})}>{step[1]}</button>}
-            {r.status === 'waiting_customer' && <p className="muted">You can resume once the customer approves and pays for the additional work and the accountant confirms the payment.</p>}
+            {r.status === 'waiting_customer' && <p className="muted">You can resume once the customer clicks Go ahead, and any additional work is approved, paid and confirmed by the accountant.</p>}
             {r.status === 'in_progress' && (
               <div className="row">
                 <button className="ghost" onClick={() => setStatus(r, 'waiting_parts')}>Waiting for parts</button>
