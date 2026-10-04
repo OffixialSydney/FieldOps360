@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Customer, Manager, Technician, Accountant } from '../../components/Views';
 import { Bell, Platform } from '../../components/More';
 import ProfileForm from '../../components/ProfileForm';
+import Assistant from '../../components/Assistant';
 
 const SuperAdmin = (p) => (
   <>
@@ -66,6 +67,7 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="wrap">{pending ? <Pending me={profile} /> : <View me={profile} />}</div>
+      <Assistant me={profile} />
       {showProfile && <ProfileForm me={profile} onSaved={setProfile} onClose={() => setShowProfile(false)} />}
       {confirmOut && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 20 }}>
