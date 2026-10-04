@@ -40,11 +40,12 @@ export function Files({ requestId, canUpload }) {
 /* Customer rates a completed job */
 export function Rating({ request }) {
   const [stars, setStars] = useState(null);
+  const [fb, setFb] = useState('');
   useEffect(() => {
     supabase.from('ratings').select('stars').eq('request_id', request.id).maybeSingle().then(({ data }) => setStars(data?.stars || null));
   }, [request.id]);
   async function rate(n) {
-    const { error } = await supabase.from('ratings').insert({ request_id: request.id, customer_id: request.customer_id, technician_id: request.technician_id, stars: n });
+    const { error } = await supabase.from('ratings').insert({ request_id: request.id, customer_id: request.customer_id, technician_id: request.technician_id, stars: n, feedback: fb || null });
     if (error) return alert(error.message);
     setStars(n);
   }
@@ -52,6 +53,7 @@ export function Rating({ request }) {
   return (
     <div style={{ margin: '8px 0' }}>
       <h3>Rate the technician (1 to 10)</h3>
+      <textarea placeholder="Leave feedback (optional)" value={fb} onChange={(e) => setFb(e.target.value)} />
       <div className="row">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <button key={n} style={{ marginTop: 0 }} onClick={() => rate(n)}>{n}</button>)}
       </div>
@@ -60,9 +62,10 @@ export function Rating({ request }) {
 }
 
 /* Support tickets: customers create, staff reply */
+const TSTATUS = { open: 'Open', assigned: 'Assigned', in_progress: 'In progress', waiting_customer: 'Waiting customer', resolved: 'Resolved', closed: 'Closed' };
 export function Tickets({ me, staff, readOnly }) {
   const [rows, setRows] = useState([]);
-  const [f, setF] = useState({ subject: '', message: '', request_id: '' });
+  const [f, setF] = useState({ subject: '', message: '', request_id: '', priority: 'normal' });
   const [reply, setReply] = useState({});
   const [showClosed, setShowClosed] = useState(false);
   const [jobs, setJobs] = useState([]);
@@ -75,16 +78,20 @@ export function Tickets({ me, staff, readOnly }) {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const visible = staff && !showClosed ? rows.filter((t) => t.status === 'open') : rows;
+  const visible = staff && !showClosed ? rows.filter((t) => !['resolved', 'closed'].includes(t.status)) : rows;
 
   async function create(e) {
     e.preventDefault();
     await supabase.from('tickets').insert({ ...f, customer_id: me.id });
-    setF({ subject: '', message: '', request_id: '' });
+    setF({ subject: '', message: '', request_id: '', priority: 'normal' });
     load();
   }
-  async function answer(t) {
-    await supabase.from('tickets').update({ reply: reply[t.id], status: 'closed' }).eq('id', t.id);
+  async function answer(t, status = 'closed') {
+    await supabase.from('tickets').update({ reply: reply[t.id], status }).eq('id', t.id);
+    load();
+  }
+  async function setStatus(t, status) {
+    await supabase.from('tickets').update({ status }).eq('id', t.id);
     load();
   }
 
@@ -98,6 +105,10 @@ export function Tickets({ me, staff, readOnly }) {
             {jobs.map((j) => <option key={j.id} value={j.id}>{j.request_no} · {j.service_type}</option>)}
           </select>
           {jobs.length === 0 && <p className="muted">You can open a ticket once a company has accepted one of your requests.</p>}
+          <label>Priority</label>
+          <select value={f.priority} onChange={(e) => setF({ ...f, priority: e.target.value })}>
+            {['low', 'normal', 'high', 'urgent'].map((p) => <option key={p} value={p}>{p.toUpperCase()}</option>)}
+          </select>
           <label>Subject</label>
           <input required value={f.subject} onChange={(e) => setF({ ...f, subject: e.target.value })} />
           <label>Message</label>
@@ -109,14 +120,20 @@ export function Tickets({ me, staff, readOnly }) {
       {visible.length === 0 && <p className="muted">No tickets.</p>}
       {visible.map((t) => (
         <div className="card" key={t.id}>
-          <div className="row" style={{ justifyContent: 'space-between' }}><h3>{t.subject}</h3><span className="badge">{t.status}</span></div>
+          <div className="row" style={{ justifyContent: 'space-between' }}><h3>{t.ticket_no ? `${t.ticket_no} · ` : ''}{t.subject}</h3><span className="row"><span className="badge">{(t.priority || 'normal').toUpperCase()}</span><span className="badge">{TSTATUS[t.status] || t.status}</span></span></div>
           <p>{t.message}</p>
           {t.reply && <p className="muted">Reply: {t.reply}</p>}
-          {readOnly && t.status === 'open' && <p className="muted">Waiting for the company manager to reply.</p>}
-          {staff && !readOnly && t.status === 'open' && (
+          {readOnly && !['resolved', 'closed'].includes(t.status) && <p className="muted">Waiting for the company manager to reply.</p>}
+          {staff && !readOnly && !['resolved', 'closed'].includes(t.status) && (
             <>
               <textarea placeholder="Write a reply" onChange={(e) => setReply({ ...reply, [t.id]: e.target.value })} />
-              <button onClick={() => answer(t)}>Reply and close</button>
+              <div className="row">
+                <button onClick={() => answer(t, 'waiting_customer')}>Send reply</button>
+                <button className="ghost" onClick={() => answer(t)}>Reply and close</button>
+                <select value={t.status} style={{ width: 'auto' }} onChange={(e) => setStatus(t, e.target.value)}>
+                  {Object.entries(TSTATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </div>
             </>
           )}
         </div>
@@ -254,10 +271,14 @@ export function Assets() {
 /* Activity log */
 export function Audit() {
   const [rows, setRows] = useState([]);
-  useEffect(() => { supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(30).then(({ data }) => setRows(data || [])); }, []);
+  useEffect(() => { supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => setRows(data || [])); }, []);
   if (!rows.length) return <p className="muted">No activity yet.</p>;
   return rows.map((r) => (
-    <div className="card muted" key={r.id}>{new Date(r.created_at).toLocaleString()} · {r.action} on {r.table_name}</div>
+    <div className="card" key={r.id}>
+      <b>{r.actor_name || 'System'}</b>{r.actor_role ? <span className="muted"> ({r.actor_role})</span> : ''}
+      <p style={{ margin: '4px 0' }}>{r.summary || `${r.action} on ${r.table_name}`}</p>
+      <span className="muted">{new Date(r.created_at).toLocaleString()}</span>
+    </div>
   ));
 }
 
