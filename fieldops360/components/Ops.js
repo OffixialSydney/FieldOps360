@@ -168,7 +168,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span><b>{inv.invoice_no}</b>{inv.customer?.full_name ? ` · ${inv.customer.full_name}` : ''}<br /><span className="muted">{inv.job?.request_no} · {money(inv.amount)}</span></span>
+        <span><b>{inv.invoice_no}</b>{inv.kind === 'additional' ? ' · Additional work' : ''}{inv.customer?.full_name ? ` · ${inv.customer.full_name}` : ''}<br /><span className="muted">{inv.job?.request_no} · {money(inv.amount)}</span></span>
         <span className="badge">{ILABEL[inv.status]}</span>
       </div>
       <button type="button" className="ghost" style={{ marginTop: 8 }} onClick={() => setOpen(!open)}>{open ? 'Hide invoice' : 'View invoice'}</button>
@@ -209,10 +209,10 @@ export function InvoiceCard({ inv, staff, onChange }) {
             <>
               <label>Amount to pay (leave empty for full balance)</label>
               <input type="number" min="1" max={balance} value={amt} onChange={(e) => setAmt(e.target.value)} placeholder={String(balance)} />
-              <label>Payment method (test mode, no real money)</label>
+              <label>Payment method (test mode, no real money). The accountant confirms your payment.</label>
               <select value={method} onChange={(e) => setMethod(e.target.value)}>
-                <option value="card_test">Card (test mode, instant)</option>
-                <option value="bank_transfer">Bank transfer (accountant confirms)</option>
+                <option value="card_test">Card (test mode)</option>
+                <option value="bank_transfer">Bank transfer</option>
               </select>
               <button type="button" onClick={pay}>Pay now</button>
             </>
