@@ -1,7 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { warrantyStatus } from './Ops';
+import { Rating } from './Extra';
+import { Extras } from './More';
 
 export const STATUS = {
   new: 'Requested', reviewing: 'Reviewing', assigned: 'Assigned', rejected: 'Rejected', accepted: 'Accepted',
@@ -196,7 +198,7 @@ export function recommend(req, techs, reqs, locs, ratings) {
     const rs = ratings.filter((x) => x.technician_id === t.id);
     const avg = rs.length ? rs.reduce((a, b) => a + b.stars, 0) / rs.length : null;
     const avail = t.availability === 'busy' ? 4 : t.availability === 'offline' ? 0 : 10;
-    const score = Math.round((km == null ? 20 : 40 * Math.max(0, 1 - km / 50)) + (match ? 25 : 0) + Math.max(0, 20 - 5 * jobs) + avail + ((avg ?? 3) / 5) * 5);
+    const score = Math.round((km == null ? 20 : 40 * Math.max(0, 1 - km / 50)) + (match ? 25 : 0) + Math.max(0, 20 - 5 * jobs) + avail + ((avg ?? 6) / 10) * 5);
     return { t, jobs, km, match, avg, score };
   }).sort((a, b) => b.score - a.score);
 }
@@ -212,10 +214,50 @@ export function Suggestions({ req, techs, reqs, locs, ratings, onAssign }) {
           <span>
             <b>{t.full_name}</b> · score {score}<br />
             <span className="muted">
-              {km != null ? `${km.toFixed(1)} km` : 'location unknown'} · skill match {match}% · {jobs} active job(s) · {t.availability || 'available'}{avg ? ` · ${avg.toFixed(1)}★` : ''}
+              {km != null ? `${km.toFixed(1)} km` : 'location unknown'} · skill match {match}% · {jobs} active job(s) · {t.availability || 'available'}{avg ? ` · ${avg.toFixed(1)}/10` : ''}
             </span>
           </span>
           <button style={{ marginTop: 0 }} onClick={() => onAssign(t.id)}>Assign</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* Things the customer must do: approve extra work, rate finished jobs */
+export function ActionNeeded({ reqs, onChange }) {
+  const [pending, setPending] = useState([]);
+  const [rated, setRated] = useState(null);
+  const [err, setErr] = useState('');
+  const load = useCallback(async () => {
+    const a = await supabase.from('extra_charges').select('request_id').eq('status', 'pending');
+    const b = await supabase.from('ratings').select('request_id');
+    setErr(a.error ? a.error.message : '');
+    setPending([...new Set((a.data || []).map((x) => x.request_id))]);
+    setRated((b.data || []).map((x) => x.request_id));
+  }, []);
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 15000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  const toRate = reqs.filter((r) => ['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && r.technician_id && rated && !rated.includes(r.id));
+  if (!pending.length && !toRate.length && !err) return null;
+  return (
+    <div className="card" style={{ borderColor: 'var(--accent)' }}>
+      <h3>Action needed</h3>
+      {err && <p className="err">{err}</p>}
+      {pending.map((id) => (
+        <div key={id}>
+          <p className="muted" style={{ margin: '4px 0' }}>Additional work waiting for your approval on {reqs.find((r) => r.id === id)?.request_no}</p>
+          <Extras requestId={id} mode="customer" onChange={() => { load(); onChange(); }} />
+        </div>
+      ))}
+      {toRate.map((r) => (
+        <div key={r.id}>
+          <p className="muted" style={{ margin: '4px 0' }}>{r.request_no} · {r.service_type} is finished</p>
+          <Rating request={r} />
         </div>
       ))}
     </div>
