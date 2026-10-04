@@ -224,7 +224,26 @@ export function Suggestions({ req, techs, reqs, locs, ratings, onAssign }) {
   );
 }
 
-/* Things the customer must do: approve extra work, rate finished jobs */
+/* The customer tells the technician to continue */
+export function GoAhead({ request, onChange }) {
+  const [msg, setMsg] = useState('');
+  async function go() {
+    const { error } = await supabase.rpc('customer_go_ahead', { p_request: request.id });
+    if (error) return setMsg(error.message);
+    setMsg('Thank you. The technician has been told to continue.');
+    window.dispatchEvent(new Event('extras-changed'));
+    onChange();
+  }
+  if (request.customer_ready) return <p className="muted">You said go ahead. The technician continues once everything is settled.</p>;
+  return (
+    <div>
+      <button onClick={go}>Go ahead</button>
+      {msg && <p className="muted">{msg}</p>}
+    </div>
+  );
+}
+
+/* Things the customer must do now: answer the current job, then rate finished jobs */
 export function ActionNeeded({ reqs, onChange }) {
   const [pending, setPending] = useState([]);
   const [rated, setRated] = useState(null);
@@ -239,23 +258,36 @@ export function ActionNeeded({ reqs, onChange }) {
   useEffect(() => {
     load();
     const t = setInterval(load, 15000);
-    return () => clearInterval(t);
+    const h = () => load();
+    window.addEventListener('extras-changed', h);
+    return () => { clearInterval(t); window.removeEventListener('extras-changed', h); };
   }, [load]);
 
+  const over = ['completed', 'invoiced', 'paid', 'closed', 'cancelled', 'rejected'];
+  const waiting = reqs.filter((r) => r.status === 'waiting_customer');
+  const extraJobs = reqs.filter((r) => pending.includes(r.id) && !over.includes(r.status) && r.status !== 'waiting_customer');
   const toRate = reqs.filter((r) => ['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && r.technician_id && rated && !rated.includes(r.id));
-  if (!pending.length && !toRate.length && !err) return null;
+  if (!waiting.length && !extraJobs.length && !toRate.length && !err) return null;
+  const refresh = () => { load(); onChange(); };
   return (
     <div className="card" style={{ borderColor: 'var(--accent)' }}>
       <h3>Action needed</h3>
       {err && <p className="err">{err}</p>}
-      {pending.map((id) => (
-        <div key={id}>
-          <p className="muted" style={{ margin: '4px 0' }}>Additional work waiting for your approval on {reqs.find((r) => r.id === id)?.request_no}</p>
-          <Extras requestId={id} mode="customer" onChange={() => { load(); onChange(); }} />
+      {waiting.map((r) => (
+        <div key={r.id} style={{ margin: '8px 0' }}>
+          <p style={{ margin: '4px 0' }}><b>{r.request_no} · {r.service_type}</b>: the technician is waiting for you</p>
+          <Extras requestId={r.id} mode="customer" onlyPending onChange={refresh} />
+          <GoAhead request={r} onChange={refresh} />
+        </div>
+      ))}
+      {extraJobs.map((r) => (
+        <div key={r.id} style={{ margin: '8px 0' }}>
+          <p style={{ margin: '4px 0' }}><b>{r.request_no} · {r.service_type}</b>: additional work needs your decision</p>
+          <Extras requestId={r.id} mode="customer" onlyPending onChange={refresh} />
         </div>
       ))}
       {toRate.map((r) => (
-        <div key={r.id}>
+        <div key={r.id} style={{ margin: '8px 0' }}>
           <p className="muted" style={{ margin: '4px 0' }}>{r.request_no} · {r.service_type} is finished</p>
           <Rating request={r} />
         </div>
