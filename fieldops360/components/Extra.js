@@ -48,12 +48,12 @@ export function Rating({ request }) {
     if (error) return alert(error.message);
     setStars(n);
   }
-  if (stars) return <p style={{ margin: '8px 0' }}>Your rating: {'★'.repeat(stars)}{'☆'.repeat(5 - stars)} ({stars}/5)</p>;
+  if (stars) return <p style={{ margin: '8px 0' }}>Your rating: {stars}/10</p>;
   return (
     <div style={{ margin: '8px 0' }}>
-      <h3>Rate this job</h3>
+      <h3>Rate the technician (1 to 10)</h3>
       <div className="row">
-        {[1, 2, 3, 4, 5].map((n) => <button key={n} style={{ marginTop: 0 }} onClick={() => rate(n)}>{n} ★</button>)}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <button key={n} style={{ marginTop: 0 }} onClick={() => rate(n)}>{n}</button>)}
       </div>
     </div>
   );
@@ -282,7 +282,7 @@ export function Stats() {
       <div className="card"><span className="muted">Total requests</span><div className="stat">{s.total}</div></div>
       <div className="card"><span className="muted">Open jobs</span><div className="stat">{s.open}</div></div>
       <div className="card"><span className="muted">Completed</span><div className="stat">{s.done}</div></div>
-      <div className="card"><span className="muted">Average rating</span><div className="stat">{s.avg}</div></div>
+      <div className="card"><span className="muted">Average rating (out of 10)</span><div className="stat">{s.avg}</div></div>
     </div>
   );
 }
