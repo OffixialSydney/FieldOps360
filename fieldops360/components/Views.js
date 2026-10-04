@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, SignaturePad, Earnings } from './Extra';
 import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
+import { Analytics, Performance } from './Analytics';
+import { WalletCard, CreditForm } from './Wallet';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
@@ -33,11 +35,13 @@ export function Customer({ me }) {
     const t = setInterval(() => { reload(); reloadInv(); }, 15000);
     return () => clearInterval(t);
   }, [reload, reloadInv]);
+  useEffect(() => { supabase.rpc('check_warranty_alerts'); }, []);
 
   return (
     <>
       <ActionNeeded reqs={reqs} onChange={() => { reload(); reloadInv(); }} />
       <Overview reqs={reqs} invs={invs} assets={assets} />
+      <WalletCard />
 
       <h2>New service request</h2>
       <RequestForm me={me} onCreated={reload} />
@@ -180,7 +184,7 @@ export function Manager({ readOnly, me }) {
   return (
     <>
       <div className="row" style={{ margin: '12px 0' }}>
-        {[['live', 'Dashboard'], ['dispatch', 'Dispatch'], ['history', 'History and inventory']].map(([k, label]) => (
+        {[['live', 'Dashboard'], ['dispatch', 'Dispatch'], ['analytics', 'Analytics'], ['history', 'History and inventory']].map(([k, label]) => (
           <button key={k} className={view === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setView(k)}>{label}</button>
         ))}
       </div>
@@ -230,6 +234,13 @@ export function Manager({ readOnly, me }) {
           })}
           <h2>Live locations</h2>
           <TechMap />
+        </>
+      )}
+
+      {view === 'analytics' && (
+        <>
+          <Analytics />
+          <Performance />
         </>
       )}
 
@@ -404,6 +415,8 @@ export function Accountant() {
         <div className="card"><span className="muted">Outstanding</span><div className="stat">{money(owed)}</div></div>
         <div className="card"><span className="muted">Payments to review</span><div className="stat">{awaiting}</div></div>
       </div>
+      <h2>Customer wallet credit</h2>
+      <CreditForm />
       <h2>Invoices</h2>
       {invs.length === 0 && <p className="muted">No invoices yet.</p>}
       {invs.map((i) => <InvoiceCard key={i.id} inv={i} staff onChange={reload} />)}
