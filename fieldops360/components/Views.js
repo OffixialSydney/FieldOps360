@@ -137,7 +137,7 @@ export function Manager({ readOnly, me }) {
         <Timeline requestId={r.id} />
         <Diagnosis requestId={r.id} />
         <Materials requestId={r.id} />
-        <Extras requestId={r.id} mode={readOnly ? 'view' : 'customer'} />
+        <Extras requestId={r.id} mode="view" />
         <Files requestId={r.id} />
         {readOnly && r.technician_id && <p className="muted">Assigned technician: {techs.find((t) => t.id === r.technician_id)?.full_name || '-'}</p>}
         {live && !readOnly && (
