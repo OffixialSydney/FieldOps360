@@ -38,9 +38,10 @@ export function Bell({ me }) {
 }
 
 /* Additional work: technician requests, customer or manager decides */
-export function Extras({ requestId, mode, meId }) {
+export function Extras({ requestId, mode, meId, onChange }) {
   const [rows, setRows] = useState([]);
   const [lines, setLines] = useState([{ label: '', amount: '' }]);
+  const [msg, setMsg] = useState('');
   const load = useCallback(async () => {
     const { data } = await supabase.from('extra_charges').select('*').eq('request_id', requestId).order('created_at');
     setRows(data || []);
@@ -52,11 +53,13 @@ export function Extras({ requestId, mode, meId }) {
 
   async function add() {
     const clean = lines.filter((l) => l.label && Number(l.amount) > 0).map((l) => ({ label: l.label, amount: Number(l.amount) }));
-    if (!clean.length) return;
-    await supabase.from('extra_charges').insert({
+    if (!clean.length) return setMsg('Enter at least one item with an amount.');
+    const { error } = await supabase.from('extra_charges').insert({
       request_id: requestId, technician_id: meId, description: clean.map((l) => l.label).join(', '),
       amount: clean.reduce((s, l) => s + l.amount, 0), lines: clean,
     });
+    if (error) return setMsg(error.message);
+    setMsg('Sent to the customer for approval.');
     setLines([{ label: '', amount: '' }]);
     load();
   }
@@ -64,6 +67,7 @@ export function Extras({ requestId, mode, meId }) {
     const { error } = await supabase.rpc('decide_extra', { p_id: id, p_status: status });
     if (error) alert(error.message);
     load();
+    if (onChange) onChange();
   }
 
   if (!rows.length && mode !== 'tech') return null;
@@ -100,6 +104,7 @@ export function Extras({ requestId, mode, meId }) {
             <b>Total {money(total)}</b>
           </div>
           <button type="button" style={{ marginTop: 6 }} onClick={add}>Send to customer</button>
+          {msg && <p className="muted">{msg}</p>}
         </>
       )}
     </div>
