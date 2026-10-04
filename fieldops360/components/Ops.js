@@ -194,7 +194,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
           {pays.length > 0 && <h3>Payments</h3>}
           {pays.map((p) => (
             <div className="row" key={p.id} style={{ justifyContent: 'space-between', margin: '6px 0' }}>
-              <span className="muted">{money(p.amount)} · {p.method === 'card_test' ? 'Card (test)' : 'Bank transfer'} · {p.reference}</span>
+              <span className="muted">{money(p.amount)} · {p.method === 'card_test' ? 'Card (test)' : p.method === 'wallet' ? 'Wallet' : 'Bank transfer'} · {p.reference}</span>
               <span className="row">
                 <span className="badge">{p.status}</span>
                 {staff && p.status === 'pending' && <>
@@ -213,6 +213,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
               <select value={method} onChange={(e) => setMethod(e.target.value)}>
                 <option value="card_test">Card (test mode)</option>
                 <option value="bank_transfer">Bank transfer</option>
+                <option value="wallet">Wallet</option>
               </select>
               <button type="button" onClick={pay}>Pay now</button>
             </>
