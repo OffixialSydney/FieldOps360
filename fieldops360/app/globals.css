@@ -22,3 +22,24 @@ button.danger{background:#b42318}
 .stat{font-size:22px;font-weight:600}
 .auth{max-width:380px;margin:10vh auto;padding:16px}
 .err{color:#b42318;font-size:14px}
+
+/* Mobile first: large touch targets */
+@media (max-width: 700px) {
+  button, select, input, textarea { min-height: 44px; font-size: 16px; }
+  .wrap { padding: 12px; }
+}
+.filebtn { display: inline-block; padding: 12px 16px; margin: 6px 8px 0 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+
+/* Bottom navigation for the technician app */
+.bottomnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.bottomnav button { flex: 1; margin: 0; border-radius: 0; background: transparent; color: var(--muted); min-height: 56px; font-size: 15px; }
+.bottomnav button.active { color: var(--accent); font-weight: 600; box-shadow: inset 0 3px 0 var(--accent); }
+
+/* Printing documents */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  .doc-overlay { position: static !important; overflow: visible !important; background: #fff !important; padding: 0 !important; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+  .no-print { display: none !important; }
+}
