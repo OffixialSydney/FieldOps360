@@ -6,6 +6,9 @@ import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
 import { Analytics, Performance } from './Analytics';
 import { WalletCard, CreditForm } from './Wallet';
+import { DocButton } from './Documents';
+import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList } from './Filters';
+import { updateOrQueue } from '../lib/offline';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded, GoAhead } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
@@ -14,11 +17,26 @@ const money = (n) => '₦' + Number(n || 0).toLocaleString();
 function useRows(table, query) {
   const [rows, setRows] = useState([]);
   const load = useCallback(async () => {
-    const { data } = await query(supabase.from(table));
+    const key = `fo:cache:${table}`;
+    const { data, error } = await query(supabase.from(table));
+    if (error) {
+      try {
+        const cached = localStorage.getItem(key);
+        if (cached) { setRows(JSON.parse(cached)); return; }
+      } catch (e) { /* no saved copy */ }
+      setRows(data || []);
+      return;
+    }
     setRows(data || []);
+    try { localStorage.setItem(key, JSON.stringify(data || [])); } catch (e) { /* storage full */ }
   }, [table]); // eslint-disable-line
   useEffect(() => { load(); }, [load]);
-  return [rows, load];
+  useEffect(() => {
+    const h = () => load();
+    window.addEventListener('queue-synced', h);
+    return () => window.removeEventListener('queue-synced', h);
+  }, [load]);
+  return [rows, load, setRows];
 }
 
 const Badge = ({ s }) => <span className="badge">{STATUS[s] || s.replace('_', ' ')}</span>;
@@ -28,6 +46,7 @@ export function Customer({ me }) {
   const [reqs, reload] = useRows('requests', (t) => t.select('*, tech:profiles!requests_technician_id_fkey(full_name,phone), company:companies(name)').order('created_at', { ascending: false }));
   const [invs, reloadInv] = useRows('invoices', (t) => t.select('*, job:requests(request_no,service_type)').order('created_at', { ascending: false }));
   const [assets] = useRows('assets', (t) => t.select('*'));
+  const [shownInvs, invFilter] = useInvoiceFilter(invs);
   const [ctab, setCtab] = useState('active');
   const past = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
   const myReqs = reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
@@ -43,7 +62,7 @@ export function Customer({ me }) {
       <Overview reqs={reqs} invs={invs} assets={assets} />
       <WalletCard />
 
-      <h2>New service request</h2>
+      <h2 id="new-request">New service request</h2>
       <RequestForm me={me} onCreated={reload} />
 
       <h2>My requests</h2>
@@ -52,7 +71,12 @@ export function Customer({ me }) {
           <button key={k} className={ctab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setCtab(k)}>{label}</button>
         ))}
       </div>
-      {myReqs.length === 0 && <p className="muted">{ctab === 'history' ? 'No finished jobs yet.' : 'No active requests. Submit one above.'}</p>}
+      {myReqs.length === 0 && (
+        <div className="card" style={{ textAlign: 'center' }}>
+          <p>{ctab === 'history' ? 'No finished jobs yet.' : 'No service jobs yet.'}</p>
+          {ctab === 'active' && <button onClick={() => document.getElementById('new-request')?.scrollIntoView({ behavior: 'smooth' })}>Request a Service</button>}
+        </div>
+      )}
       {myReqs.map((r) => (
         <div className="card" key={r.id} id={r.request_no}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -69,6 +93,12 @@ export function Customer({ me }) {
           {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>WARRANTY CLAIM</p>}
           {r.status === 'waiting_customer' && <GoAhead request={r} onChange={reload} />}
           <Timeline requestId={r.id} />
+          {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && (
+            <div className="row">
+              <DocButton type="completion" id={r.id} label="Completion report" />
+              <DocButton type="service" id={r.id} label="Service report" />
+            </div>
+          )}
           <Diagnosis requestId={r.id} />
           <Materials requestId={r.id} />
           <Files requestId={r.id} canUpload />
@@ -83,7 +113,9 @@ export function Customer({ me }) {
       <Tickets me={me} />
       <h2>Invoices and payments</h2>
       {invs.length === 0 && <p className="muted">Invoices appear here once a job is completed.</p>}
-      {invs.map((i) => <InvoiceCard key={i.id} inv={i} onChange={() => { reloadInv(); reload(); }} />)}
+      {invs.length > 0 && invFilter}
+      {shownInvs.length === 0 && invs.length > 0 && <p className="muted">No invoices match the filter.</p>}
+      {shownInvs.map((i) => <InvoiceCard key={i.id} inv={i} onChange={() => { reloadInv(); reload(); }} />)}
     </>
   );
 }
@@ -97,6 +129,7 @@ const GROUPS = {
 
 export function Manager({ readOnly, me }) {
   const [view, setView] = useState('live');
+  const [jf, setJf] = useState(emptyJobFilter);
   const [tab, setTab] = useState('pending');
   const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
   const [techs] = useRows('profiles', (t) => t.select('id,full_name,skills,availability').eq('role', 'technician'));
@@ -109,6 +142,7 @@ export function Manager({ readOnly, me }) {
   const inTab = (r, k) => (k === 'open' ? !r.company_id && r.status === 'new' : !!r.company_id && GROUPS[k].includes(r.status));
   const shown = reqs
     .filter((r) => inTab(r, view === 'history' ? 'history' : tab))
+    .filter(jobPasses(jf))
     .sort((a, b) => (RANK[a.priority] ?? 2) - (RANK[b.priority] ?? 2));
 
   async function update(id, patch) {
@@ -145,6 +179,12 @@ export function Manager({ readOnly, me }) {
         {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
         {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>POTENTIAL WARRANTY CLAIM</p>}
         <Timeline requestId={r.id} />
+        {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && (
+          <div className="row">
+            <DocButton type="completion" id={r.id} label="Completion report" />
+            <DocButton type="service" id={r.id} label="Service report" />
+          </div>
+        )}
         <Diagnosis requestId={r.id} />
         <Materials requestId={r.id} />
         <Extras requestId={r.id} mode="view" />
@@ -185,7 +225,7 @@ export function Manager({ readOnly, me }) {
   return (
     <>
       <div className="row" style={{ margin: '12px 0' }}>
-        {[['live', 'Dashboard'], ['dispatch', 'Dispatch'], ['analytics', 'Analytics'], ['history', 'History and inventory']].map(([k, label]) => (
+        {[['live', 'Dashboard'], ['dispatch', 'Dispatch'], ['customers', 'Customers'], ['analytics', 'Analytics'], ['history', 'History and inventory']].map(([k, label]) => (
           <button key={k} className={view === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setView(k)}>{label}</button>
         ))}
       </div>
@@ -204,6 +244,7 @@ export function Manager({ readOnly, me }) {
               </button>
             ))}
           </div>
+          <JobFilters jf={jf} setJf={setJf} techs={techs} />
           {shown.length === 0 && <p className="muted">Nothing here.</p>}
           {list}
           <h2>Support tickets</h2>
@@ -238,6 +279,8 @@ export function Manager({ readOnly, me }) {
         </>
       )}
 
+      {view === 'customers' && <CustomersList />}
+
       {view === 'analytics' && (
         <>
           <Analytics />
@@ -248,6 +291,7 @@ export function Manager({ readOnly, me }) {
       {view === 'history' && (
         <>
           <h2>Finished and cancelled jobs</h2>
+          <JobFilters jf={jf} setJf={setJf} techs={techs} />
           {shown.length === 0 && <p className="muted">No finished or cancelled jobs yet.</p>}
           {list}
           <h2>Assets and warranties</h2>
@@ -274,12 +318,13 @@ const FLOW = {
 };
 
 export function Technician({ me }) {
-  const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').not('status', 'in', '(cancelled,paid,closed)').order('created_at', { ascending: false }));
+  const [reqs, reload, setRows] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').neq('status', 'cancelled').order('created_at', { ascending: false }));
   const [form, setForm] = useState({});
   const [avail, setAvail] = useState(me.availability || 'available');
   const [skills, setSkills] = useState(me.skills || '');
   const [skillMsg, setSkillMsg] = useState('');
   const [finishing, setFinishing] = useState(false);
+  const [ttab, setTtab] = useState('jobs');
 
   async function saveSkills() {
     const { data, error } = await supabase.from('profiles').update({ skills }).eq('id', me.id).select();
@@ -293,13 +338,15 @@ export function Technician({ me }) {
       const pos = await getPos();
       if (pos) { patch.status_lat = pos.lat; patch.status_lng = pos.lng; }
     }
-    const { error } = await supabase.from('requests').update(patch).eq('id', r.id);
-    if (error) alert(error.message);
-    reload();
+    const res = await updateOrQueue('requests', r.id, patch);
+    if (res.error) alert(res.error.message);
+    if (res.queued) setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...patch } : x)));
+    else reload();
   }
 
   async function complete(r) {
     if (finishing) return;
+    if (!navigator.onLine) return alert('Completing a job needs an internet connection. Your other changes are saved and will sync.');
     setFinishing(true);
     const d = form[r.id] || {};
     const n = (x) => Number(x || 0);
@@ -326,10 +373,20 @@ export function Technician({ me }) {
     reload();
   }
 
+  const DONE_ST = ['completed', 'invoiced', 'paid', 'closed'];
+  const mine = reqs.filter((r) => (ttab === 'done') === DONE_ST.includes(r.status));
+
+  async function saveNotes(r) {
+    const res = await updateOrQueue('requests', r.id, { tech_notes: form[r.id]?.notes ?? '' });
+    alert(res.error ? res.error.message : res.queued ? 'Saved on this device. It will sync when you are online.' : 'Notes saved');
+  }
+
   return (
     <>
-      <ShareLocation me={me} />
-      <Earnings me={me} />
+      {ttab === 'me' && (
+        <>
+          <ShareLocation me={me} />
+          <Earnings me={me} />
       <div className="card">
         <label>My availability</label>
         <select value={avail} onChange={(e) => { setAvail(e.target.value); supabase.from('profiles').update({ availability: e.target.value }).eq('id', me.id); }}>
@@ -342,10 +399,18 @@ export function Technician({ me }) {
         <button type="button" onClick={saveSkills}>Save skills</button>
         {skillMsg && <p className="muted">{skillMsg}</p>}
       </div>
+        </>
+      )}
 
-      <h2>My jobs</h2>
-      {reqs.length === 0 && <p className="muted">No jobs assigned to you yet.</p>}
-      {reqs.map((r) => {
+      {ttab !== 'me' && (
+        <>
+      <h2>{ttab === 'done' ? 'Finished jobs' : 'My jobs'}</h2>
+      {mine.length === 0 && (
+        <div className="card" style={{ textAlign: 'center' }}>
+          <p>{ttab === 'done' ? 'No finished jobs yet.' : 'No jobs assigned to you yet.'}</p>
+        </div>
+      )}
+      {mine.map((r) => {
         const dest = r.latitude != null ? `${r.latitude},${r.longitude}` : encodeURIComponent(r.address || '');
         const step = FLOW[r.status];
         return (
@@ -364,7 +429,14 @@ export function Technician({ me }) {
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Navigate</button></a>
             </div>
             <Timeline requestId={r.id} />
-            <Files requestId={r.id} canUpload />
+            <Files requestId={r.id} canUpload kinds />
+            {!DONE_ST.includes(r.status) && (
+              <>
+                <label>My notes</label>
+                <textarea defaultValue={r.tech_notes || ''} onChange={upd(r.id, 'notes')} />
+                <button type="button" className="ghost" onClick={() => saveNotes(r)}>Save notes</button>
+              </>
+            )}
             {r.status === 'assigned' && <button className="danger" onClick={() => setStatus(r, 'rejected', { technician_id: null })}>Reject job</button>}
             {r.status === 'accepted' && <input type="number" min="1" placeholder="ETA in minutes" style={{ marginTop: 8 }} onChange={upd(r.id, 'eta')} />}
             {step && <button onClick={() => setStatus(r, step[0], r.status === 'accepted' ? { eta_minutes: Number(form[r.id]?.eta) || null } : {})}>{step[1]}</button>}
@@ -397,6 +469,15 @@ export function Technician({ me }) {
           </div>
         );
       })}
+        </>
+      )}
+
+      <div style={{ height: 72 }} />
+      <nav className="bottomnav">
+        {[['jobs', `Jobs (${reqs.filter((r) => !DONE_ST.includes(r.status)).length})`], ['done', 'Finished'], ['me', 'Me']].map(([k, label]) => (
+          <button key={k} className={ttab === k ? 'active' : ''} onClick={() => setTtab(k)}>{label}</button>
+        ))}
+      </nav>
     </>
   );
 }
@@ -407,6 +488,7 @@ export function Accountant() {
   const revenue = invs.reduce((s, i) => s + Number(i.paid_amount || 0), 0);
   const owed = invs.filter((i) => !['paid', 'refunded'].includes(i.status)).reduce((s, i) => s + Number(i.amount) - Number(i.paid_amount || 0), 0);
   const awaiting = invs.filter((i) => i.status === 'pending').length;
+  const [shownInvs, invFilter] = useInvoiceFilter(invs);
 
   return (
     <>
@@ -420,7 +502,9 @@ export function Accountant() {
       <CreditForm />
       <h2>Invoices</h2>
       {invs.length === 0 && <p className="muted">No invoices yet.</p>}
-      {invs.map((i) => <InvoiceCard key={i.id} inv={i} staff onChange={reload} />)}
+      {invs.length > 0 && invFilter}
+      {shownInvs.length === 0 && invs.length > 0 && <p className="muted">No invoices match the filter.</p>}
+      {shownInvs.map((i) => <InvoiceCard key={i.id} inv={i} staff onChange={reload} />)}
     </>
   );
 }
