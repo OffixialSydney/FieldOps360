@@ -74,6 +74,11 @@ export async function POST(req) {
   });
   const { data: u } = await sb.auth.getUser(token);
   if (!u?.user) return Response.json({ error: 'Please log in again.' }, { status: 401 });
+  const hits = (globalThis.__aiHits ||= new Map());
+  const nowMs = Date.now();
+  const recent = (hits.get(u.user.id) || []).filter((t) => nowMs - t < 600000);
+  if (recent.length >= 20) return Response.json({ error: 'You have asked a lot of questions. Please wait a few minutes and try again.' }, { status: 429 });
+  hits.set(u.user.id, [...recent, nowMs]);
   const { data: me } = await sb.from('profiles').select('id,full_name,role').eq('id', u.user.id).single();
   if (!me) return Response.json({ error: 'Profile not found.' }, { status: 403 });
 
