@@ -6,6 +6,9 @@ import { Customer, Manager, Technician, Accountant } from '../../components/View
 import { Bell, Platform } from '../../components/More';
 import ProfileForm from '../../components/ProfileForm';
 import Assistant from '../../components/Assistant';
+import Search from '../../components/Search';
+import OfflineBanner from '../../components/OfflineBanner';
+import { clearCache } from '../../lib/offline';
 
 const SuperAdmin = (p) => (
   <>
@@ -22,6 +25,7 @@ export default function Dashboard() {
   const [showProfile, setShowProfile] = useState(false);
 
   async function logout() {
+    clearCache();
     await supabase.auth.signOut();
     router.push('/');
   }
@@ -66,7 +70,11 @@ export default function Dashboard() {
           <button className="ghost" onClick={() => setConfirmOut(true)}>Log out</button>
         </div>
       </div>
-      <div className="wrap">{pending ? <Pending me={profile} /> : <View me={profile} />}</div>
+      <OfflineBanner />
+      <div className="wrap">
+        {!pending && <Search />}
+        {pending ? <Pending me={profile} /> : <View me={profile} />}
+      </div>
       <Assistant me={profile} />
       {showProfile && <ProfileForm me={profile} onSaved={setProfile} onClose={() => setShowProfile(false)} />}
       {confirmOut && (
