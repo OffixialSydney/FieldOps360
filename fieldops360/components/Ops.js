@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { DocButton } from './Documents';
 
 export const money = (n) => '₦' + Number(n || 0).toLocaleString();
 const num = (v) => Number(v || 0);
@@ -175,6 +176,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
       {open && (
         <div style={{ marginTop: 10 }}>
           <h3>{co || 'Company'}</h3>
+          <DocButton type="invoice" id={inv.id} label="Print invoice" />
           <p className="muted">Invoice {inv.invoice_no} · {new Date(inv.created_at).toLocaleDateString()} · Due {inv.due_date}<br />Job {inv.job?.request_no} · {inv.job?.service_type}</p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -201,6 +203,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
                   <button style={{ marginTop: 0 }} onClick={() => review(p.id, 'confirm')}>Confirm</button>
                   <button className="danger" style={{ marginTop: 0 }} onClick={() => review(p.id, 'fail')}>Reject</button>
                 </>}
+                {p.status === 'confirmed' && <DocButton type="receipt" id={p.id} label="Receipt" />}
                 {staff && p.status === 'confirmed' && <button className="ghost" onClick={() => review(p.id, 'refund')}>Refund</button>}
               </span>
             </div>
@@ -288,6 +291,7 @@ export function AssetsAdmin({ readOnly }) {
             {a.serial_number ? `Serial ${a.serial_number} · ` : ''}{a.customer?.full_name}{a.tech?.full_name ? ` · Technician ${a.tech.full_name}` : ''}<br />
             Installed {a.installation_date || '-'} · Warranty {a.warranty_months ? `${a.warranty_months} months, until ${a.warranty_until}` : 'none'} · {a.status.toUpperCase()}
           </p>
+          {a.warranty_until && <DocButton type="warranty" id={a.id} label="Warranty certificate" />}
           <select value={a.status} disabled={readOnly} style={{ width: 'auto' }} onChange={(e) => setStatus(a.id, e.target.value)}>
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="retired">Retired</option>
           </select>
