@@ -2,12 +2,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { WarrantyBadge } from './Ops';
+import { DocButton } from './Documents';
 
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
 
-/* Photos, videos and documents for a job */
-export function Files({ requestId, canUpload }) {
+/* Photos, videos and documents for a job (camera upload, before/after labels, size and type checks) */
+export function Files({ requestId, canUpload, kinds }) {
   const [files, setFiles] = useState([]);
+  const [kind, setKind] = useState('before');
+  const [msg, setMsg] = useState('');
   const load = useCallback(async () => {
     const { data } = await supabase.from('attachments').select('*').eq('request_id', requestId);
     const list = await Promise.all((data || []).map(async (a) => {
@@ -20,19 +23,39 @@ export function Files({ requestId, canUpload }) {
 
   async function upload(e) {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
+    if (!/^(image|video)\//.test(file.type) && file.type !== 'application/pdf') return setMsg('Only photos, videos and PDF files are allowed.');
+    if (file.size > 15 * 1024 * 1024) return setMsg('That file is too large. The limit is 15 MB.');
+    setMsg('Uploading...');
     const path = `${requestId}/${Date.now()}-${file.name.replace(/[^\w.-]/g, '_')}`;
     const { error } = await supabase.storage.from('job-files').upload(path, file);
-    if (error) return;
+    if (error) return setMsg(error.message);
     const { data: u } = await supabase.auth.getUser();
-    await supabase.from('attachments').insert({ request_id: requestId, path, name: file.name, uploaded_by: u.user.id });
+    await supabase.from('attachments').insert({ request_id: requestId, path, name: file.name, uploaded_by: u.user.id, kind: kinds ? kind : 'photo' });
+    setMsg('');
     load();
   }
 
   return (
     <div style={{ margin: '8px 0' }}>
-      {files.map((f) => <a key={f.id} href={f.url} target="_blank" rel="noreferrer" className="muted" style={{ marginRight: 10 }}>{f.name}</a>)}
-      {canUpload && <input type="file" accept="image/*,video/*,.pdf" onChange={upload} />}
+      {files.map((f) => (
+        <a key={f.id} href={f.url} target="_blank" rel="noreferrer" className="muted" style={{ marginRight: 10 }}>
+          {f.kind && f.kind !== 'photo' ? `${f.kind}: ` : ''}{f.name}
+        </a>
+      ))}
+      {canUpload && kinds && (
+        <>
+          <label>Photo type</label>
+          <select value={kind} onChange={(e) => setKind(e.target.value)}>
+            <option value="before">Before photo</option><option value="after">After photo</option><option value="photo">Other</option>
+          </select>
+          <label className="filebtn">Take a photo<input type="file" accept="image/*" capture="environment" onChange={upload} hidden /></label>
+          <label className="filebtn">Choose a file<input type="file" accept="image/*,video/*,.pdf" onChange={upload} hidden /></label>
+        </>
+      )}
+      {canUpload && !kinds && <input type="file" accept="image/*,video/*,.pdf" onChange={upload} />}
+      {msg && <p className="muted">{msg}</p>}
     </div>
   );
 }
@@ -264,6 +287,7 @@ export function Assets() {
       <p className="muted">
         {a.serial_number ? `Serial ${a.serial_number} · ` : ''}Installed {a.installation_date || '-'} · {a.warranty_until ? `Warranty until ${a.warranty_until}` : 'No warranty'}
       </p>
+      {a.warranty_until && <DocButton type="warranty" id={a.id} label="Warranty certificate" />}
     </div>
   ));
 }
