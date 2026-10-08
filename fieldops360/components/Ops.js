@@ -23,7 +23,7 @@ export const WarrantyBadge = ({ a }) => {
 /* ---------- Diagnosis ---------- */
 const DFIELDS = [['problem', 'Problem'], ['cause', 'Cause'], ['solution', 'Recommended solution'], ['notes', 'Additional notes']];
 
-export function Diagnosis({ requestId, canEdit, meId }) {
+export function Diagnosis({ requestId, canEdit, meId, onSaved }) {
   const [d, setD] = useState(null);
   const [saved, setSaved] = useState(false);
   const [msg, setMsg] = useState('');
@@ -40,8 +40,8 @@ export function Diagnosis({ requestId, canEdit, meId }) {
       request_id: requestId, problem: d.problem, cause: d.cause, solution: d.solution, notes: d.notes,
       est_parts: num(d.est_parts), est_labour: num(d.est_labour), updated_by: meId, updated_at: new Date().toISOString(),
     });
-    setMsg(error ? error.message : 'Diagnosis saved');
-    if (!error) setSaved(true);
+    setMsg(error ? error.message : 'Diagnosis submitted');
+    if (!error) { setSaved(true); if (onSaved) onSaved(); }
   }
 
   if (!canEdit) {
@@ -66,7 +66,7 @@ export function Diagnosis({ requestId, canEdit, meId }) {
       <input type="number" min="0" value={d.est_parts ?? ''} onChange={(e) => setD({ ...d, est_parts: e.target.value })} />
       <label>Estimated labour (₦)</label>
       <input type="number" min="0" value={d.est_labour ?? ''} onChange={(e) => setD({ ...d, est_labour: e.target.value })} />
-      <button type="button" onClick={save}>Save diagnosis</button>
+      <button type="button" onClick={save}>Submit diagnosis</button>
       {msg && <p className="muted">{msg}</p>}
     </div>
   );
