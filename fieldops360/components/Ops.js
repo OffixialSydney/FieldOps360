@@ -138,7 +138,7 @@ export function InvoiceCard({ inv, staff, onChange }) {
   const [pays, setPays] = useState([]);
   const [co, setCo] = useState('');
   const [amt, setAmt] = useState('');
-  const [method, setMethod] = useState('card_test');
+  const [wallet, setWallet] = useState(0);
   const balance = num(inv.amount) - num(inv.paid_amount);
 
   const loadPays = useCallback(async () => {
@@ -148,13 +148,15 @@ export function InvoiceCard({ inv, staff, onChange }) {
   useEffect(() => {
     if (!open) return;
     loadPays();
+    if (!staff) supabase.from('wallet_transactions').select('balance').order('id', { ascending: false }).limit(1).then(({ data }) => setWallet(Number(data?.[0]?.balance || 0)));
     if (inv.company_id) supabase.from('companies').select('name').eq('id', inv.company_id).maybeSingle().then(({ data }) => setCo(data?.name || ''));
-  }, [open, loadPays, inv.company_id]);
+  }, [open, loadPays, inv.company_id, staff]);
 
   async function pay() {
-    const { error } = await supabase.rpc('make_payment', { p_invoice: inv.id, p_amount: num(amt || balance), p_method: method });
+    const { error } = await supabase.rpc('make_payment', { p_invoice: inv.id, p_amount: num(amt || balance), p_method: 'wallet' });
     if (error) return alert(error.message);
     setAmt('');
+    setWallet((w) => w - num(amt || balance));
     loadPays();
     onChange();
   }
@@ -210,15 +212,16 @@ export function InvoiceCard({ inv, staff, onChange }) {
           ))}
           {!staff && balance > 0 && (
             <>
-              <label>Amount to pay (leave empty for full balance)</label>
+              <p className="muted">Wallet balance: <b>{money(wallet)}</b></p>
+              <label>Amount to pay (leave empty for the full balance)</label>
               <input type="number" min="1" max={balance} value={amt} onChange={(e) => setAmt(e.target.value)} placeholder={String(balance)} />
-              <label>Payment method (test mode, no real money). The accountant confirms your payment.</label>
-              <select value={method} onChange={(e) => setMethod(e.target.value)}>
-                <option value="card_test">Card (test mode)</option>
-                <option value="bank_transfer">Bank transfer</option>
-                <option value="wallet">Wallet</option>
-              </select>
-              <button type="button" onClick={pay}>Pay now</button>
+              {wallet < num(amt || balance) ? (
+                <>
+                  <p className="err">Your wallet balance is not enough for this payment.</p>
+                  <a href="/wallet/topup"><button type="button">Add funds</button></a>
+                </>
+              ) : <button type="button" onClick={pay}>Pay from wallet</button>}
+              <p className="muted">The accountant confirms your payment after you pay.</p>
             </>
           )}
         </div>
