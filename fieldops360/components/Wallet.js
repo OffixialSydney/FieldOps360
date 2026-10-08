@@ -8,7 +8,6 @@ const LABEL = { deposit: 'Deposit', credit: 'Credit', refund: 'Refund', payment:
 /* Customer wallet */
 export function WalletCard() {
   const [rows, setRows] = useState([]);
-  const [amt, setAmt] = useState('');
   const load = useCallback(async () => {
     const { data } = await supabase.from('wallet_transactions').select('*').order('id', { ascending: false }).limit(20);
     setRows(data || []);
@@ -16,24 +15,14 @@ export function WalletCard() {
   useEffect(() => { load(); const t = setInterval(load, 20000); return () => clearInterval(t); }, [load]);
   const balance = rows.length ? Number(rows[0].balance) : 0;
 
-  async function deposit() {
-    const { error } = await supabase.rpc('wallet_deposit', { p_amount: Number(amt) });
-    if (error) return alert(error.message);
-    setAmt('');
-    load();
-  }
   return (
     <>
       <h2>My wallet</h2>
       <div className="card">
         <span className="muted">Balance</span>
         <div className="stat">{money(balance)}</div>
-        <label>Add money (test mode, no real money)</label>
-        <div className="row">
-          <input type="number" min="1" value={amt} onChange={(e) => setAmt(e.target.value)} placeholder="Amount" style={{ flex: 1 }} />
-          <button style={{ marginTop: 0 }} onClick={deposit}>Add money</button>
-        </div>
-        <p className="muted">You can pay invoices from your wallet. Refunds are returned here.</p>
+        <a href="/wallet/topup"><button style={{ marginTop: 8 }}>Add funds</button></a>
+        <p className="muted">Fund your wallet by card, bank transfer or crypto. Invoices are paid from the wallet, and refunds are returned here.</p>
         {rows.map((t) => (
           <p key={t.id} className="muted" style={{ margin: '4px 0' }}>
             {new Date(t.created_at).toLocaleString()} · {LABEL[t.type]} · <b>{t.amount > 0 ? '+' : ''}{money(t.amount)}</b> · balance {money(t.balance)}{t.note ? ` · ${t.note}` : ''}
