@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { ServicesEditor } from './Ops';
+import { TopupReview } from './TopUp';
 
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
 const ROLES = ['customer', 'technician', 'manager', 'accountant', 'super_admin'];
@@ -278,6 +279,8 @@ export function Platform() {
           ))}
         </>
       )}
+      <h2>Wallet top-ups to confirm</h2>
+      <TopupReview />
       <h2>Platform: users by company</h2>
       {[...companies.map((c) => ({ id: c.id, name: c.name })), { id: null, name: 'No company' }].map((g) => {
         const members = users.filter((u) => (u.company_id || null) === g.id);
