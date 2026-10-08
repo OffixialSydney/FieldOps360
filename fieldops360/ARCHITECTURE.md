@@ -66,3 +66,11 @@ Completing a job and uploading photos need a connection.
 5. Customer: open the invoice, pay it, then download the receipt after the accountant confirms.
 6. Accountant (accountant@fieldops.demo): confirm the payment.
 7. Manager: check analytics, technician performance and the activity log.
+
+## Wallet and payments
+
+- Customers fund a wallet (`wallet_transactions`, an append-only ledger) from the **Add funds** page, then pay invoices from it.
+- **Paystack:** the server starts the payment, the customer pays on Paystack, and the server checks the result with Paystack before crediting. A signed webhook adds the money even if the customer closes the page. A payment reference can only be credited once.
+- **Bank transfer and Bitcoin:** the customer sends money, then uploads a screenshot. The platform admin checks it and confirms. The wallet is credited with the amount the admin confirms.
+- Invoice payments from the wallet still wait for the accountant's confirmation.
+- The service role key and Paystack secret key exist only as server environment variables.
