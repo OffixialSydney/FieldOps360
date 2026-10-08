@@ -91,7 +91,7 @@ export function RequestForm({ me, onCreated }) {
     setF(empty);
     setFiles([]);
     setBusy(false);
-    onCreated();
+    onCreated(data.request_no);
   }
 
   return (
