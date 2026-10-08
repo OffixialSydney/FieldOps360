@@ -23,19 +23,31 @@ function Copy({ label, value }) {
   );
 }
 
-/* Screenshot upload for bank and Bitcoin transfers */
-function ProofUpload({ meId, reference, withNote, onDone }) {
-  const [msg, setMsg] = useState('');
+/* Screenshot of a bank or Bitcoin transfer: add it, check it, then tap the button to send */
+function ProofUpload({ meId, reference, withNote, label, onDone }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [note, setNote] = useState('');
+  const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
-  async function upload(e) {
-    const file = e.target.files[0];
+
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+
+  function pick(e) {
+    const f = e.target.files[0];
     e.target.value = '';
-    if (!file) return;
-    if (!/^image\//.test(file.type) && file.type !== 'application/pdf') return setMsg('Please upload a screenshot (image) or PDF.');
-    if (file.size > 8 * 1024 * 1024) return setMsg('That file is too large. The limit is 8 MB.');
+    if (!f) return;
+    if (!/^image\//.test(f.type) && f.type !== 'application/pdf') return setMsg('Please choose a screenshot (image) or a PDF.');
+    if (f.size > 8 * 1024 * 1024) return setMsg('That file is too large. The limit is 8 MB.');
+    setMsg('');
+    setFile(f);
+    setPreview(/^image\//.test(f.type) ? URL.createObjectURL(f) : '');
+  }
+
+  async function send() {
+    if (!file) return setMsg('Add your payment screenshot first.');
     setBusy(true);
-    setMsg('Uploading your screenshot...');
+    setMsg('Sending...');
     const path = `${meId}/${reference}-${Date.now()}-${file.name.replace(/[^\w.-]/g, '_')}`;
     const { error } = await supabase.storage.from('topup-proofs').upload(path, file);
     if (error) { setBusy(false); return setMsg(error.message); }
@@ -45,12 +57,22 @@ function ProofUpload({ meId, reference, withNote, onDone }) {
     setMsg('');
     onDone();
   }
+
   return (
     <div className="card" style={{ background: '#f9fafb' }}>
-      <h3>Send your payment screenshot</h3>
-      <p className="muted">After you have made the transfer, upload a screenshot of the receipt. The admin checks it and adds the money to your wallet.</p>
+      <h3>Step 1: add your payment screenshot</h3>
+      <p className="muted">Make the transfer first, then add a screenshot of the receipt.</p>
       {withNote && <><label>Transaction hash (optional)</label><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Paste the transaction hash" /></>}
-      <label className="filebtn">{busy ? 'Uploading...' : 'Upload screenshot'}<input type="file" accept="image/*,.pdf" onChange={upload} hidden disabled={busy} /></label>
+      <label className="filebtn">{file ? 'Change screenshot' : 'Add screenshot'}<input type="file" accept="image/*,.pdf" onChange={pick} hidden disabled={busy} /></label>
+      {file && (
+        <div style={{ margin: '8px 0' }}>
+          {preview && <img src={preview} alt="Your screenshot" style={{ maxWidth: '100%', maxHeight: 220, borderRadius: 8, border: '1px solid var(--line)' }} />}
+          <p className="muted" style={{ margin: '4px 0' }}>Added: {file.name}</p>
+        </div>
+      )}
+      <h3>Step 2: tell us you have paid</h3>
+      <button type="button" disabled={!file || busy} onClick={send}>{busy ? 'Sending...' : label}</button>
+      {!file && <p className="muted">The button turns on after you add your screenshot.</p>}
       {msg && <p className="muted">{msg}</p>}
     </div>
   );
@@ -174,7 +196,7 @@ export default function TopUpPage() {
                 <Copy label="Amount to send" value={n} />
                 <Copy label="Reference (put this in the transfer narration)" value={ref} />
                 {sent ? <p style={{ color: '#0f766e', fontWeight: 600 }}>Screenshot received. The admin will confirm and your wallet will be updated.</p>
-                  : <ProofUpload meId={me.id} reference={ref} onDone={() => { setSent(true); refresh(); }} />}
+                  : <ProofUpload meId={me.id} reference={ref} label="I have paid" onDone={() => { setSent(true); refresh(); }} />}
               </>
             ) : <p className="err">Bank transfer is not set up yet. The site owner must add the bank details in Vercel.</p>)}
           </div>
@@ -193,7 +215,7 @@ export default function TopUpPage() {
                     <Copy label="Your reference" value={ref} />
                     <p className="muted">Send only Bitcoin (BTC) to this address. Other coins or networks will be lost. Send the naira value of {money(n)} at the current rate. The admin confirms the amount received.</p>
                     {sent ? <p style={{ color: '#0f766e', fontWeight: 600 }}>Screenshot received. The admin will confirm and your wallet will be updated.</p>
-                      : <ProofUpload meId={me.id} reference={ref} withNote onDone={() => { setSent(true); refresh(); }} />}
+                      : <ProofUpload meId={me.id} reference={ref} withNote label="I have made the payment" onDone={() => { setSent(true); refresh(); }} />}
                   </>
                 )}
               </>
@@ -207,7 +229,7 @@ export default function TopUpPage() {
         {history.map((t) => (
           <div className="card row" key={t.id} style={{ justifyContent: 'space-between' }}>
             <span>{money(t.amount)} · {t.provider === 'paystack' ? 'Paystack' : t.provider === 'bank' ? 'Bank transfer' : 'Bitcoin'}<br /><span className="muted">{t.reference} · {new Date(t.created_at).toLocaleString()}</span></span>
-            <span className="badge">{t.status === 'success' ? 'Added' : t.status === 'failed' ? 'Not completed' : t.proof_path || t.provider === 'paystack' ? 'Waiting' : 'Needs your screenshot'}</span>
+            <span className="badge">{t.status === 'success' ? 'Added' : t.status === 'failed' ? 'Not completed' : t.proof_path || t.provider === 'paystack' ? 'Waiting' : 'Not sent yet'}</span>
           </div>
         ))}
       </div>
