@@ -48,8 +48,9 @@ export function Customer({ me }) {
   const [assets] = useRows('assets', (t) => t.select('*'));
   const [shownInvs, invFilter] = useInvoiceFilter(invs);
   const [ctab, setCtab] = useState('active');
+  const [notice, setNotice] = useState('');
   const past = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
-  const myReqs = reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
+  const myReqs = ctab === 'new' ? [] : reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
   useEffect(() => {
     const t = setInterval(() => { reload(); reloadInv(); }, 15000);
     return () => clearInterval(t);
@@ -62,19 +63,23 @@ export function Customer({ me }) {
       <Overview reqs={reqs} invs={invs} assets={assets} />
       <WalletCard />
 
-      <h2 id="new-request">New service request</h2>
-      <RequestForm me={me} onCreated={reload} />
-
       <h2>My requests</h2>
       <div className="row" style={{ marginBottom: 12 }}>
-        {[['active', 'Active'], ['history', 'History']].map(([k, label]) => (
-          <button key={k} className={ctab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setCtab(k)}>{label}</button>
+        {[['active', 'Active'], ['history', 'History'], ['new', 'New request']].map(([k, label]) => (
+          <button key={k} className={ctab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => { setCtab(k); setNotice(''); }}>{label}</button>
         ))}
       </div>
-      {myReqs.length === 0 && (
+      {notice && ctab === 'active' && <div className="card" style={{ borderColor: 'var(--accent)' }}><p style={{ margin: 0 }}>{notice}</p></div>}
+      {ctab === 'new' && (
+        <>
+          <h3>New service request</h3>
+          <RequestForm me={me} onCreated={(no) => { reload(); setCtab('active'); setNotice(`Request ${no} submitted. A company that offers this service will accept it soon.`); }} />
+        </>
+      )}
+      {ctab !== 'new' && myReqs.length === 0 && (
         <div className="card" style={{ textAlign: 'center' }}>
           <p>{ctab === 'history' ? 'No finished jobs yet.' : 'No service jobs yet.'}</p>
-          {ctab === 'active' && <button onClick={() => document.getElementById('new-request')?.scrollIntoView({ behavior: 'smooth' })}>Request a Service</button>}
+          {ctab === 'active' && <button onClick={() => setCtab('new')}>Request a Service</button>}
         </div>
       )}
       {myReqs.map((r) => (
