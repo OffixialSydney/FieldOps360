@@ -51,7 +51,7 @@ export function Bell({ me }) {
 }
 
 /* Additional work: technician requests, customer or manager decides */
-export function Extras({ requestId, mode, meId, onChange, onlyPending }) {
+export function Extras({ requestId, mode, meId, onChange, onlyPending, hideList }) {
   const [rows, setRows] = useState([]);
   const [lines, setLines] = useState([{ label: '', amount: '' }]);
   const [msg, setMsg] = useState('');
@@ -78,6 +78,7 @@ export function Extras({ requestId, mode, meId, onChange, onlyPending }) {
     });
     if (error) return setMsg(error.message);
     setMsg('Sent to the customer for approval.');
+    window.dispatchEvent(new Event('extras-changed'));
     setLines([{ label: '', amount: '' }]);
     load();
   }
@@ -89,7 +90,7 @@ export function Extras({ requestId, mode, meId, onChange, onlyPending }) {
     if (onChange) onChange();
   }
 
-  const shownRows = onlyPending ? rows.filter((x) => x.status === 'pending') : rows;
+  const shownRows = hideList ? [] : onlyPending ? rows.filter((x) => x.status === 'pending') : rows;
   if (!shownRows.length && mode !== 'tech') return null;
   return (
     <div style={{ margin: '8px 0' }}>
