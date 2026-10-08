@@ -34,7 +34,8 @@ function useRows(table, query) {
   useEffect(() => {
     const h = () => load();
     window.addEventListener('queue-synced', h);
-    return () => window.removeEventListener('queue-synced', h);
+    window.addEventListener('extras-changed', h);
+    return () => { window.removeEventListener('queue-synced', h); window.removeEventListener('extras-changed', h); };
   }, [load]);
   return [rows, load, setRows];
 }
@@ -97,6 +98,7 @@ export function Customer({ me }) {
           {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
           {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>WARRANTY CLAIM</p>}
           {r.status === 'waiting_customer' && <GoAhead request={r} onChange={reload} />}
+          {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
           <Timeline requestId={r.id} />
           {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && (
             <div className="row">
@@ -183,6 +185,7 @@ export function Manager({ readOnly, me }) {
         </div>
         {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
         {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>POTENTIAL WARRANTY CLAIM</p>}
+        {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
         <Timeline requestId={r.id} />
         {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && (
           <div className="row">
@@ -323,13 +326,22 @@ const FLOW = {
 };
 
 export function Technician({ me }) {
-  const [reqs, reload, setRows] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').neq('status', 'cancelled').order('created_at', { ascending: false }));
+  const [reqs, reload, setRows] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
+  const [exRows, reloadEx] = useRows('extra_charges', (t) => t.select('request_id,status'));
   const [form, setForm] = useState({});
   const [avail, setAvail] = useState(me.availability || 'available');
   const [skills, setSkills] = useState(me.skills || '');
   const [skillMsg, setSkillMsg] = useState('');
   const [finishing, setFinishing] = useState(false);
   const [ttab, setTtab] = useState('jobs');
+  useEffect(() => {
+    const t = setInterval(() => { reload(); reloadEx(); }, 15000);
+    return () => clearInterval(t);
+  }, [reload, reloadEx]);
+  const ex = (id) => {
+    const l = exRows.filter((x) => x.request_id === id);
+    return { pending: l.some((x) => x.status === 'pending'), approved: l.some((x) => x.status === 'approved'), rejected: l.filter((x) => x.status === 'rejected').length };
+  };
 
   async function saveSkills() {
     const { data, error } = await supabase.from('profiles').update({ skills }).eq('id', me.id).select();
@@ -347,6 +359,13 @@ export function Technician({ me }) {
     if (res.error) alert(res.error.message);
     if (res.queued) setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...patch } : x)));
     else reload();
+  }
+
+  async function stopWork(r) {
+    if (!window.confirm('Stop work and cancel this job because the client refused the additional work?')) return;
+    const res = await updateOrQueue('requests', r.id, { status: 'cancelled', cancel_reason: 'Client refused the additional work' });
+    if (res.error) return alert(res.error.message);
+    reload();
   }
 
   async function complete(r) {
@@ -378,7 +397,7 @@ export function Technician({ me }) {
     reload();
   }
 
-  const DONE_ST = ['completed', 'invoiced', 'paid', 'closed'];
+  const DONE_ST = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
   const mine = reqs.filter((r) => (ttab === 'done') === DONE_ST.includes(r.status));
 
   async function saveNotes(r) {
@@ -418,6 +437,7 @@ export function Technician({ me }) {
       {mine.map((r) => {
         const dest = r.latitude != null ? `${r.latitude},${r.longitude}` : encodeURIComponent(r.address || '');
         const step = FLOW[r.status];
+        const s = ex(r.id);
         return (
           <div className="card" key={r.id} id={r.request_no}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -433,6 +453,7 @@ export function Technician({ me }) {
               {r.customer?.phone && <a href={`tel:${r.customer.phone}`}><button className="ghost">Call customer</button></a>}
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Navigate</button></a>
             </div>
+            {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
             <Timeline requestId={r.id} />
             <Files requestId={r.id} canUpload kinds />
             {!DONE_ST.includes(r.status) && (
@@ -446,16 +467,14 @@ export function Technician({ me }) {
             {r.status === 'accepted' && <input type="number" min="1" placeholder="ETA in minutes" style={{ marginTop: 8 }} onChange={upd(r.id, 'eta')} />}
             {step && <button onClick={() => setStatus(r, step[0], r.status === 'accepted' ? { eta_minutes: Number(form[r.id]?.eta) || null } : {})}>{step[1]}</button>}
             {r.status === 'waiting_customer' && <p className="muted">You can resume once the customer clicks Go ahead, and any additional work is approved, paid and confirmed by the accountant.</p>}
-            {r.status === 'in_progress' && (
-              <div className="row">
-                <button className="ghost" onClick={() => setStatus(r, 'waiting_parts')}>Waiting for parts</button>
-                <button className="ghost" onClick={() => setStatus(r, 'waiting_customer')}>Waiting for customer</button>
-              </div>
-            )}
-            {r.status === 'in_progress' && <Extras requestId={r.id} mode="tech" meId={me.id} />}
-            {['arrived', 'diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && <Diagnosis requestId={r.id} canEdit meId={me.id} />}
+            {r.status === 'in_progress' && !s.approved && !s.pending && <Extras requestId={r.id} mode="tech" meId={me.id} hideList />}
+            {r.status === 'in_progress' && !s.approved && !s.pending && s.rejected > 0 && <p className="muted">The customer declined your last request. You can send a revised one or complete the job.</p>}
+            {r.status === 'in_progress' && s.pending && <p className="muted">Waiting for the customer to decide on your additional work request.</p>}
+            {r.status === 'in_progress' && s.approved && <p style={{ color: '#0f766e', fontWeight: 600 }}>The customer approved the additional work. You can complete the job.</p>}
+            {r.status === 'in_progress' && !s.approved && !s.pending && s.rejected >= 2 && <button className="danger" onClick={() => stopWork(r)}>Stop work: client refused</button>}
+            {r.status === 'diagnosing' && <Diagnosis requestId={r.id} canEdit meId={me.id} onSaved={() => setStatus(r, 'in_progress')} />}
             {['diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && <Materials requestId={r.id} canEdit />}
-            {r.status === 'in_progress' && (
+            {r.status === 'in_progress' && !s.pending && (
               <>
                 <h3>Complete job</h3>
                 <label>Work performed</label><textarea onChange={upd(r.id, 'work_done')} />
