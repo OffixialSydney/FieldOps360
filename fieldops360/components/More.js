@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { ServicesEditor } from './Ops';
 import { TopupReview } from './TopUp';
+import { useLive } from '../lib/live';
 
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
 const ROLES = ['customer', 'technician', 'manager', 'accountant', 'super_admin'];
@@ -65,6 +66,7 @@ export function Extras({ requestId, mode, meId, onChange, onlyPending, hideList 
     window.addEventListener('extras-changed', h);
     return () => window.removeEventListener('extras-changed', h);
   }, [load]);
+  useLive('extra_charges', load);
 
   const total = lines.reduce((s, l) => s + Number(l.amount || 0), 0);
   const setLine = (i, k, v) => setLines(lines.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
