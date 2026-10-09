@@ -192,7 +192,7 @@ export function TechMap() {
 }
 
 /* Super admin: companies, subscriptions and users */
-export function Platform() {
+export function Platform({ show }) {
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [f, setF] = useState({ name: '', plan: 'basic', subscription_until: '' });
@@ -237,6 +237,8 @@ export function Platform() {
 
   return (
     <>
+      {(!show || show === 'companies') && (
+        <>
       <h2>Platform: companies</h2>
       <div className="grid">
         <div className="card"><span className="muted">Companies</span><div className="stat">{companies.length}</div></div>
@@ -268,6 +270,10 @@ export function Platform() {
           </div>
         </div>
       ))}
+        </>
+      )}
+      {(!show || show === 'users') && (
+        <>
       {users.some((u) => u.requested_role && u.role === 'customer') && (
         <>
           <h2>Pending role requests</h2>
@@ -282,8 +288,16 @@ export function Platform() {
           ))}
         </>
       )}
+        </>
+      )}
+      {(!show || show === 'topups') && (
+        <>
       <h2>Wallet top-ups to confirm</h2>
       <TopupReview />
+        </>
+      )}
+      {(!show || show === 'users') && (
+        <>
       <h2>Platform: users by company</h2>
       {[...companies.map((c) => ({ id: c.id, name: c.name })), { id: null, name: 'No company' }].map((g) => {
         const members = users.filter((u) => (u.company_id || null) === g.id);
@@ -295,6 +309,8 @@ export function Platform() {
           </div>
         );
       })}
+        </>
+      )}
     </>
   );
 }
