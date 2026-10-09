@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { warrantyStatus } from './Ops';
 import { Rating } from './Extra';
 import { Extras } from './More';
+import { useLive } from '../lib/live';
 
 export const STATUS = {
   new: 'Requested', reviewing: 'Reviewing', assigned: 'Assigned', rejected: 'Rejected', accepted: 'Accepted',
@@ -263,6 +264,7 @@ export function ActionNeeded({ reqs, onChange }) {
     return () => { clearInterval(t); window.removeEventListener('extras-changed', h); };
   }, [load]);
 
+  useLive('extra_charges', load);
   const over = ['completed', 'invoiced', 'paid', 'closed', 'cancelled', 'rejected'];
   const waiting = reqs.filter((r) => r.status === 'waiting_customer');
   const extraJobs = reqs.filter((r) => pending.includes(r.id) && !over.includes(r.status) && r.status !== 'waiting_customer');
