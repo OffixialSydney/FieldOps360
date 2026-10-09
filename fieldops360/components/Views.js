@@ -9,6 +9,7 @@ import { WalletCard, CreditForm } from './Wallet';
 import { DocButton } from './Documents';
 import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList } from './Filters';
 import { updateOrQueue } from '../lib/offline';
+import { useLive } from '../lib/live';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded, GoAhead } from './Jobs';
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
@@ -338,6 +339,7 @@ export function Technician({ me }) {
     const t = setInterval(() => { reload(); reloadEx(); }, 15000);
     return () => clearInterval(t);
   }, [reload, reloadEx]);
+  useLive('extra_charges', reloadEx);
   const ex = (id) => {
     const l = exRows.filter((x) => x.request_id === id);
     return { pending: l.some((x) => x.status === 'pending'), approved: l.some((x) => x.status === 'approved'), rejected: l.filter((x) => x.status === 'rejected').length };
