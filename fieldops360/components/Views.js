@@ -135,8 +135,8 @@ const GROUPS = {
   history: ['completed', 'invoiced', 'paid', 'closed', 'cancelled'],
 };
 
-export function Manager({ readOnly, me }) {
-  const [view, setView] = useState('live');
+export function Manager({ readOnly, me, only }) {
+  const [view, setView] = useState(only || 'live');
   const [jf, setJf] = useState(emptyJobFilter);
   const [tab, setTab] = useState('pending');
   const [reqs, reload] = useRows('requests', (t) => t.select('*, customer:profiles!requests_customer_id_fkey(full_name,phone)').order('created_at', { ascending: false }));
@@ -149,7 +149,7 @@ export function Manager({ readOnly, me }) {
   const live = view === 'live';
   const inTab = (r, k) => (k === 'open' ? !r.company_id && r.status === 'new' : !!r.company_id && GROUPS[k].includes(r.status));
   const shown = reqs
-    .filter((r) => inTab(r, view === 'history' ? 'history' : tab))
+    .filter((r) => inTab(r, view === 'history' || view === 'jobhistory' ? 'history' : tab))
     .filter(jobPasses(jf))
     .sort((a, b) => (RANK[a.priority] ?? 2) - (RANK[b.priority] ?? 2));
 
@@ -233,11 +233,13 @@ export function Manager({ readOnly, me }) {
 
   return (
     <>
+      {!only && (
       <div className="row" style={{ margin: '12px 0' }}>
         {[['live', 'Dashboard'], ['dispatch', 'Dispatch'], ['customers', 'Customers'], ['analytics', 'Analytics'], ['history', 'History and inventory']].map(([k, label]) => (
           <button key={k} className={view === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => setView(k)}>{label}</button>
         ))}
       </div>
+      )}
 
       {readOnly && <p className="muted">View only: each company's manager assigns jobs, replies to tickets and manages stock and warranties. You can follow progress here.</p>}
 
@@ -256,8 +258,12 @@ export function Manager({ readOnly, me }) {
           <JobFilters jf={jf} setJf={setJf} techs={techs} />
           {shown.length === 0 && <p className="muted">Nothing here.</p>}
           {list}
-          <h2>Support tickets</h2>
-          <Tickets staff readOnly={readOnly} />
+          {!only && (
+            <>
+              <h2>Support tickets</h2>
+              <Tickets staff readOnly={readOnly} />
+            </>
+          )}
         </>
       )}
 
@@ -294,6 +300,38 @@ export function Manager({ readOnly, me }) {
         <>
           <Analytics />
           <Performance />
+        </>
+      )}
+
+      {view === 'jobhistory' && (
+        <>
+          <h2>Job history</h2>
+          <JobFilters jf={jf} setJf={setJf} techs={techs} />
+          {shown.length === 0 && <p className="muted">No finished or cancelled jobs yet.</p>}
+          {list}
+        </>
+      )}
+
+      {view === 'tickets' && (
+        <>
+          <h2>Support tickets</h2>
+          <Tickets staff readOnly={readOnly} />
+        </>
+      )}
+
+      {view === 'stock' && (
+        <>
+          <h2>Assets and warranties</h2>
+          <AssetsAdmin readOnly={readOnly} />
+          <h2>Inventory</h2>
+          <Inventory readOnly={readOnly} />
+        </>
+      )}
+
+      {view === 'log' && (
+        <>
+          <h2>Activity log</h2>
+          <Audit />
         </>
       )}
 
