@@ -6,16 +6,11 @@ import { Customer, Manager, Technician, Accountant } from '../../components/View
 import { Bell, Platform } from '../../components/More';
 import ProfileForm from '../../components/ProfileForm';
 import Assistant from '../../components/Assistant';
+import SuperAdmin from '../../components/AdminViews';
 import Search from '../../components/Search';
 import OfflineBanner from '../../components/OfflineBanner';
 import { clearCache } from '../../lib/offline';
 
-const SuperAdmin = (p) => (
-  <>
-    <Platform />
-    <Manager {...p} readOnly />
-  </>
-);
 
 export default function Dashboard() {
   const router = useRouter();
