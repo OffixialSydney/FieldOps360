@@ -5,7 +5,7 @@ import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, Si
 import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
 import { Analytics, Performance } from './Analytics';
-import { WalletCard } from './Wallet';
+import { WalletCard, TransactionList } from './Wallet';
 import { DocButton } from './Documents';
 import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList } from './Filters';
 import { updateOrQueue } from '../lib/offline';
@@ -52,7 +52,7 @@ export function Customer({ me }) {
   const [ctab, setCtab] = useState('active');
   const [notice, setNotice] = useState('');
   const past = ['completed', 'invoiced', 'paid', 'closed', 'cancelled'];
-  const myReqs = ctab === 'new' ? [] : reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
+  const myReqs = ctab === 'new' || ctab === 'transactions' ? [] : reqs.filter((r) => past.includes(r.status) === (ctab === 'history'));
   useEffect(() => {
     const t = setInterval(() => { reload(); reloadInv(); }, 15000);
     return () => clearInterval(t);
@@ -67,7 +67,7 @@ export function Customer({ me }) {
 
       <h2>My requests</h2>
       <div className="row" style={{ marginBottom: 12 }}>
-        {[['active', 'Active'], ['history', 'History'], ['new', 'New request']].map(([k, label]) => (
+        {[['active', 'Active'], ['history', 'History'], ['new', 'New request'], ['transactions', 'Transactions']].map(([k, label]) => (
           <button key={k} className={ctab === k ? '' : 'ghost'} style={{ marginTop: 0 }} onClick={() => { setCtab(k); setNotice(''); }}>{label}</button>
         ))}
       </div>
@@ -78,7 +78,8 @@ export function Customer({ me }) {
           <RequestForm me={me} onCreated={(no) => { reload(); setCtab('active'); setNotice(`Request ${no} submitted. A company that offers this service will accept it soon.`); }} />
         </>
       )}
-      {ctab !== 'new' && myReqs.length === 0 && (
+      {ctab === 'transactions' && <TransactionList />}
+      {ctab !== 'new' && ctab !== 'transactions' && myReqs.length === 0 && (
         <div className="card" style={{ textAlign: 'center' }}>
           <p>{ctab === 'history' ? 'No finished jobs yet.' : 'No service jobs yet.'}</p>
           {ctab === 'active' && <button onClick={() => setCtab('new')}>Request a Service</button>}
