@@ -5,7 +5,7 @@ import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, Si
 import { Extras, ShareLocation, TechMap } from './More';
 import { Diagnosis, Materials, InvoiceCard, AssetsAdmin, ServicesEditor } from './Ops';
 import { Analytics, Performance } from './Analytics';
-import { WalletCard, CreditForm } from './Wallet';
+import { WalletCard } from './Wallet';
 import { DocButton } from './Documents';
 import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList } from './Filters';
 import { updateOrQueue } from '../lib/offline';
@@ -562,8 +562,6 @@ export function Accountant() {
         <div className="card"><span className="muted">Outstanding</span><div className="stat">{money(owed)}</div></div>
         <div className="card"><span className="muted">Payments to review</span><div className="stat">{awaiting}</div></div>
       </div>
-      <h2>Customer wallet credit</h2>
-      <CreditForm />
       <h2>Invoices</h2>
       {invs.length === 0 && <p className="muted">No invoices yet.</p>}
       {invs.length > 0 && invFilter}
