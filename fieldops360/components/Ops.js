@@ -139,7 +139,12 @@ export function InvoiceCard({ inv, staff, onChange }) {
   const [co, setCo] = useState('');
   const [amt, setAmt] = useState('');
   const [wallet, setWallet] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [working, setWorking] = useState('');
   const balance = num(inv.amount) - num(inv.paid_amount);
+  const pendingTotal = pays.filter((p) => p.status === 'pending').reduce((s, p) => s + num(p.amount), 0);
+  const payable = balance - pendingTotal;
+  const waiting = pendingTotal > 0 || inv.status === 'pending';
 
   const loadPays = useCallback(async () => {
     const { data } = await supabase.from('payments').select('*').eq('invoice_id', inv.id).order('created_at');
@@ -153,18 +158,24 @@ export function InvoiceCard({ inv, staff, onChange }) {
   }, [open, loadPays, inv.company_id, staff]);
 
   async function pay() {
-    const { error } = await supabase.rpc('make_payment', { p_invoice: inv.id, p_amount: num(amt || balance), p_method: 'wallet' });
-    if (error) return alert(error.message);
+    if (busy) return;
+    setBusy(true);
+    const { error } = await supabase.rpc('make_payment', { p_invoice: inv.id, p_amount: num(amt || payable), p_method: 'wallet' });
+    if (error) { alert(error.message); setBusy(false); return; }
     setAmt('');
-    setWallet((w) => w - num(amt || balance));
-    loadPays();
+    setWallet((w) => w - num(amt || payable));
+    await loadPays();
     onChange();
+    setTimeout(() => setBusy(false), 8000);
   }
   async function review(id, action) {
+    if (working) return;
+    setWorking(id);
     const { error } = await supabase.rpc('review_payment', { p_payment: id, p_action: action });
-    if (error) return alert(error.message);
-    loadPays();
+    if (error) alert(error.message);
+    await loadPays();
     onChange();
+    setWorking('');
   }
   const lines = inv.items?.length ? inv.items : [{ label: 'Service', qty: 1, unit_price: inv.amount }];
 
@@ -202,26 +213,35 @@ export function InvoiceCard({ inv, staff, onChange }) {
               <span className="row">
                 <span className="badge">{p.status}</span>
                 {staff && p.status === 'pending' && <>
-                  <button style={{ marginTop: 0 }} onClick={() => review(p.id, 'confirm')}>Confirm</button>
-                  <button className="danger" style={{ marginTop: 0 }} onClick={() => review(p.id, 'fail')}>Reject</button>
+                  <button style={{ marginTop: 0 }} disabled={!!working} onClick={() => review(p.id, 'confirm')}>{working === p.id ? 'Please wait...' : 'Confirm'}</button>
+                  <button className="danger" style={{ marginTop: 0 }} disabled={!!working} onClick={() => review(p.id, 'fail')}>Reject</button>
                 </>}
                 {p.status === 'confirmed' && <DocButton type="receipt" id={p.id} label="Receipt" />}
-                {staff && p.status === 'confirmed' && <button className="ghost" onClick={() => review(p.id, 'refund')}>Refund</button>}
+                {staff && p.status === 'confirmed' && <button className="ghost" disabled={!!working} onClick={() => review(p.id, 'refund')}>Refund</button>}
               </span>
             </div>
           ))}
           {!staff && balance > 0 && (
             <>
               <p className="muted">Wallet balance: <b>{money(wallet)}</b></p>
-              <label>Amount to pay (leave empty for the full balance)</label>
-              <input type="number" min="1" max={balance} value={amt} onChange={(e) => setAmt(e.target.value)} placeholder={String(balance)} />
-              {wallet < num(amt || balance) ? (
+              {waiting ? (
                 <>
-                  <p className="err">Your wallet balance is not enough for this payment.</p>
-                  <a href="/wallet/topup"><button type="button">Add funds</button></a>
+                  <button type="button" disabled>Waiting for approval</button>
+                  <p className="muted">Your payment{pendingTotal > 0 ? ` of ${money(pendingTotal)}` : ''} is waiting for the accountant to confirm. You can pay again only after it is decided.</p>
                 </>
-              ) : <button type="button" onClick={pay}>Pay from wallet</button>}
-              <p className="muted">The accountant confirms your payment after you pay.</p>
+              ) : (
+                <>
+                  <label>Amount to pay (leave empty for the full balance)</label>
+                  <input type="number" min="1" max={payable} value={amt} onChange={(e) => setAmt(e.target.value)} placeholder={String(payable)} />
+                  {wallet < num(amt || payable) ? (
+                    <>
+                      <p className="err">Your wallet balance is not enough for this payment.</p>
+                      <a href="/wallet/topup"><button type="button">Add funds</button></a>
+                    </>
+                  ) : <button type="button" disabled={busy} onClick={pay}>{busy ? 'Processing...' : 'Pay from wallet'}</button>}
+                  <p className="muted">The accountant confirms your payment after you pay.</p>
+                </>
+              )}
             </>
           )}
         </div>
