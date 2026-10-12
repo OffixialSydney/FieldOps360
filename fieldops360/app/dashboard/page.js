@@ -11,7 +11,6 @@ import Search from '../../components/Search';
 import OfflineBanner from '../../components/OfflineBanner';
 import { clearCache } from '../../lib/offline';
 
-
 export default function Dashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
@@ -22,19 +21,19 @@ export default function Dashboard() {
   async function logout() {
     clearCache();
     await supabase.auth.signOut();
-    router.push('/');
+    router.push('/login');
   }
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession();
-      if (!data.session) return router.replace('/');
+      if (!data.session) return router.replace('/login');
       const { data: p } = await supabase.from('profiles').select('*').eq('id', data.session.user.id).single();
       idRef.current = data.session.user.id;
       setProfile(p);
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) router.replace('/');
+      if (event === 'SIGNED_OUT' || !session) router.replace('/login');
       else if (idRef.current && session.user.id !== idRef.current) window.location.reload();
     });
     return () => sub.subscription.unsubscribe();
