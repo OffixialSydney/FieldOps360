@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { Files, Rating, Tickets, Inventory, Assets, Audit, Stats, ItemPicker, SignaturePad, Earnings } from './Extra';
 import { Extras, ShareLocation, TechMap } from './More';
@@ -111,6 +112,28 @@ export function Customer({ me }) {
               {r.status === 'en_route' && r.eta_minutes ? <> · ETA <b>{r.eta_minutes} mins</b></> : null}
             </p>
           )}
+
+          {['assigned', 'accepted', 'en_route', 'arrived', 'diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && (
+            <div style={{ margin: '8px 0 12px' }}>
+              <Link href={`/track?no=${r.request_no}`}>
+                <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px', margin: 0 }}>
+                  <span className="radar-dot" style={{ width: 7, height: 7, background: '#fff', borderRadius: '50%' }}></span>
+                  <span>View Live Radar Tracking & ETA</span>
+                </button>
+              </Link>
+            </div>
+          )}
+
+          {['completed', 'invoiced'].includes(r.status) && (
+            <div style={{ margin: '8px 0 12px' }}>
+              <Link href={`/track?no=${r.request_no}`}>
+                <button type="button" className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px', margin: 0 }}>
+                  <span>View Completed Work Order & Telemetry</span>
+                </button>
+              </Link>
+            </div>
+          )}
+
           {r.company?.name && <p className="muted">Serviced by {r.company.name}</p>}
           {r.status === 'waiting_parts' && <p style={{ color: '#b54708', fontWeight: 600 }}>The technician is waiting for parts to continue.</p>}
           {r.status === 'waiting_customer' && <p style={{ color: '#b42318', fontWeight: 600 }}>The technician is waiting for your decision on additional work.</p>}
@@ -208,6 +231,12 @@ export function Manager({ readOnly, me, only }) {
         {(r.scheduled_date || r.preferred_date) && <p className="muted">Preferred: {r.preferred_date || '-'} {r.preferred_time || ''}</p>}
         <div className="row">
           <a href={`https://www.google.com/maps/search/?api=1&query=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Open location</button></a>
+          <Link href={`/track?no=${r.request_no}`}>
+            <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span className="radar-dot" style={{ width: 6, height: 6 }}></span>
+              <span>Live Radar</span>
+            </button>
+          </Link>
           {r.customer?.phone && (
             <a href={`https://wa.me/${r.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${r.customer.full_name || ''}, regarding your FieldOps 360 service order #${r.request_no}:`)}`} target="_blank" rel="noreferrer">
               <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -511,7 +540,7 @@ export function Technician({ me }) {
     }
 
     setFinishing(false);
-    alert('Job completed! Invoice created and sent straight to the customer via WhatsApp/SMS with direct portal link.');
+    alert('Job completed! Invoice created and sent straight to customer WhatsApp with direct live portal link.');
     reload();
   }
 
@@ -587,6 +616,12 @@ export function Technician({ me }) {
             <div className="row">
               {r.customer?.phone && <a href={`tel:${r.customer.phone}`}><button className="ghost">Call customer</button></a>}
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Navigate</button></a>
+              <Link href={`/track?no=${r.request_no}`}>
+                <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="radar-dot" style={{ width: 6, height: 6 }}></span>
+                  <span>Live Radar Screen</span>
+                </button>
+              </Link>
               {r.customer?.phone && (
                 <button
                   type="button"
