@@ -11,6 +11,15 @@ import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList 
 import { updateOrQueue } from '../lib/offline';
 import { useLive } from '../lib/live';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded, GoAhead } from './Jobs';
+import { sendDispatchAlert } from '../lib/notify';
+
+function WhatsAppIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  );
+}
 
 const SERVICES = ['Solar installation', 'Solar maintenance', 'Electrical', 'Generator repair', 'Air-conditioner servicing', 'Plumbing', 'CCTV installation', 'Internet installation', 'Equipment maintenance', 'Other'];
 const money = (n) => '₦' + Number(n || 0).toLocaleString();
@@ -92,15 +101,31 @@ export function Customer({ me }) {
             <span className="row"><Prio p={r.priority} /><Badge s={r.status} /></span>
           </div>
           <p className="muted">{r.request_no}</p>
-          {r.company?.name ? <p className="muted">Company: {r.company.name}</p> : r.status === 'new' && <p className="muted">Open: waiting for a company that offers this service to accept your request.</p>}
           <p>{r.description}</p>
-          <p className="muted">{r.address}</p>
-          {(r.scheduled_date || r.preferred_date) && <p className="muted">Appointment: {r.scheduled_date || r.preferred_date} {r.preferred_time || ''}</p>}
-          {r.tech?.full_name && <p className="muted">Technician: {r.tech.full_name}{r.status === 'en_route' && r.eta_minutes ? ` · ETA ${r.eta_minutes} min` : ''}</p>}
-          {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
-          {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>WARRANTY CLAIM</p>}
-          {r.status === 'waiting_customer' && <GoAhead request={r} onChange={reload} />}
-          {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
+          {r.notes && <p className="muted">Notes: {r.notes}</p>}
+          <p className="muted">Service address: {r.address}</p>
+          {r.tech?.full_name && (
+            <p>
+              Assigned technician: <b>{r.tech.full_name}</b>
+              {r.tech.phone && <> · <a href={`tel:${r.tech.phone}`}>{r.tech.phone}</a></>}
+              {r.status === 'en_route' && r.eta_minutes ? <> · ETA <b>{r.eta_minutes} mins</b></> : null}
+            </p>
+          )}
+          {r.company?.name && <p className="muted">Serviced by {r.company.name}</p>}
+          {r.status === 'waiting_parts' && <p style={{ color: '#b54708', fontWeight: 600 }}>The technician is waiting for parts to continue.</p>}
+          {r.status === 'waiting_customer' && <p style={{ color: '#b42318', fontWeight: 600 }}>The technician is waiting for your decision on additional work.</p>}
+          {r.tech_notes && (
+            <div style={{ background: '#f8fafc', borderLeft: '3px solid var(--primary)', padding: '10px 14px', borderRadius: '0 8px 8px 0', margin: '8px 0' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Technician Live Log</span>
+              <p style={{ margin: '4px 0 0', fontSize: '13px' }}>{r.tech_notes}</p>
+            </div>
+          )}
+          {r.work_done && (
+            <div style={{ background: '#ecfdf5', borderLeft: '3px solid #059669', padding: '10px 14px', borderRadius: '0 8px 8px 0', margin: '8px 0' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>Work Performed</span>
+              <p style={{ margin: '4px 0 0', fontSize: '13px' }}>{r.work_done}</p>
+            </div>
+          )}
           <Timeline requestId={r.id} />
           {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && (
             <div className="row">
@@ -110,13 +135,12 @@ export function Customer({ me }) {
           )}
           <Diagnosis requestId={r.id} />
           <Materials requestId={r.id} />
+          <Extras requestId={r.id} mode="customer" onChange={() => { reload(); reloadInv(); }} />
           <Files requestId={r.id} canUpload />
-          <Extras requestId={r.id} mode="customer" />
-          {['completed', 'invoiced', 'paid', 'closed'].includes(r.status) && <Rating request={r} />}
+          {r.status === 'invoiced' && <p style={{ color: '#b54708', fontWeight: 600 }}>Invoice generated. Please scroll down to settle.</p>}
         </div>
       ))}
 
-      <h2>Equipment and warranties</h2>
       <Assets />
       <h2>Support</h2>
       <Tickets me={me} />
@@ -183,7 +207,15 @@ export function Manager({ readOnly, me, only }) {
         <p className="muted">{r.customer?.full_name} · {r.customer?.phone} · {r.address}</p>
         {(r.scheduled_date || r.preferred_date) && <p className="muted">Preferred: {r.preferred_date || '-'} {r.preferred_time || ''}</p>}
         <div className="row">
-          <a href={`https://www.google.com/maps/search/?api=1&query=${dest}`} target="_blank" rel="noreferrer">Open location</a>
+          <a href={`https://www.google.com/maps/search/?api=1&query=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Open location</button></a>
+          {r.customer?.phone && (
+            <a href={`https://wa.me/${r.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${r.customer.full_name || ''}, regarding your FieldOps 360 service order #${r.request_no}:`)}`} target="_blank" rel="noreferrer">
+              <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <WhatsAppIcon />
+                <span>WhatsApp Customer</span>
+              </button>
+            </a>
+          )}
         </div>
         {r.signature && <img src={r.signature} alt="Customer signature" style={{ height: 60 }} />}
         {r.warranty_claim && <p style={{ color: '#0f766e', fontWeight: 600, margin: '4px 0' }}>POTENTIAL WARRANTY CLAIM</p>}
@@ -374,11 +406,14 @@ export function Technician({ me }) {
   const [skillMsg, setSkillMsg] = useState('');
   const [finishing, setFinishing] = useState(false);
   const [ttab, setTtab] = useState('jobs');
+  const [waAlerts, setWaAlerts] = useState({});
+
   useEffect(() => {
     const t = setInterval(() => { reload(); reloadEx(); }, 15000);
     return () => clearInterval(t);
   }, [reload, reloadEx]);
   useLive('extra_charges', reloadEx);
+
   const ex = (id) => {
     const l = exRows.filter((x) => x.request_id === id);
     return { pending: l.some((x) => x.status === 'pending'), approved: l.some((x) => x.status === 'approved'), rejected: l.filter((x) => x.status === 'rejected').length };
@@ -398,6 +433,20 @@ export function Technician({ me }) {
     }
     const res = await updateOrQueue('requests', r.id, patch);
     if (res.error) alert(res.error.message);
+
+    // Automated dispatch status notification
+    sendDispatchAlert({
+      type: 'job_status',
+      request: { ...r, ...patch },
+      customer: r.customer,
+      technician: me,
+      status: STATUS[status] || status,
+    }).then((notif) => {
+      if (notif?.waLink) {
+        setWaAlerts((prev) => ({ ...prev, [r.id]: notif.waLink }));
+      }
+    });
+
     if (res.queued) setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...patch } : x)));
     else reload();
   }
@@ -427,14 +476,42 @@ export function Technician({ me }) {
     const subtotal = items.reduce((s, l) => s + l.qty * l.unit_price, 0);
     const discount = Math.min(n(d.discount), subtotal);
     const tax = Math.round(((subtotal - discount) * n(d.tax)) / 100);
-    await supabase.from('invoices').insert({ request_id: r.id, customer_id: r.customer_id, technician_id: me.id, items, subtotal, discount, tax, amount: subtotal - discount + tax });
+    const totalAmount = subtotal - discount + tax;
+
+    const { data: invData } = await supabase.from('invoices').insert({ 
+      request_id: r.id, 
+      customer_id: r.customer_id, 
+      technician_id: me.id, 
+      items, 
+      subtotal, 
+      discount, 
+      tax, 
+      amount: totalAmount 
+    }).select().single();
+
     const start = new Date().toISOString().slice(0, 10);
     const until = d.warranty ? new Date(Date.now() + n(d.warranty) * 30 * 864e5).toISOString().slice(0, 10) : null;
     await supabase.from('assets').insert({
       customer_id: r.customer_id, request_id: r.id, name: r.service_type, serial_number: d.serial || null, technician_id: me.id,
       installation_date: start, warranty_months: d.warranty ? n(d.warranty) : null, warranty_start: d.warranty ? start : null, warranty_until: until,
     });
+
+    // Send automated WhatsApp / SMS dispatch with invoice link to customer
+    const notif = await sendDispatchAlert({
+      type: 'job_completed',
+      request: r,
+      customer: r.customer,
+      technician: me,
+      workDone: d.work_done,
+      invoice: invData || { invoice_no: r.request_no?.replace('REQ', 'INV'), amount: totalAmount },
+    });
+
+    if (notif?.waLink) {
+      setWaAlerts((prev) => ({ ...prev, [r.id]: notif.waLink }));
+    }
+
     setFinishing(false);
+    alert('Job completed! Invoice created and sent straight to the customer via WhatsApp/SMS with direct portal link.');
     reload();
   }
 
@@ -442,8 +519,24 @@ export function Technician({ me }) {
   const mine = reqs.filter((r) => (ttab === 'done') === DONE_ST.includes(r.status));
 
   async function saveNotes(r) {
-    const res = await updateOrQueue('requests', r.id, { tech_notes: form[r.id]?.notes ?? '' });
-    alert(res.error ? res.error.message : res.queued ? 'Saved on this device. It will sync when you are online.' : 'Notes saved');
+    const notes = form[r.id]?.notes ?? '';
+    const res = await updateOrQueue('requests', r.id, { tech_notes: notes });
+    if (res.error) return alert(res.error.message);
+
+    // Automated dispatch of technician log to customer
+    const notif = await sendDispatchAlert({
+      type: 'job_log',
+      request: r,
+      customer: r.customer,
+      technician: me,
+      notes,
+    });
+
+    if (notif?.waLink) {
+      setWaAlerts((prev) => ({ ...prev, [r.id]: notif.waLink }));
+    }
+
+    alert(res.queued ? 'Saved on this device. It will sync when you are online.' : 'Notes saved and dispatched to customer WhatsApp/SMS.');
   }
 
   return (
@@ -488,21 +581,59 @@ export function Technician({ me }) {
             </div>
             <p className="muted">{r.request_no}</p>
             <p>{r.description}</p>
-            {r.notes && <p className="muted">Notes: {r.notes}</p>}
+            {r.notes && <p className="muted">Customer notes: {r.notes}</p>}
             <p className="muted">{r.customer?.full_name} · {r.address}</p>
             {r.scheduled_date && <p className="muted">Scheduled for {r.scheduled_date}</p>}
             <div className="row">
               {r.customer?.phone && <a href={`tel:${r.customer.phone}`}><button className="ghost">Call customer</button></a>}
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Navigate</button></a>
+              {r.customer?.phone && (
+                <button
+                  type="button"
+                  className="ghost"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  onClick={async () => {
+                    const notif = await sendDispatchAlert({
+                      type: 'job_log',
+                      request: r,
+                      customer: r.customer,
+                      technician: me,
+                      notes: form[r.id]?.notes || r.tech_notes || 'Technician is actively working on your request.',
+                    });
+                    if (notif?.waLink) {
+                      setWaAlerts((prev) => ({ ...prev, [r.id]: notif.waLink }));
+                      window.open(notif.waLink, '_blank');
+                    }
+                  }}
+                >
+                  <WhatsAppIcon />
+                  <span>WhatsApp Customer</span>
+                </button>
+              )}
             </div>
+
+            {waAlerts[r.id] && (
+              <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', padding: '10px 14px', marginTop: '10px' }}>
+                <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#065f46', fontWeight: 600 }}>
+                  Automated dispatch alert ready for {r.customer?.full_name || 'Customer'}
+                </p>
+                <a href={waAlerts[r.id]} target="_blank" rel="noreferrer">
+                  <button type="button" style={{ background: '#059669', color: '#fff', fontSize: '12px', padding: '6px 12px', marginTop: 0, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <WhatsAppIcon />
+                    <span>Open in WhatsApp</span>
+                  </button>
+                </a>
+              </div>
+            )}
+
             {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
             <Timeline requestId={r.id} />
             <Files requestId={r.id} canUpload={late} kinds />
             {late && (
               <>
-                <label>My notes</label>
-                <textarea defaultValue={r.tech_notes || ''} onChange={upd(r.id, 'notes')} />
-                <button type="button" className="ghost" onClick={() => saveNotes(r)}>Save notes</button>
+                <label>My diagnostic & operational notes</label>
+                <textarea defaultValue={r.tech_notes || ''} placeholder="Log parts replaced, voltage readings, or status notes here..." onChange={upd(r.id, 'notes')} />
+                <button type="button" className="ghost" onClick={() => saveNotes(r)}>Save notes & dispatch update</button>
               </>
             )}
             {r.status === 'assigned' && <button className="danger" onClick={() => setStatus(r, 'rejected', { technician_id: null })}>Reject job</button>}
@@ -519,7 +650,7 @@ export function Technician({ me }) {
             {r.status === 'in_progress' && !s.pending && (
               <>
                 <h3>Complete job</h3>
-                <label>Work performed</label><textarea onChange={upd(r.id, 'work_done')} />
+                <label>Work performed summary</label><textarea onChange={upd(r.id, 'work_done')} placeholder="Summarize work done for invoice..." />
                 <label>Labour charge (₦)</label><input type="number" min="0" onChange={upd(r.id, 'labour')} />
                 <label>Service fee (₦)</label><input type="number" min="0" onChange={upd(r.id, 'fee')} />
                 <label>Discount (₦)</label><input type="number" min="0" onChange={upd(r.id, 'discount')} />
@@ -528,8 +659,8 @@ export function Technician({ me }) {
                 <label>Warranty given (months)</label><input type="number" min="0" onChange={upd(r.id, 'warranty')} />
                 <label>Customer signature</label>
                 <SignaturePad onChange={(v) => setForm({ ...form, [r.id]: { ...form[r.id], signature: v } })} />
-                <p className="muted">The invoice is built from materials, approved additional work, labour and fees.</p>
-                <button disabled={finishing} onClick={() => complete(r)}>{finishing ? 'Completing...' : 'Complete job'}</button>
+                <p className="muted">The invoice is built from materials, approved additional work, labour and fees. Customer will automatically receive WhatsApp notification with invoice link upon completion.</p>
+                <button disabled={finishing} onClick={() => complete(r)}>{finishing ? 'Completing & dispatching invoice...' : 'Complete job & send invoice'}</button>
               </>
             )}
           </div>
