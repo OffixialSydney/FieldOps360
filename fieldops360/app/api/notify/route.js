@@ -35,7 +35,7 @@ export async function POST(req) {
     } = body;
 
     const baseOrigin = origin || process.env.NEXT_PUBLIC_APP_URL || 'https://fieldops360.vercel.app';
-    const portalLink = `${baseOrigin}/dashboard#${requestNo || ''}`;
+    const trackingLink = `${baseOrigin}/track?no=${encodeURIComponent(requestNo || '')}`;
 
     let title = '';
     let messageText = '';
@@ -52,7 +52,7 @@ Work Performed: ${workDone || 'Complete inspection and repairs verified.'}
 Invoice Amount: ₦${Number(invoiceAmount || 0).toLocaleString()}
 
 Review your itemized invoice, sign off, and settle directly on your portal:
-${portalLink}`;
+${trackingLink}`;
     } else if (type === 'job_log') {
       title = `Service Log Update - #${requestNo || 'REQ'}`;
       messageText = 
@@ -63,8 +63,8 @@ Technician ${techName || 'assigned'} logged a new update for #${requestNo || 'RE
 Log Notes: "${notes || 'Inspection in progress'}"
 Current Status: ${status || 'In Progress'}
 
-View real-time job timeline on your portal:
-${portalLink}`;
+Track live job details, technician location & ETA:
+${trackingLink}`;
     } else {
       title = `Status Update - #${requestNo || 'REQ'}`;
       messageText = 
@@ -72,8 +72,8 @@ ${portalLink}`;
 Hello ${customerName || 'Customer'},
 Your service order #${requestNo || 'REQ'} is now marked as: ${status || 'Updated'} by technician ${techName || 'assigned'}.
 
-Track live job details:
-${portalLink}`;
+Track live job details, technician location & ETA:
+${trackingLink}`;
     }
 
     // 1. Save in-app notification in Supabase
@@ -84,7 +84,7 @@ ${portalLink}`;
         const sb = createClient(supabaseUrl, supabaseServiceKey);
         await sb.from('notifications').insert({
           user_id: customerId,
-          message: `${title}: ${notes || workDone || status || 'Job updated'}. View at ${portalLink}`,
+          message: `${title}: ${notes || workDone || status || 'Job updated'}. View at ${trackingLink}`,
           read: false,
         });
       } catch (dbErr) {
@@ -178,7 +178,7 @@ ${portalLink}`;
       channel: twilioSent ? 'twilio' : termiiSent ? 'termii' : 'direct',
       waLink,
       messageText,
-      portalLink,
+      trackingLink,
     });
   } catch (err) {
     return Response.json({ ok: false, error: err.message }, { status: 500 });
