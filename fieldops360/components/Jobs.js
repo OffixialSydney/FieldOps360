@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { warrantyStatus } from './Ops';
 import { Rating } from './Extra';
@@ -169,6 +170,12 @@ export function Overview({ reqs, invs, assets }) {
             Technician: <b>{r.tech?.full_name || 'Assigned'}</b>
             {r.status === 'en_route' && r.eta_minutes ? <><br />ETA: <b>{r.eta_minutes} minutes</b></> : null}
           </p>
+          <Link href={`/track?no=${r.request_no}`}>
+            <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+              <span className="radar-dot" style={{ width: 7, height: 7, background: '#fff', borderRadius: '50%' }}></span>
+              <span>Open Live Radar Tracking</span>
+            </button>
+          </Link>
         </div>
       ))}
       {recent.length > 0 && (
