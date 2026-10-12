@@ -159,19 +159,14 @@ PLATFORM FACTS (JSON): ${JSON.stringify(facts)}`;
       try {
         const r = JSON.parse(m[1]);
         if (CATS.includes(r.service_type) && r.description) {
-          request = {
-            service_type: r.service_type,
-            priority: ['low', 'normal', 'high', 'urgent'].includes(r.priority) ? r.priority : 'normal',
-            description: String(r.description).slice(0, 500),
-          };
+          request = r;
+          reply = reply.replace(m[0], '').trim();
         }
-      } catch (e) {
-        /* ignore malformed suggestions */
-      }
-      reply = reply.replace(m[0], '').trim();
+      } catch (err) {}
     }
+
     return Response.json({ reply, request });
   } catch (err) {
-    return Response.json({ error: 'An unexpected error occurred in the assistant service.' }, { status: 500 });
+    return Response.json({ error: 'Server error processing assistant request.' }, { status: 500 });
   }
 }
