@@ -2,108 +2,172 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
+// Clean, professional SVG icons (Zero emojis)
+const Icons = {
+  Logo: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  ),
+  Dispatch: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="3 11 22 2 13 21 11 13 3 11" />
+    </svg>
+  ),
+  Offline: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+      <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+      <line x1="12" y1="20" x2="12.01" y2="20" />
+    </svg>
+  ),
+  Signature: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  ),
+  Wallet: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+      <circle cx="17" cy="15" r="1" />
+    </svg>
+  ),
+  Inventory: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  ),
+  Security: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  ),
+  ArrowRight: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  Star: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+};
+
 const SLIDES = [
   {
     id: 'dispatch',
     tab: 'Smart Dispatch',
-    icon: '⚡',
-    badge: 'AI-Powered Dispatch Engine',
-    title: 'Auto-Match Technicians by Skill & GPS Proximity',
-    desc: 'Route incoming service requests to the most qualified nearby technician. FieldOps 360 automatically verifies warranty coverage, balances crew workload, and forecasts precise arrival ETAs.',
+    IconComponent: Icons.Dispatch,
+    badge: 'Automated Routing',
+    title: 'Match Technicians by Skill & Real-Time Proximity',
+    desc: 'Route incoming service orders to the nearest qualified crew. FieldOps 360 validates technician certifications, checks van inventory, and calculates travel ETAs automatically.',
     points: [
-      'Real-time GPS proximity and skill matching',
-      'Instant automated warranty detection',
-      '1-click dispatch with SMS & push alerts'
+      'Proximity-based technician dispatching',
+      'Automated asset warranty verification',
+      'Real-time technician arrival notifications',
     ],
     mockup: {
-      tag: 'LIVE WORK ORDER #REQ-4109',
+      tag: 'WORK ORDER #REQ-4109',
       status: 'Technician En Route',
       metric1: { label: 'Assigned Specialist', val: 'Marcus V. (Master Electrician)' },
       metric2: { label: 'Distance & ETA', val: '2.4 mi • 8 mins away' },
-      detail: 'Commercial Solar Inverter diagnostic & emergency bypass overhaul. Van parts verified in stock.'
-    }
+      detail: 'Solar Inverter diagnostic & bypass overhaul. Verified van stock availability.',
+    },
   },
   {
     id: 'offline',
     tab: 'Offline Mobile',
-    icon: '📶',
+    IconComponent: Icons.Offline,
     badge: 'Zero Network Latency',
-    title: 'Work Uninterrupted in Basements & Dead Zones',
-    desc: 'Empower field crews with mobile workflows that never crash when signal drops. Job diagnostics, photos, and status updates queue locally on-device and auto-sync immediately when reconnected.',
+    title: 'Work Uninterrupted in Remote Areas & Basements',
+    desc: 'Equip field technicians with a mobile workflow that never stalls without reception. Diagnostics, photos, and notes queue locally on-device and sync immediately upon reconnecting.',
     points: [
-      'Local device queue for zero data loss',
-      'Auto-syncs status and notes on reconnect',
-      'Full asset history cached on mobile'
+      'Local-first database queue prevents data loss',
+      'Instant synchronization upon cellular reconnect',
+      'Complete asset and job history stored locally',
     ],
     mockup: {
-      tag: 'OFFLINE MODE ACTIVE (SIGNAL: 0 BARS)',
+      tag: 'OFFLINE MODE ACTIVE',
       status: 'Queueing 3 Updates Locally',
       metric1: { label: 'Cached Records', val: '12 Active Work Orders' },
-      metric2: { label: 'Offline Queue', val: '3 Diagnostics Pending Sync' },
-      detail: 'Technician logged notes and diagnostic checklist in underground utility vault. Auto-sync armed.'
-    }
+      metric2: { label: 'Pending Queue', val: '3 Diagnostics Queued' },
+      detail: 'Diagnostic checklist recorded in underground facility. Auto-sync armed.',
+    },
   },
   {
     id: 'approvals',
     tab: 'Digital Sign-Off',
-    icon: '✍️',
-    badge: 'Frictionless Signatures',
-    title: 'Capture Legally-Binding Customer Signatures on Glass',
-    desc: 'Eliminate billing disputes forever. Collect client signatures on-site right from the technician mobile screen. If unexpected parts are needed, instant quote approvals are sent directly to the customer portal.',
+    IconComponent: Icons.Signature,
+    badge: 'Legally Binding',
+    title: 'Capture Verified Signatures on Mobile Glass',
+    desc: 'Eliminate billing disputes. Customers sign off directly on the technician mobile screen. If additional parts are diagnosed, quote approvals are sent directly to the client portal.',
     points: [
-      'Touch signature collection directly on glass',
-      'One-click extra labor & parts quote approvals',
-      'Tamper-proof audit log with exact timestamps'
+      'Digital touch signature collection on glass',
+      'Instant client quote authorization for extra scope',
+      'Complete audit trail with GPS geo-timestamp',
     ],
     mockup: {
-      tag: 'COMPLETION SIGN-OFF #SIG-9022',
-      status: 'Customer Approved & Signed',
-      metric1: { label: 'Customer Representative', val: 'Sarah Jenkins (Facilities Lead)' },
-      metric2: { label: 'Scope Verified', val: '100% Inspection Passed' },
-      detail: 'Digital signature captured with GPS geo-stamp. Work order completed and ready for automated billing.'
-    }
+      tag: 'SIGN-OFF VERIFIED',
+      status: 'Client Signed & Approved',
+      metric1: { label: 'Customer Lead', val: 'Sarah Jenkins (Facilities Dir.)' },
+      metric2: { label: 'Inspection Status', val: '100% Passed & Verified' },
+      detail: 'Signature captured with timestamp. Work order ready for settlement.',
+    },
   },
   {
     id: 'wallet',
     tab: 'Wallet & Invoicing',
-    icon: '💳',
+    IconComponent: Icons.Wallet,
     badge: 'Multi-Rail Settlement',
-    title: 'Instant Automated Invoicing & Pre-Funded Wallets',
-    desc: 'The moment a technician closes a ticket, itemized invoices generate automatically. Customers can settle immediately via corporate digital wallet, card, direct bank transfer, or crypto ledger.',
+    title: 'Automated Invoices & Corporate Wallet Settlement',
+    desc: 'The instant a work order is signed off, itemized invoices generate automatically. Clients can settle immediately via pre-funded corporate wallets, credit card, bank transfer, or crypto ledger.',
     points: [
-      'Automated invoice generation from completed jobs',
-      'Corporate digital wallets for pre-funded maintenance',
-      'Full accountant ledger reconciliation'
+      'Instant invoice generation from closed tickets',
+      'Pre-funded customer wallets for zero-friction payments',
+      'Comprehensive accountant ledger reconciliation',
     ],
     mockup: {
       tag: 'SETTLED INVOICE #INV-8821',
       status: 'Paid via Corporate Wallet',
       metric1: { label: 'Total Invoiced', val: '$1,450.00 USD' },
       metric2: { label: 'Client Wallet Balance', val: '$18,320.00 Remaining' },
-      detail: 'Accountant approved payment receipt automatically emailed. Zero manual paperwork required.'
-    }
-  }
+      detail: 'Payment receipt generated and emailed to billing department.',
+    },
+  },
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "FieldOps 360 cut our average dispatch time from 45 minutes down to 6 minutes. The offline mobile app alone saved our technicians hundreds of hours in remote commercial sites.",
-    author: "Elena Rostova",
-    role: "VP of Operations, Apex Facilities Corp",
-    avatar: "ER"
+    quote: 'FieldOps 360 reduced our average dispatch time from 45 minutes down to 6 minutes. The offline mobile tool alone saved our technicians hundreds of hours in remote commercial facilities.',
+    author: 'Elena Rostova',
+    role: 'VP of Operations, Apex Facilities Corp',
+    initials: 'ER',
   },
   {
-    quote: "The multi-rail wallet and instant digital sign-off changed our cash flow completely. We went from waiting 30 days for customer payments to settling 80% of invoices same-day.",
-    author: "Derek Vance",
-    role: "Managing Director, VoltWorks Energy Systems",
-    avatar: "DV"
+    quote: 'The digital sign-off and pre-funded wallet transformed our billing pipeline. We transitioned from waiting 30 days for payment to settling 80% of invoices the exact day work is completed.',
+    author: 'Derek Vance',
+    role: 'Managing Director, VoltWorks Energy Systems',
+    initials: 'DV',
   },
   {
-    quote: "The multi-tenant security and warranty tracking saved us over $120,000 in duplicate warranty claims in our first quarter alone. Absolutely top tier.",
-    author: "Tariq Al-Mansoor",
-    role: "Fleet & Service Director, Horizon Solar Grid",
-    avatar: "TM"
-  }
+    quote: 'Multi-tenant security and warranty tracking saved our team over $120,000 in duplicate warranty claims during our first quarter. The software is remarkably stable and dependable.',
+    author: 'Tariq Al-Mansoor',
+    role: 'Fleet & Service Director, Horizon Solar Grid',
+    initials: 'TM',
+  },
 ];
 
 export default function LandingPage() {
@@ -113,12 +177,10 @@ export default function LandingPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const timerRef = useRef(null);
 
-  // Auto-advancing slider with progress bar
   useEffect(() => {
     if (isPaused) return;
-
-    const interval = 50; // update progress every 50ms
-    const totalDuration = 6000; // 6 seconds per slide
+    const interval = 50;
+    const totalDuration = 6000;
     const increment = (interval / totalDuration) * 100;
 
     timerRef.current = setInterval(() => {
@@ -162,17 +224,19 @@ export default function LandingPage() {
 
   return (
     <div className="topnotch-landing">
-      {/* Executive Frosted Navbar */}
+      {/* Executive Navbar */}
       <nav className="topnotch-nav">
         <div className="landing-container nav-inner">
           <Link href="/" className="brand-group">
-            <div className="brand-icon-box">⚡</div>
+            <div className="brand-icon-box">
+              <Icons.Logo />
+            </div>
             <span className="brand-name">FieldOps 360</span>
-            <span className="brand-glow-tag">Enterprise v2.0</span>
+            <span className="brand-glow-tag">Platform</span>
           </Link>
 
           <div className="nav-links">
-            <a href="#workflow">Live Platform</a>
+            <a href="#workflow">Platform</a>
             <a href="#features">Capabilities</a>
             <a href="#metrics">Performance</a>
             <a href="#testimonials">Reviews</a>
@@ -184,7 +248,7 @@ export default function LandingPage() {
               Sign In
             </Link>
             <Link href="/login?mode=signup" className="nav-btn-glow">
-              Get Started Free →
+              Get Started
             </Link>
           </div>
         </div>
@@ -195,52 +259,49 @@ export default function LandingPage() {
         <div className="landing-container">
           <div className="hero-pill-badge">
             <span className="radar-dot"></span>
-            <span>Next-Generation Field Operations Command Center</span>
+            <span>Enterprise Field Service Operating System</span>
           </div>
 
           <h1 className="hero-main-title">
             Dispatch Faster. Empower Crews.{' '}
-            <span className="gradient-title-text">Accelerate Cash Flow.</span>
+            <span className="gradient-title-text">Accelerate Revenue.</span>
           </h1>
 
           <p className="hero-sub-text">
-            The mission-critical operating system unifying intelligent dispatching, offline-first mobile workflows, 
-            customer approvals, digital wallet settlements, and real-time inventory control.
+            Unify intelligent technician dispatching, offline-first mobile workflows, customer digital approvals, 
+            and multi-rail invoice settlements in one high-performance platform.
           </p>
 
           <div className="hero-action-row">
             <Link href="/login?mode=signup" className="cta-mega-btn">
-              <span>Start Free Enterprise Trial</span>
-              <span>→</span>
+              <span>Start Free Trial</span>
+              <Icons.ArrowRight />
             </Link>
             <Link href="/login" className="cta-glass-btn">
-              <span>Access Portal</span>
-              <span>⚡</span>
+              <span>Sign In to Portal</span>
             </Link>
           </div>
 
-          {/* Infinite Animated Marquee */}
+          {/* Clean Partner Ticker (Zero emojis) */}
           <div className="marquee-wrapper">
             <div className="marquee-track">
-              <div className="marquee-item"><span style={{ color: '#2563eb' }}>⚡</span> VOLTWORKS ENERGY</div>
-              <div className="marquee-item"><span style={{ color: '#f59e0b' }}>☀️</span> SOLARGRID NATION</div>
-              <div className="marquee-item"><span style={{ color: '#059669' }}>🏢</span> APEX FACILITY SOLUTIONS</div>
-              <div className="marquee-item"><span style={{ color: '#0284c7' }}>❄️</span> THERMO-DYNAMICS HVAC</div>
-              <div className="marquee-item"><span style={{ color: '#4f46e5' }}>🔧</span> MATRIX MECHANICAL</div>
-              <div className="marquee-item"><span style={{ color: '#059669' }}>🛡️</span> INFRACORE UTILITIES</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> VOLTWORKS ENERGY</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> SOLARGRID SYSTEMS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> APEX FACILITY SOLUTIONS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> THERMAL DYNAMICS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> MATRIX MECHANICAL</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> INFRACORE UTILITIES</div>
               {/* Duplicate track for seamless infinite loop */}
-              <div className="marquee-item"><span style={{ color: '#2563eb' }}>⚡</span> VOLTWORKS ENERGY</div>
-              <div className="marquee-item"><span style={{ color: '#f59e0b' }}>☀️</span> SOLARGRID NATION</div>
-              <div className="marquee-item"><span style={{ color: '#059669' }}>🏢</span> APEX FACILITY SOLUTIONS</div>
-              <div className="marquee-item"><span style={{ color: '#0284c7' }}>❄️</span> THERMO-DYNAMICS HVAC</div>
-              <div className="marquee-item"><span style={{ color: '#4f46e5' }}>🔧</span> MATRIX MECHANICAL</div>
-              <div className="marquee-item"><span style={{ color: '#059669' }}>🛡️</span> INFRACORE UTILITIES</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> VOLTWORKS ENERGY</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> SOLARGRID SYSTEMS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> APEX FACILITY SOLUTIONS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> THERMAL DYNAMICS</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> MATRIX MECHANICAL</div>
+              <div className="marquee-item"><span className="bullet-dot">•</span> INFRACORE UTILITIES</div>
             </div>
           </div>
 
-          {/* =========================================================
-             COMMAND COCKPIT SLIDER (Sleek Dark Cockpit on Light Canvas)
-             ========================================================= */}
+          {/* Interactive Workflow Cockpit Slider */}
           <section
             id="workflow"
             className="slider-section-container"
@@ -248,34 +309,33 @@ export default function LandingPage() {
             onMouseLeave={() => setIsPaused(false)}
           >
             <div className="interactive-slider-box">
-              {/* Slider Tab Navigation */}
+              {/* Tabs */}
               <div className="slider-tabs-nav">
-                {SLIDES.map((slide, idx) => (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    className={`slider-tab-btn ${activeSlide === idx ? 'active' : ''}`}
-                    onClick={() => selectSlide(idx)}
-                  >
-                    <span className="tab-icon">{slide.icon}</span>
-                    <span>{slide.tab}</span>
-                  </button>
-                ))}
+                {SLIDES.map((slide, idx) => {
+                  const SlideIcon = slide.IconComponent;
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      className={`slider-tab-btn ${activeSlide === idx ? 'active' : ''}`}
+                      onClick={() => selectSlide(idx)}
+                    >
+                      <span className="tab-icon"><SlideIcon /></span>
+                      <span>{slide.tab}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Animated Progress Timer Line */}
+              {/* Progress timer bar */}
               <div className="slider-timer-bar">
-                <div
-                  className="slider-timer-fill"
-                  style={{ width: `${progress}%` }}
-                ></div>
+                <div className="slider-timer-fill" style={{ width: `${progress}%` }}></div>
               </div>
 
-              {/* Slide Content Display */}
+              {/* Slide Body */}
               <div className="slide-display-area" key={currentSlide.id}>
                 <div className="slide-grid">
-                  {/* Left Column: Details */}
-                  <div className="slide-info-panel" style={{ textAlign: 'left' }}>
+                  <div className="slide-info-panel">
                     <span className="slide-badge-pill">{currentSlide.badge}</span>
                     <h3>{currentSlide.title}</h3>
                     <p className="slide-desc">{currentSlide.desc}</p>
@@ -283,23 +343,21 @@ export default function LandingPage() {
                     <ul className="slide-key-points">
                       {currentSlide.points.map((pt, i) => (
                         <li key={i}>
-                          <span className="point-check">✓</span>
+                          <span className="point-check"><Icons.Check /></span>
                           <span>{pt}</span>
                         </li>
                       ))}
                     </ul>
 
-                    <Link href="/login?mode=signup" className="nav-btn-glow" style={{ display: 'inline-flex' }}>
-                      Try {currentSlide.tab} Feature →
+                    <Link href="/login?mode=signup" className="nav-btn-glow" style={{ display: 'inline-flex', gap: '8px' }}>
+                      <span>Explore {currentSlide.tab}</span>
+                      <Icons.ArrowRight />
                     </Link>
                   </div>
 
-                  {/* Right Column: Live Mockup Card */}
-                  <div className="slide-mockup-card" style={{ textAlign: 'left' }}>
+                  <div className="slide-mockup-card">
                     <div className="mockup-header-bar">
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8' }}>
-                        {currentSlide.mockup.tag}
-                      </span>
+                      <span className="mockup-id-tag">{currentSlide.mockup.tag}</span>
                       <div className="mockup-status-indicator">
                         <span className="mockup-pulse-circle"></span>
                         <span>{currentSlide.mockup.status}</span>
@@ -318,35 +376,25 @@ export default function LandingPage() {
                     </div>
 
                     <div className="mockup-detail-bubble">
-                      <strong style={{ color: '#fff', fontSize: '12px' }}>Operational Activity Log</strong>
-                      <span>{currentSlide.mockup.detail}</span>
+                      <span className="bubble-head">Operational Activity Log</span>
+                      <span className="bubble-text">{currentSlide.mockup.detail}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Slider Footer Controls */}
+              {/* Slider Controls */}
               <div className="slider-controls-footer">
-                <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-                  {isPaused ? '⏸ Auto-rotation paused (hovering)' : '▶ Auto-advancing (hover to pause)'}
+                <span className="slider-hint">
+                  {isPaused ? 'Paused (hovering)' : 'Auto-advancing (hover to inspect)'}
                 </span>
 
                 <div className="slider-nav-arrows">
-                  <button
-                    type="button"
-                    className="arrow-circle-btn"
-                    onClick={prevSlide}
-                    aria-label="Previous slide"
-                  >
-                    ←
+                  <button type="button" className="arrow-circle-btn" onClick={prevSlide} aria-label="Previous slide">
+                    ‹
                   </button>
-                  <button
-                    type="button"
-                    className="arrow-circle-btn"
-                    onClick={nextSlide}
-                    aria-label="Next slide"
-                  >
-                    →
+                  <button type="button" className="arrow-circle-btn" onClick={nextSlide} aria-label="Next slide">
+                    ›
                   </button>
                 </div>
               </div>
@@ -356,24 +404,24 @@ export default function LandingPage() {
       </header>
 
       {/* Metrics Banner */}
-      <section id="metrics" className="topnotch-section" style={{ padding: '50px 0', background: '#ffffff', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+      <section id="metrics" className="topnotch-section metrics-section">
         <div className="landing-container">
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', textAlign: 'center' }}>
-            <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#2563eb', fontSize: '38px' }}>82%</div>
-              <p className="muted" style={{ margin: '6px 0 0' }}>Faster Dispatch Allocation</p>
+          <div className="grid metrics-grid">
+            <div className="card metric-card">
+              <div className="stat metric-num-blue">82%</div>
+              <p className="muted">Faster Dispatch Allocation</p>
             </div>
-            <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#059669', fontSize: '38px' }}>100%</div>
-              <p className="muted" style={{ margin: '6px 0 0' }}>Offline Mobile Reliability</p>
+            <div className="card metric-card">
+              <div className="stat metric-num-green">100%</div>
+              <p className="muted">Offline Mobile Resilience</p>
             </div>
-            <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#4f46e5', fontSize: '38px' }}>3.8x</div>
-              <p className="muted" style={{ margin: '6px 0 0' }}>Accelerated Cash Flow</p>
+            <div className="card metric-card">
+              <div className="stat metric-num-indigo">3.8x</div>
+              <p className="muted">Accelerated Invoice Settlement</p>
             </div>
-            <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#d97706', fontSize: '38px' }}>99.9%</div>
-              <p className="muted" style={{ margin: '6px 0 0' }}>SLA Uptime Performance</p>
+            <div className="card metric-card">
+              <div className="stat metric-num-amber">99.9%</div>
+              <p className="muted">SLA Uptime Performance</p>
             </div>
           </div>
         </div>
@@ -381,77 +429,95 @@ export default function LandingPage() {
 
       {/* Capability Cards Section */}
       <section id="features" className="topnotch-section">
-        <div className="landing-container" style={{ textAlign: 'center' }}>
-          <span className="section-tag-pill">Enterprise Capabilities</span>
-          <h2 className="section-head-title">Engineered to Run High-Velocity Field Teams</h2>
-          <p className="section-head-desc">
-            Everything your operations, technicians, and finance teams require in one unified architecture.
-          </p>
+        <div className="landing-container">
+          <div className="section-title-wrap">
+            <span className="section-tag-pill">Core Architecture</span>
+            <h2 className="section-head-title">Engineered for High-Velocity Field Teams</h2>
+            <p className="section-head-desc">
+              Everything your operations managers, field crews, and accounting teams need in one unified system.
+            </p>
+          </div>
 
-          <div className="glow-features-grid" style={{ textAlign: 'left' }}>
+          <div className="glow-features-grid">
             <div className="glow-feature-card">
-              <div className="feature-top-icon">📍</div>
+              <div className="feature-top-icon">
+                <Icons.Dispatch />
+              </div>
               <h4>Intelligent Skill & Proximity Dispatch</h4>
               <p>
-                Match incoming work orders instantly with certified technicians. Avoid excessive drive times and eliminate mismatched skill sets.
+                Allocate incoming work tickets automatically to certified technicians based on location, skillset, and parts availability.
               </p>
             </div>
 
             <div className="glow-feature-card">
-              <div className="feature-top-icon">📶</div>
-              <h4>Offline-First Mobile Synchronization</h4>
+              <div className="feature-top-icon">
+                <Icons.Offline />
+              </div>
+              <h4>Offline-First Mobile Sync</h4>
               <p>
-                Keep crews operating in dead zones. Diagnostic records, work notes, and statuses queue on-device and auto-sync without data loss.
+                Field technicians record diagnostics, parts usage, and notes in low-signal zones. Changes queue on-device and auto-sync seamlessly.
               </p>
             </div>
 
             <div className="glow-feature-card">
-              <div className="feature-top-icon">✍️</div>
-              <h4>Customer Signature & Scope Approvals</h4>
+              <div className="feature-top-icon">
+                <Icons.Signature />
+              </div>
+              <h4>Client Sign-Off & Scope Authorization</h4>
               <p>
-                Collect binding digital sign-offs directly on the field phone. If unexpected parts are needed, clients approve quotes in seconds.
+                Capture verified digital sign-offs directly on glass. Clients receive instantaneous prompts to approve unexpected repair scope.
               </p>
             </div>
 
             <div className="glow-feature-card">
-              <div className="feature-top-icon">💳</div>
+              <div className="feature-top-icon">
+                <Icons.Wallet />
+              </div>
               <h4>Multi-Rail Digital Wallet System</h4>
               <p>
-                Customers pre-fund accounts via bank transfer, card, or crypto. Completed invoices deduct effortlessly with full financial audit trails.
+                Clients fund maintenance balances via card, bank transfer, or crypto. Completed invoices deduct automatically with full audit logs.
               </p>
             </div>
 
             <div className="glow-feature-card">
-              <div className="feature-top-icon">📦</div>
+              <div className="feature-top-icon">
+                <Icons.Inventory />
+              </div>
               <h4>Live Truck & Warehouse Parts Ledger</h4>
               <p>
-                Track parts consumed on every ticket in real-time. Automatically decrease inventory balances and monitor warranty coverage.
+                Real-time inventory ledger updates the moment parts are consumed on a ticket. Automated warranty coverage checks built in.
               </p>
             </div>
 
             <div className="glow-feature-card">
-              <div className="feature-top-icon">🛡️</div>
+              <div className="feature-top-icon">
+                <Icons.Security />
+              </div>
               <h4>PostgreSQL Multi-Tenant RLS Security</h4>
               <p>
-                Strict database Row-Level Security isolates company data. Technicians, managers, and customers only see what they are authorized to view.
+                Bank-grade Row-Level Security ensures strict multi-organization data isolation. Staff only access authorized data.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Testimonial Slider */}
-      <section id="testimonials" className="topnotch-section" style={{ background: '#f1f5f9' }}>
-        <div className="landing-container" style={{ textAlign: 'center' }}>
-          <span className="section-tag-pill">Proven Results</span>
-          <h2 className="section-head-title">Loved by Modern Field Operators</h2>
+      {/* Customer Testimonial Carousel */}
+      <section id="testimonials" className="topnotch-section testimonials-section">
+        <div className="landing-container">
+          <div className="section-title-wrap">
+            <span className="section-tag-pill">Field Validation</span>
+            <h2 className="section-head-title">Trusted by Modern Service Operations</h2>
+          </div>
 
           <div className="testimonial-wrapper">
-            <div className="quote-stars">★★★★★</div>
+            <div className="quote-stars-row">
+              <Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star />
+            </div>
             <p className="testimonial-quote">"{currentTestimonial.quote}"</p>
 
             <div className="testimonial-author-box">
-              <div className="author-avatar">{currentTestimonial.avatar}</div>
+              <div className="author-avatar">{currentTestimonial.initials}</div>
               <div className="author-details">
                 <div className="author-name">{currentTestimonial.author}</div>
                 <div className="author-title">{currentTestimonial.role}</div>
@@ -459,21 +525,11 @@ export default function LandingPage() {
             </div>
 
             <div className="testimonial-nav-arrows">
-              <button
-                type="button"
-                className="arrow-circle-btn"
-                onClick={prevTestimonial}
-                aria-label="Previous testimonial"
-              >
-                ←
+              <button type="button" className="arrow-circle-btn" onClick={prevTestimonial} aria-label="Previous testimonial">
+                ‹
               </button>
-              <button
-                type="button"
-                className="arrow-circle-btn"
-                onClick={nextTestimonial}
-                aria-label="Next testimonial"
-              >
-                →
+              <button type="button" className="arrow-circle-btn" onClick={nextTestimonial} aria-label="Next testimonial">
+                ›
               </button>
             </div>
           </div>
@@ -483,48 +539,47 @@ export default function LandingPage() {
       {/* Security & Architecture Highlights */}
       <section id="security" className="topnotch-section">
         <div className="landing-container">
-          <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '48px 36px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-            <span className="section-tag-pill">Security & Architecture</span>
-            <h2 style={{ fontSize: '32px', margin: '14px 0 16px', color: '#0f172a' }}>Enterprise Row-Level Security (RLS)</h2>
-            <p style={{ color: '#475569', maxWidth: '780px', fontSize: '16px', lineHeight: 1.7 }}>
-              FieldOps 360 enforces multi-tenant organization boundaries directly at the PostgreSQL layer. Sensitive financial actions—like wallet balance deductions, inventory ledger movements, and warranty validations—run exclusively inside atomic database functions with role verification.
+          <div className="card security-highlight-card">
+            <span className="section-tag-pill">Enterprise Governance</span>
+            <h2 className="security-title">PostgreSQL Row-Level Security (RLS)</h2>
+            <p className="security-desc">
+              FieldOps 360 enforces organizational boundaries directly at the database layer. Critical ledger operations—such as wallet deductions, parts usage, and payment verifications—execute inside atomic database functions with cryptographic role validation.
             </p>
 
-            <div className="grid" style={{ marginTop: '36px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-              <div style={{ borderLeft: '3px solid #2563eb', paddingLeft: '16px' }}>
-                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Zero Cross-Tenant Leakage</strong>
-                <span className="muted">Row-level isolation enforced on every query.</span>
+            <div className="grid security-perks-grid">
+              <div className="security-perk perk-blue">
+                <strong>Zero Cross-Tenant Leakage</strong>
+                <span className="muted">Strict database isolation enforced on every request.</span>
               </div>
-              <div style={{ borderLeft: '3px solid #059669', paddingLeft: '16px' }}>
-                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Immutable Audit Ledgers</strong>
-                <span className="muted">Every job change and transaction is append-only.</span>
+              <div className="security-perk perk-green">
+                <strong>Immutable Audit Ledgers</strong>
+                <span className="muted">All job state transitions and payments are append-only.</span>
               </div>
-              <div style={{ borderLeft: '3px solid #4f46e5', paddingLeft: '16px' }}>
-                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Offline Queue Resilience</strong>
-                <span className="muted">Local change queue with clean sync reconciliation.</span>
+              <div className="security-perk perk-indigo">
+                <strong>Offline Queue Resilience</strong>
+                <span className="muted">Deterministic change replay ensures zero lost records.</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Bottom CTA Banner */}
+      {/* Call to Action Banner */}
       <section className="topnotch-cta-banner">
         <div className="landing-container">
           <div className="cta-glow-container">
             <h2>Ready to Modernize Your Field Operations?</h2>
             <p>
-              Join commercial contractors, solar operators, and facility management teams driving peak efficiency with FieldOps 360.
+              Join service contractors, solar providers, and facilities teams running faster, more profitable field operations with FieldOps 360.
             </p>
 
             <div className="hero-action-row" style={{ marginBottom: 0 }}>
-              <Link href="/login?mode=signup" className="cta-mega-btn" style={{ background: '#fff', color: '#0f172a' }}>
-                <span>Create Free Account Now</span>
-                <span>→</span>
+              <Link href="/login?mode=signup" className="cta-mega-btn cta-btn-white">
+                <span>Create Free Account</span>
+                <Icons.ArrowRight />
               </Link>
-              <Link href="/login" className="cta-glass-btn" style={{ borderColor: 'rgba(255, 255, 255, 0.4)', background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+              <Link href="/login" className="cta-glass-btn cta-btn-translucent">
                 <span>Sign In to Portal</span>
-                <span>⚡</span>
               </Link>
             </div>
           </div>
@@ -535,24 +590,26 @@ export default function LandingPage() {
       <footer className="topnotch-footer">
         <div className="landing-container">
           <div className="footer-top-grid">
-            <div>
+            <div className="footer-brand-col">
               <div className="brand-group" style={{ marginBottom: '14px' }}>
-                <div className="brand-icon-box">⚡</div>
+                <div className="brand-icon-box">
+                  <Icons.Logo />
+                </div>
                 <span className="brand-name">FieldOps 360</span>
               </div>
-              <p style={{ color: '#475569', fontSize: '14px', maxWidth: '340px', lineHeight: 1.6 }}>
-                The high-performance field service operating system. Dispatching, offline mobile tooling, customer approvals, and ledger invoicing unified.
+              <p className="footer-lead-text">
+                The modern field service operating system. Smart dispatching, offline mobile tooling, customer digital approvals, and multi-rail billing.
               </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#059669', background: '#ecfdf5', padding: '4px 12px', borderRadius: '99px', marginTop: '12px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
+              <div className="status-pill">
+                <span className="status-dot"></span>
                 <span>All Systems Operational</span>
               </div>
             </div>
 
             <div className="footer-col-nav">
               <div>
-                <h5>Product</h5>
-                <a href="#workflow">Live Platform</a>
+                <h5>Platform</h5>
+                <a href="#workflow">Dispatch Engine</a>
                 <a href="#features">Capabilities</a>
                 <a href="#metrics">Performance</a>
                 <a href="#security">Architecture</a>
@@ -562,7 +619,7 @@ export default function LandingPage() {
                 <h5>Access</h5>
                 <Link href="/login">Customer Portal</Link>
                 <Link href="/login">Technician Mobile</Link>
-                <Link href="/login">Operations Console</Link>
+                <Link href="/login">Manager Console</Link>
                 <Link href="/login?mode=signup">New Account</Link>
               </div>
 
@@ -577,10 +634,10 @@ export default function LandingPage() {
 
           <div className="footer-bottom-bar">
             <span>© {new Date().getFullYear()} FieldOps 360. All rights reserved.</span>
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <a href="#features" className="muted">Privacy Policy</a>
-              <a href="#features" className="muted">Terms of Service</a>
-              <a href="#security" className="muted">Security Posture</a>
+            <div className="footer-legal-links">
+              <a href="#features">Privacy Policy</a>
+              <a href="#features">Terms of Service</a>
+              <a href="#security">Security Posture</a>
             </div>
           </div>
         </div>
