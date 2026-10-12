@@ -479,6 +479,7 @@ export function Technician({ me }) {
         const dest = r.latitude != null ? `${r.latitude},${r.longitude}` : encodeURIComponent(r.address || '');
         const step = FLOW[r.status];
         const s = ex(r.id);
+        const late = ['diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status);
         return (
           <div className="card" key={r.id} id={r.request_no}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -496,8 +497,8 @@ export function Technician({ me }) {
             </div>
             {r.cancel_reason && <p className="err" style={{ fontWeight: 600 }}>Job stopped: {r.cancel_reason}</p>}
             <Timeline requestId={r.id} />
-            <Files requestId={r.id} canUpload kinds />
-            {!DONE_ST.includes(r.status) && (
+            <Files requestId={r.id} canUpload={late} kinds />
+            {late && (
               <>
                 <label>My notes</label>
                 <textarea defaultValue={r.tech_notes || ''} onChange={upd(r.id, 'notes')} />
