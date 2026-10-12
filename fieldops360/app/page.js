@@ -162,7 +162,7 @@ export default function LandingPage() {
 
   return (
     <div className="topnotch-landing">
-      {/* Luxury Glass Navbar */}
+      {/* Executive Frosted Navbar */}
       <nav className="topnotch-nav">
         <div className="landing-container nav-inner">
           <Link href="/" className="brand-group">
@@ -219,27 +219,27 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Infinite Animated Marquee of Industry Leaders */}
+          {/* Infinite Animated Marquee */}
           <div className="marquee-wrapper">
             <div className="marquee-track">
-              <div className="marquee-item"><span>⚡</span> VOLTWORKS ENERGY</div>
-              <div className="marquee-item"><span>☀️</span> SOLARGRID NATION</div>
-              <div className="marquee-item"><span>🏢</span> APEX FACILITY SOLUTIONS</div>
-              <div className="marquee-item"><span>❄️</span> THERMO-DYNAMICS HVAC</div>
-              <div className="marquee-item"><span>🔧</span> MATRIX MECHANICAL</div>
-              <div className="marquee-item"><span>🛡️</span> INFRACORE UTILITIES</div>
+              <div className="marquee-item"><span style={{ color: '#2563eb' }}>⚡</span> VOLTWORKS ENERGY</div>
+              <div className="marquee-item"><span style={{ color: '#f59e0b' }}>☀️</span> SOLARGRID NATION</div>
+              <div className="marquee-item"><span style={{ color: '#059669' }}>🏢</span> APEX FACILITY SOLUTIONS</div>
+              <div className="marquee-item"><span style={{ color: '#0284c7' }}>❄️</span> THERMO-DYNAMICS HVAC</div>
+              <div className="marquee-item"><span style={{ color: '#4f46e5' }}>🔧</span> MATRIX MECHANICAL</div>
+              <div className="marquee-item"><span style={{ color: '#059669' }}>🛡️</span> INFRACORE UTILITIES</div>
               {/* Duplicate track for seamless infinite loop */}
-              <div className="marquee-item"><span>⚡</span> VOLTWORKS ENERGY</div>
-              <div className="marquee-item"><span>☀️</span> SOLARGRID NATION</div>
-              <div className="marquee-item"><span>🏢</span> APEX FACILITY SOLUTIONS</div>
-              <div className="marquee-item"><span>❄️</span> THERMO-DYNAMICS HVAC</div>
-              <div className="marquee-item"><span>🔧</span> MATRIX MECHANICAL</div>
-              <div className="marquee-item"><span>🛡️</span> INFRACORE UTILITIES</div>
+              <div className="marquee-item"><span style={{ color: '#2563eb' }}>⚡</span> VOLTWORKS ENERGY</div>
+              <div className="marquee-item"><span style={{ color: '#f59e0b' }}>☀️</span> SOLARGRID NATION</div>
+              <div className="marquee-item"><span style={{ color: '#059669' }}>🏢</span> APEX FACILITY SOLUTIONS</div>
+              <div className="marquee-item"><span style={{ color: '#0284c7' }}>❄️</span> THERMO-DYNAMICS HVAC</div>
+              <div className="marquee-item"><span style={{ color: '#4f46e5' }}>🔧</span> MATRIX MECHANICAL</div>
+              <div className="marquee-item"><span style={{ color: '#059669' }}>🛡️</span> INFRACORE UTILITIES</div>
             </div>
           </div>
 
           {/* =========================================================
-             INTERACTIVE WORKFLOW SLIDER / COMMAND CENTER
+             COMMAND COCKPIT SLIDER (Sleek Dark Cockpit on Light Canvas)
              ========================================================= */}
           <section
             id="workflow"
@@ -327,7 +327,7 @@ export default function LandingPage() {
 
               {/* Slider Footer Controls */}
               <div className="slider-controls-footer">
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
+                <span style={{ fontSize: '13px', color: '#94a3b8' }}>
                   {isPaused ? '⏸ Auto-rotation paused (hovering)' : '▶ Auto-advancing (hover to pause)'}
                 </span>
 
@@ -356,23 +356,23 @@ export default function LandingPage() {
       </header>
 
       {/* Metrics Banner */}
-      <section id="metrics" className="topnotch-section" style={{ padding: '60px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+      <section id="metrics" className="topnotch-section" style={{ padding: '50px 0', background: '#ffffff', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <div className="landing-container">
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', textAlign: 'center' }}>
             <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#60a5fa', fontSize: '38px' }}>82%</div>
+              <div className="stat" style={{ color: '#2563eb', fontSize: '38px' }}>82%</div>
               <p className="muted" style={{ margin: '6px 0 0' }}>Faster Dispatch Allocation</p>
             </div>
             <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#34d399', fontSize: '38px' }}>100%</div>
+              <div className="stat" style={{ color: '#059669', fontSize: '38px' }}>100%</div>
               <p className="muted" style={{ margin: '6px 0 0' }}>Offline Mobile Reliability</p>
             </div>
             <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#818cf8', fontSize: '38px' }}>3.8x</div>
+              <div className="stat" style={{ color: '#4f46e5', fontSize: '38px' }}>3.8x</div>
               <p className="muted" style={{ margin: '6px 0 0' }}>Accelerated Cash Flow</p>
             </div>
             <div className="card" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className="stat" style={{ color: '#f59e0b', fontSize: '38px' }}>99.9%</div>
+              <div className="stat" style={{ color: '#d97706', fontSize: '38px' }}>99.9%</div>
               <p className="muted" style={{ margin: '6px 0 0' }}>SLA Uptime Performance</p>
             </div>
           </div>
@@ -441,7 +441,7 @@ export default function LandingPage() {
       </section>
 
       {/* Interactive Testimonial Slider */}
-      <section id="testimonials" className="topnotch-section" style={{ background: 'rgba(15, 23, 42, 0.4)' }}>
+      <section id="testimonials" className="topnotch-section" style={{ background: '#f1f5f9' }}>
         <div className="landing-container" style={{ textAlign: 'center' }}>
           <span className="section-tag-pill">Proven Results</span>
           <h2 className="section-head-title">Loved by Modern Field Operators</h2>
@@ -483,24 +483,24 @@ export default function LandingPage() {
       {/* Security & Architecture Highlights */}
       <section id="security" className="topnotch-section">
         <div className="landing-container">
-          <div className="card" style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '24px', padding: '48px 36px' }}>
+          <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '48px 36px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
             <span className="section-tag-pill">Security & Architecture</span>
-            <h2 style={{ fontSize: '32px', margin: '14px 0 16px', color: '#fff' }}>Enterprise Row-Level Security (RLS)</h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '780px', fontSize: '16px', lineHeight: 1.7 }}>
+            <h2 style={{ fontSize: '32px', margin: '14px 0 16px', color: '#0f172a' }}>Enterprise Row-Level Security (RLS)</h2>
+            <p style={{ color: '#475569', maxWidth: '780px', fontSize: '16px', lineHeight: 1.7 }}>
               FieldOps 360 enforces multi-tenant organization boundaries directly at the PostgreSQL layer. Sensitive financial actions—like wallet balance deductions, inventory ledger movements, and warranty validations—run exclusively inside atomic database functions with role verification.
             </p>
 
             <div className="grid" style={{ marginTop: '36px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-              <div style={{ borderLeft: '2px solid #3b82f6', paddingLeft: '16px' }}>
-                <strong style={{ color: '#fff', fontSize: '16px', display: 'block' }}>Zero Cross-Tenant Leakage</strong>
+              <div style={{ borderLeft: '3px solid #2563eb', paddingLeft: '16px' }}>
+                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Zero Cross-Tenant Leakage</strong>
                 <span className="muted">Row-level isolation enforced on every query.</span>
               </div>
-              <div style={{ borderLeft: '2px solid #10b981', paddingLeft: '16px' }}>
-                <strong style={{ color: '#fff', fontSize: '16px', display: 'block' }}>Immutable Audit Ledgers</strong>
+              <div style={{ borderLeft: '3px solid #059669', paddingLeft: '16px' }}>
+                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Immutable Audit Ledgers</strong>
                 <span className="muted">Every job change and transaction is append-only.</span>
               </div>
-              <div style={{ borderLeft: '2px solid #818cf8', paddingLeft: '16px' }}>
-                <strong style={{ color: '#fff', fontSize: '16px', display: 'block' }}>Offline Queue Resilience</strong>
+              <div style={{ borderLeft: '3px solid #4f46e5', paddingLeft: '16px' }}>
+                <strong style={{ color: '#0f172a', fontSize: '16px', display: 'block' }}>Offline Queue Resilience</strong>
                 <span className="muted">Local change queue with clean sync reconciliation.</span>
               </div>
             </div>
@@ -508,7 +508,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Luxury Bottom CTA */}
+      {/* Bottom CTA Banner */}
       <section className="topnotch-cta-banner">
         <div className="landing-container">
           <div className="cta-glow-container">
@@ -522,7 +522,7 @@ export default function LandingPage() {
                 <span>Create Free Account Now</span>
                 <span>→</span>
               </Link>
-              <Link href="/login" className="cta-glass-btn" style={{ borderColor: 'rgba(255, 255, 255, 0.4)' }}>
+              <Link href="/login" className="cta-glass-btn" style={{ borderColor: 'rgba(255, 255, 255, 0.4)', background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
                 <span>Sign In to Portal</span>
                 <span>⚡</span>
               </Link>
@@ -531,7 +531,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Luxury Footer */}
+      {/* Executive Footer */}
       <footer className="topnotch-footer">
         <div className="landing-container">
           <div className="footer-top-grid">
@@ -540,10 +540,10 @@ export default function LandingPage() {
                 <div className="brand-icon-box">⚡</div>
                 <span className="brand-name">FieldOps 360</span>
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '340px', lineHeight: 1.6 }}>
+              <p style={{ color: '#475569', fontSize: '14px', maxWidth: '340px', lineHeight: 1.6 }}>
                 The high-performance field service operating system. Dispatching, offline mobile tooling, customer approvals, and ledger invoicing unified.
               </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#34d399', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 12px', borderRadius: '99px', marginTop: '12px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#059669', background: '#ecfdf5', padding: '4px 12px', borderRadius: '99px', marginTop: '12px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
                 <span>All Systems Operational</span>
               </div>
