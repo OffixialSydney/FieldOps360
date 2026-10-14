@@ -1312,6 +1312,25 @@ button.danger {
    RESPONSIVE BREAKPOINTS (ALL PLATFORMS)
    ========================================================= */
 /* Tablet & below */
+
+.mobile-menu-btn {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .nav-links,
+  .desktop-nav,
+  .desktop-actions {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: inline-flex !important;
+  }
+}
+
+
+
+
 @media (max-width: 860px) {
   .nav-links {
     display: none;
