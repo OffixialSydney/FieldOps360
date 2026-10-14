@@ -1312,7 +1312,6 @@ button.danger {
    RESPONSIVE BREAKPOINTS (ALL PLATFORMS)
    ========================================================= */
 /* Tablet & below */
-
 .mobile-menu-btn {
   display: none !important;
 }
@@ -1325,6 +1324,13 @@ button.danger {
   }
   .mobile-menu-btn {
     display: inline-flex !important;
+  }
+  .slide-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .footer-top-grid {
+    grid-template-columns: 1fr;
   }
 }
 
