@@ -1334,7 +1334,20 @@ button.danger {
   }
 }
 
-
+@media (min-width: 900px) {
+  .bento-span-8 {
+    grid-column: span 8 !important;
+  }
+  .bento-span-4 {
+    grid-column: span 4 !important;
+  }
+}
+@media (max-width: 899px) {
+  .bento-span-8,
+  .bento-span-4 {
+    grid-column: span 12 !important;
+  }
+}
 
 
 @media (max-width: 860px) {
