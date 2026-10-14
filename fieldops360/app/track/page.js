@@ -3,9 +3,31 @@ import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
-import { formatWhatsAppUrl } from '../../lib/notify';
 
-// Clean SVG Icons (Zero emojis)
+// Self-contained phone and WhatsApp builders (Zero external import dependency)
+function cleanPhone(rawPhone) {
+  if (!rawPhone) return '';
+  let p = String(rawPhone).trim().replace(/[\s\-\(\)\+]/g, '');
+  if (p.startsWith('0') && p.length === 11) {
+    p = '234' + p.slice(1);
+  } else if (p.startsWith('2340') && p.length === 14) {
+    p = '234' + p.slice(4);
+  } else if (p.length === 10 && (p.startsWith('80') || p.startsWith('70') || p.startsWith('90') || p.startsWith('81'))) {
+    p = '234' + p;
+  }
+  return p;
+}
+
+function formatWhatsAppUrl(rawPhone, text = '') {
+  const p = cleanPhone(rawPhone);
+  const encodedText = encodeURIComponent(text);
+  const isFictional = !p || p.includes('5550000') || p.startsWith('000') || p.length < 10;
+  if (!isFictional && /^\d{10,15}$/.test(p)) {
+    return `https://api.whatsapp.com/send?phone=${p}&text=${encodedText}`;
+  }
+  return `https://api.whatsapp.com/send?text=${encodedText}`;
+}
+
 const Icons = {
   Logo: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -55,9 +77,12 @@ const Icons = {
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
-  Sparkles: () => (
+  Radar: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 1 1.275-1.275L12 3z" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a10 10 0 0 1 10 10" />
+      <path d="M12 12l7-7" />
+      <circle cx="12" cy="12" r="2" />
     </svg>
   ),
 };
@@ -65,9 +90,9 @@ const Icons = {
 const STAGES = [
   { key: 'assigned', label: 'Dispatched', desc: 'Technician assigned to work order' },
   { key: 'en_route', label: 'En Route', desc: 'Technician on the way to location' },
-  { key: 'arrived', label: 'Arrived', desc: 'Technician arrived on site' },
-  { key: 'in_progress', label: 'In Progress', desc: 'Active diagnostic & repairs' },
-  { key: 'completed', label: 'Completed', desc: 'Service completed & verified' },
+  { key: 'arrived', label: 'Arrived', desc: 'Technician arrived on-site' },
+  { key: 'in_progress', label: 'In Progress', desc: 'Active diagnostic and repairs' },
+  { key: 'completed', label: 'Completed', desc: 'Service completed and verified' },
 ];
 
 const STAGE_ORDER = {
@@ -386,7 +411,7 @@ function LiveTrackingContent() {
                   margin: 0,
                 }}
               >
-                <Icons.Sparkles />
+                <Icons.Radar />
                 <span>Launch Interactive Demo Radar (REQ-DEMO-4109)</span>
               </button>
             </div>
@@ -791,18 +816,18 @@ function LiveTrackingContent() {
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>
                   Technician Active Notes
                 </span>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#1e293b' }}>
                   {req.tech_notes}
                 </p>
               </div>
             )}
 
             {req.work_done && (
-              <div style={{ background: '#f0fdf4', borderLeft: '3px solid #059669', padding: '12px 16px', borderRadius: '0 8px 8px 0' }}>
+              <div style={{ background: '#ecfdf5', borderLeft: '3px solid #059669', padding: '12px 16px', borderRadius: '0 8px 8px 0' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
-                  Work Verification & Diagnostic Sign-Off
+                  Completed Work Summary
                 </span>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#166534', lineHeight: 1.5 }}>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#1e293b' }}>
                   {req.work_done}
                 </p>
               </div>
@@ -810,56 +835,52 @@ function LiveTrackingContent() {
           </div>
         )}
 
-        {/* Real-Time Live Settlement & Invoice Summary */}
+        {/* Invoice Settlement Box (When Job is Done) */}
         {invoice && (
-          <div className="card" style={{ padding: '24px' }}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div
+            className="card"
+            style={{
+              background: '#f8fafc',
+              border: '2px solid #2563eb',
+              borderRadius: '16px',
+              padding: '24px',
+              marginBottom: '20px',
+              boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.1)',
+            }}
+          >
+            <div className="row" style={{ justifyContent: 'space-between', marginBottom: '12px' }}>
               <div>
-                <span className="mini-tile-label">COMMERCIAL SETTLEMENT</span>
-                <h3 style={{ margin: '2px 0 0', fontSize: '18px' }}>
-                  Invoice #{invoice.invoice_no || req.request_no}
-                </h3>
+                <span className="badge" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                  INVOICE #{invoice.invoice_no || 'READY'}
+                </span>
+                <h3 style={{ margin: '6px 0 2px', fontSize: '20px' }}>Service Work Completed</h3>
               </div>
-              <span
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  background: invoice.status === 'paid' ? '#ecfdf5' : '#eff6ff',
-                  color: invoice.status === 'paid' ? '#065f46' : '#1d4ed8',
-                  border: invoice.status === 'paid' ? '1px solid #a7f3d0' : '1px solid #bfdbfe',
-                }}
-              >
-                {invoice.status?.toUpperCase() || 'DISPATCHED'}
-              </span>
+              <div style={{ textAlign: 'right' }}>
+                <span className="muted" style={{ fontSize: '12px' }}>Total Amount</span>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a' }}>
+                  ₦{Number(invoice.amount || 0).toLocaleString()}
+                </div>
+              </div>
             </div>
 
-            <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '16px', border: '1px solid #e2e8f0' }}>
-              <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                <span className="muted">Work Performed:</span>
-                <span style={{ fontWeight: 600 }}>{req.service_type}</span>
-              </div>
-              <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                <span className="muted">Diagnostic & Repair Labour:</span>
-                <span style={{ fontWeight: 600 }}>₦{Number(invoice.labour_cost || invoice.amount || 0).toLocaleString()}</span>
-              </div>
-              {invoice.parts_cost > 0 && (
-                <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                  <span className="muted">Certified Replacement Parts:</span>
-                  <span style={{ fontWeight: 600 }}>₦{Number(invoice.parts_cost).toLocaleString()}</span>
-                </div>
-              )}
-              <div className="row" style={{ justifyContent: 'space-between', fontSize: '17px', fontWeight: 800, borderTop: '1px solid #cbd5e1', paddingTop: '10px', marginTop: '10px' }}>
-                <span>Total Settlement:</span>
-                <span style={{ color: '#2563eb' }}>
-                  ₦{Number(invoice.total || invoice.amount || 0).toLocaleString()}
-                </span>
-              </div>
-            </div>
+            <p className="muted" style={{ fontSize: '14px', margin: '0 0 18px' }}>
+              Your technician has finalized the work order. You can review your itemized charges and settle seamlessly via pre-funded wallet, card, or bank transfer.
+            </p>
+
+            <Link href={session ? '/dashboard' : '/login'}>
+              <button style={{ width: '100%', fontSize: '15px', padding: '12px', margin: 0 }}>
+                Review & Settle Invoice on Portal
+              </button>
+            </Link>
           </div>
         )}
+
+        {/* Telemetry Refresh Footer */}
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <p className="muted" style={{ fontSize: '12px' }}>
+            Auto-refreshing via real-time satellite telemetry · Last updated at {lastRefreshed.toLocaleTimeString()}
+          </p>
+        </div>
       </main>
     </div>
   );
