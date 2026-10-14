@@ -65,10 +65,21 @@ const Icons = {
       <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   ),
+  Cross: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
   Close: () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   ),
 };
@@ -135,10 +146,34 @@ const MODULE_TABS = [
   },
 ];
 
+const FAQS = [
+  {
+    q: 'How does offline data synchronization work during cellular disconnects?',
+    a: 'The technician terminal stores job forms, diagnostic checklists, and touch signatures in a persistent local queue. Once cellular reception resumes, entries synchronize sequentially with PostgreSQL without data loss.',
+  },
+  {
+    q: 'How is contractor company data separated from other organizations?',
+    a: 'Multi-tenant isolation is enforced at the database layer using PostgreSQL Row Level Security. Database queries execute in scoped tenant boundaries, guaranteeing zero cross-company data visibility.',
+  },
+  {
+    q: 'Can customers track their assigned technician without creating an account?',
+    a: 'Yes. Customers receive a secure direct web tracking link via WhatsApp or SMS. Opening the link reveals live GPS coordinates, specialist credentials, and status milestones without requiring sign in.',
+  },
+  {
+    q: 'Can operations managers track equipment warranties and past work history?',
+    a: 'Every work order links to customer equipment records by serial number and asset tag. Technicians and managers can review past service dates, replaced parts, and warranty expiration dates on site.',
+  },
+  {
+    q: 'What payment methods are supported for commercial invoicing?',
+    a: 'Clients can settle work orders directly through pre-funded corporate credit balances, card payments, or verified corporate bank transfer reconciliation upon signature approval.',
+  },
+];
+
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [trackQuery, setTrackQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
 
   const currentTab = MODULE_TABS[activeTab];
 
@@ -152,10 +187,14 @@ export default function LandingPage() {
     }
   };
 
+  const toggleFaq = (idx) => {
+    setOpenFaq(openFaq === idx ? null : idx);
+  };
+
   return (
     <div style={{ background: '#ffffff', color: '#0f172a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif' }}>
       
-      {/* Top Enterprise Header */}
+      {/* Top Enterprise Navigation */}
       <header style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 20px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
@@ -171,10 +210,11 @@ export default function LandingPage() {
             </Link>
 
             <nav style={{ display: 'flex', gap: 24 }} className="desktop-nav">
-              <a href="#overview" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Capabilities</a>
+              <a href="#capabilities" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Capabilities</a>
               <a href="#console" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Operations Console</a>
               <a href="#architecture" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Technical Specs</a>
               <a href="#workflow" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Workflow</a>
+              <a href="#faq" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>FAQ</a>
               <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 14, fontWeight: 700, color: '#2563eb', textDecoration: 'none' }}>Live Radar</Link>
             </nav>
           </div>
@@ -218,10 +258,11 @@ export default function LandingPage() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div style={{ borderTop: '1px solid #e2e8f0', background: '#ffffff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <a href="#overview" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>Capabilities</a>
+            <a href="#capabilities" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>Capabilities</a>
             <a href="#console" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>Operations Console</a>
             <a href="#architecture" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>Technical Specs</a>
             <a href="#workflow" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>Workflow</a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 0' }}>FAQ</a>
             <Link href="/track?no=REQ-DEMO-4109" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 700, color: '#2563eb', textDecoration: 'none', padding: '8px 0' }}>Live Tracking Radar</Link>
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '10px', borderRadius: 6, border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
@@ -318,8 +359,70 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Problem vs Architecture Section */}
+      <section style={{ padding: '72px 20px', background: '#ffffff', maxWidth: 1140, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 44 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
+            Operational Transformation
+          </span>
+          <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, color: '#0f172a' }}>
+            Engineered to replace fragmented field operations
+          </h2>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
+          <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: 12, padding: 28 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 14 }}>
+              Legacy Field Service Friction
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#7f1d1d' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", marginTop: 3 }}><Icons.Cross /></span>
+                <span>Uncoordinated dispatch calls with zero proximity awareness</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#7f1d1d' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", marginTop: 3 }}><Icons.Cross /></span>
+                <span>Lost paper diagnostic forms and untracked inventory deductions</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#7f1d1d' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", marginTop: 3 }}><Icons.Cross /></span>
+                <span>Customer uncertainty with unknown technician arrival times</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#7f1d1d' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", marginTop: 3 }}><Icons.Cross /></span>
+                <span>Invoicing delays lasting weeks after work order completion</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 12, padding: 28 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 14 }}>
+              FieldOps 360 Enterprise Architecture
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#1e3a8a' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", color: "#2563eb", marginTop: 3 }}><Icons.Check /></span>
+                <span>Automated dispatch sorting nearest certified specialist</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#1e3a8a' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", color: "#2563eb", marginTop: 3 }}><Icons.Check /></span>
+                <span>Offline local storage caching checklists during cellular drops</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#1e3a8a' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", color: "#2563eb", marginTop: 3 }}><Icons.Check /></span>
+                <span>Direct WhatsApp tracking links with live GPS satellite radar</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: '#1e3a8a' }}>
+                <span style={{ display: "inline-flex", alignItems: "center", color: "#2563eb", marginTop: 3 }}><Icons.Check /></span>
+                <span>Instant on site digital signature and automated ledger settlement</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 4 Pillars of Operation */}
-      <section id="overview" style={{ padding: '72px 20px', maxWidth: 1200, margin: '0 auto' }}>
+      <section id="capabilities" style={{ padding: '72px 20px', maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ marginBottom: 44, textAlign: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
             Operational Pillars
@@ -653,6 +756,65 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Interactive FAQ Section */}
+      <section id="faq" style={{ padding: '72px 20px', maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ marginBottom: 44, textAlign: 'center' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
+            Enterprise FAQ
+          </span>
+          <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, color: '#0f172a' }}>
+            Frequently answered architectural questions
+          </h2>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {FAQS.map((faq, idx) => (
+            <div
+              key={idx}
+              style={{
+                border: '1px solid #cbd5e1',
+                borderRadius: 10,
+                background: '#ffffff',
+                overflow: 'hidden',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => toggleFaq(idx)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '18px 20px',
+                  background: openFaq === idx ? '#f8fafc' : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  margin: 0,
+                }}
+              >
+                <span>{faq.q}</span>
+                <span style={{ transform: openFaq === idx ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', color: '#64748b' }}>
+                  <Icons.ChevronDown />
+                </span>
+              </button>
+              {openFaq === idx && (
+                <div style={{ padding: '0 20px 20px', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                  <p style={{ margin: 0, paddingTop: 14, fontSize: 14, color: '#475569', lineHeight: 1.6 }}>
+                    {faq.a}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Primary Call to Action Banner */}
       <section style={{ padding: '72px 20px', background: '#ffffff' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center', border: '1px solid #cbd5e1', borderRadius: 16, padding: '44px 24px', background: '#f8fafc' }}>
@@ -702,7 +864,7 @@ export default function LandingPage() {
               <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>Platform Modules</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <a href="#console" style={{ color: '#475569', textDecoration: 'none' }}>Dispatch Console</a>
-                <a href="#overview" style={{ color: '#475569', textDecoration: 'none' }}>Technician Field Tooling</a>
+                <a href="#capabilities" style={{ color: '#475569', textDecoration: 'none' }}>Technician Field Tooling</a>
                 <Link href="/track?no=REQ-DEMO-4109" style={{ color: '#475569', textDecoration: 'none' }}>Live Customer Radar</Link>
                 <a href="#architecture" style={{ color: '#475569', textDecoration: 'none' }}>Asset & Warranty Ledger</a>
               </div>
