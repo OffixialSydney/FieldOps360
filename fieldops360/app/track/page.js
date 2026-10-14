@@ -55,6 +55,11 @@ const Icons = {
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
+  Sparkles: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 1 1.275-1.275L12 3z" />
+    </svg>
+  ),
 };
 
 const STAGES = [
@@ -97,6 +102,35 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+const DEMO_JOB = {
+  id: 'demo-sample-order-uuid',
+  request_no: 'REQ-DEMO-4109',
+  service_type: 'Solar Inverter Diagnostic & Overhaul',
+  status: 'in_progress',
+  priority: 'high',
+  address: 'Plot 14 Admiralty Way, Lekki Phase 1',
+  latitude: 6.4474,
+  longitude: 3.4709,
+  eta_minutes: 8,
+  tech_notes: 'Technician Marcus Vance is actively running high-voltage output diagnostics on inverter string 2.',
+  work_done: null,
+  created_at: new Date().toISOString(),
+};
+
+const DEMO_TECH = {
+  id: 'demo-tech-uuid',
+  full_name: 'Marcus Vance',
+  phone: '+2348012345678',
+  skills: 'Solar Systems, Master Electrician, Inverters',
+  role: 'technician',
+};
+
+const DEMO_TECH_LOC = {
+  lat: 6.4412,
+  lng: 3.4651,
+  updated_at: new Date().toISOString(),
+};
+
 function LiveTrackingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -114,7 +148,15 @@ function LiveTrackingContent() {
   const [searchInput, setSearchInput] = useState(activeQuery);
   const [recentOrders, setRecentOrders] = useState([]);
 
-  // Check user authentication session
+  // Quick Demo Generator for Instant Testing (Defined BEFORE loadData)
+  const generateDemoOrder = useCallback(() => {
+    setReq(DEMO_JOB);
+    setTech(DEMO_TECH);
+    setTechLoc(DEMO_TECH_LOC);
+    setLoading(false);
+  }, []);
+
+  // Check user authentication session so we never show "Sign In" to a logged-in user
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data?.session || null);
@@ -123,40 +165,6 @@ function LiveTrackingContent() {
       setSession(s);
     });
     return () => authSub?.subscription?.unsubscribe();
-  }, []);
-
-  // Quick Demo Generator for Instant Testing
-  const generateDemoOrder = useCallback(() => {
-    const demoReq = {
-      id: 'demo-sample-order-uuid',
-      request_no: 'REQ-DEMO-4109',
-      service_type: 'Solar Inverter Diagnostic & Overhaul',
-      status: 'in_progress',
-      priority: 'high',
-      address: 'Plot 14 Admiralty Way, Lekki Phase 1',
-      latitude: 6.4474,
-      longitude: 3.4709,
-      eta_minutes: 8,
-      tech_notes: 'Technician Marcus Vance is actively running high-voltage output diagnostics on inverter string 2.',
-      work_done: null,
-      created_at: new Date().toISOString(),
-    };
-    const demoTech = {
-      id: 'demo-tech-uuid',
-      full_name: 'Marcus Vance',
-      phone: '+2348012345678',
-      skills: 'Solar Systems, Master Electrician, Inverters',
-      role: 'technician',
-    };
-    const demoLoc = {
-      lat: 6.4412,
-      lng: 3.4651,
-      updated_at: new Date().toISOString(),
-    };
-    setReq(demoReq);
-    setTech(demoTech);
-    setTechLoc(demoLoc);
-    setLoading(false);
   }, []);
 
   // Load recent orders to provide 1-tap quick testing chips
@@ -303,7 +311,7 @@ function LiveTrackingContent() {
         <div style={{ maxWidth: 540, margin: '0 auto' }}>
           <div style={{ marginBottom: '24px' }}>
             <Link href={session ? '/dashboard' : '/'} className="back-link">
-              {session ? 'Back to Operations Dashboard' : 'Back to FieldOps 360 Home'}
+              ← {session ? 'Back to Operations Dashboard' : 'Back to FieldOps 360 Home'}
             </Link>
           </div>
 
@@ -315,7 +323,7 @@ function LiveTrackingContent() {
               Live Customer Tracking Radar
             </h1>
             <p className="muted" style={{ fontSize: '15px', margin: 0 }}>
-              Track real time technician GPS coordinates, arrival ETA, and service logs.
+              Track real-time technician GPS coordinates, arrival ETA, and service logs.
             </p>
           </div>
 
@@ -326,39 +334,10 @@ function LiveTrackingContent() {
                   Work order #{activeQuery} was not found in the database.
                 </p>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#b91c1c' }}>
-                  Please check the number or launch our interactive live test simulation below.
+                  Please check the number or launch an instant live test order below.
                 </p>
               </div>
             ) : null}
-
-            {/* Quick Test Demo Button Promoted to Top */}
-            <div style={{ marginBottom: '22px' }}>
-              <button
-                type="button"
-                onClick={generateDemoOrder}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  background: '#2563eb',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  margin: 0,
-                }}
-              >
-                <span>Launch Interactive Demo Radar (REQ-DEMO-4109)</span>
-              </button>
-              <p style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', margin: '6px 0 0' }}>
-                Test live GPS telemetry, technician profiles, and status transitions instantly.
-              </p>
-            </div>
 
             <form
               onSubmit={(e) => {
@@ -369,7 +348,7 @@ function LiveTrackingContent() {
               }}
             >
               <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Or Search Existing Work Order Number
+                Enter Work Order or Request Number
               </label>
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <input
@@ -382,14 +361,39 @@ function LiveTrackingContent() {
                 />
                 <button type="submit" style={{ margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <Icons.Search />
-                  <span>Track</span>
+                  <span>Track Order</span>
                 </button>
               </div>
             </form>
 
+            {/* Quick Test Demo Button */}
+            <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid #f1f5f9' }}>
+              <button
+                type="button"
+                className="ghost"
+                onClick={generateDemoOrder}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: '#f0fdf4',
+                  borderColor: '#bbf7d0',
+                  color: '#166534',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  margin: 0,
+                }}
+              >
+                <Icons.Sparkles />
+                <span>Launch Interactive Demo Radar (REQ-DEMO-4109)</span>
+              </button>
+            </div>
+
             {/* Recent Orders in Database (if any exist) */}
             {recentOrders.length > 0 && (
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+              <div style={{ marginTop: '20px' }}>
                 <p className="muted" style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', margin: '0 0 8px' }}>
                   Recent Work Orders on Your Server
                 </p>
@@ -416,13 +420,13 @@ function LiveTrackingContent() {
               {session ? (
                 <Link href="/dashboard">
                   <button className="ghost" style={{ width: '100%', margin: 0, fontSize: '13px', fontWeight: 600 }}>
-                    Return to Operations Dashboard
+                    ← Return to Operations Dashboard
                   </button>
                 </Link>
               ) : (
                 <Link href="/">
                   <button className="ghost" style={{ width: '100%', margin: 0, fontSize: '13px', fontWeight: 600 }}>
-                    Return to FieldOps 360 Home
+                    ← Return to FieldOps 360 Home
                   </button>
                 </Link>
               )}
@@ -453,279 +457,417 @@ function LiveTrackingContent() {
       etaText = 'En Route to Location';
     }
   } else if (req.status === 'arrived') {
-    etaText = 'Technician Arrived On Site';
-  } else if (req.status === 'in_progress' || req.status === 'diagnosing') {
-    etaText = 'Active Work in Progress';
+    etaText = 'Technician Arrived On-Site';
+  } else if (['diagnosing', 'in_progress'].includes(req.status)) {
+    etaText = 'Work Actively in Progress';
   } else if (isComplete) {
-    etaText = 'Service Completed & Signed';
+    etaText = 'Work Completed & Ready for Settlement';
   } else {
     etaText = 'Dispatched: Preparing for Route';
   }
 
-  const customerTrackingUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const technicianPhone = tech?.phone || '08012345678';
-  const whatsappUrl = formatWhatsAppUrl(
-    technicianPhone,
-    `Hello ${tech?.full_name || 'Technician'}, I am following up on work order #${req.request_no} for ${req.service_type}. Here is the tracking link: ${customerTrackingUrl}`
-  );
+  const customerNavAddress = req.address || 'Service Location';
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customerNavAddress)}`;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '24px 16px' }}>
-      <div style={{ maxWidth: 840, margin: '0 auto' }}>
-        
-        {/* Navigation Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '60px' }}>
+      {/* Top Header Bar */}
+      <header className="top" style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <div className="brand-group">
+          <Link href={session ? '/dashboard' : '/'} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
             <div className="brand-icon-box" style={{ width: 34, height: 34 }}>
               <Icons.Logo />
             </div>
             <div>
-              <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', display: 'block' }}>FieldOps 360</span>
-              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Live Telemetry Radar</span>
+              <span style={{ fontWeight: 800, fontSize: '16px' }}>FieldOps 360</span>
+              <span className="brand-glow-tag" style={{ marginLeft: '8px' }}>LIVE RADAR</span>
             </div>
-          </div>
+          </Link>
+        </div>
+        <div className="row" style={{ gap: '10px' }}>
+          <button
+            type="button"
+            className="ghost"
+            style={{ padding: '6px 12px', fontSize: '13px', margin: 0 }}
+            onClick={() => {
+              setReq(null);
+              setSearchInput('');
+              router.push('/track');
+            }}
+          >
+            Track Another Order
+          </button>
 
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => {
-                setReq(null);
-                router.push('/track');
-              }}
-              style={{ fontSize: '12px', padding: '6px 12px', margin: 0 }}
-            >
-              Track Another Order
-            </button>
+          {session ? (
             <Link
-              href={session ? '/dashboard' : '/'}
+              href="/dashboard"
               className="ghost"
               style={{
                 padding: '6px 14px',
-                fontSize: '12px',
+                fontSize: '13px',
+                borderRadius: '8px',
+                border: '1px solid #2563eb',
+                color: '#2563eb',
+                background: '#eff6ff',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              Back to Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="ghost"
+              style={{
+                padding: '6px 14px',
+                fontSize: '13px',
                 borderRadius: '8px',
                 border: '1px solid var(--line)',
                 textDecoration: 'none',
               }}
             >
-              {session ? 'Back to Dashboard' : 'Homepage'}
+              Sign In
             </Link>
-          </div>
+          )}
         </div>
+      </header>
 
-        {/* Work Order Header Card */}
-        <div className="card" style={{ padding: '24px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+      <main className="wrap" style={{ maxWidth: 840, paddingTop: '28px' }}>
+        {/* Radar Hero Card */}
+        <div
+          className="card"
+          style={{
+            background: '#0f172a',
+            color: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px 24px',
+            border: '1px solid #1e293b',
+            boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.35)',
+            marginBottom: '20px',
+          }}
+        >
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Work Order Reference
+              <span className="slide-badge-pill" style={{ marginBottom: '8px' }}>
+                ORDER #{req.request_no}
               </span>
-              <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0 6px', color: '#0f172a' }}>
-                {req.request_no}
-              </h2>
-              <p style={{ margin: 0, fontSize: '15px', color: '#475569', fontWeight: 500 }}>
+              <h2 style={{ color: '#ffffff', margin: '4px 0 6px', fontSize: '24px', fontWeight: 800 }}>
                 {req.service_type}
+              </h2>
+              <p style={{ color: '#94a3b8', margin: 0, fontSize: '14px' }}>
+                {req.address}
               </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <span
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', padding: '6px 12px', borderRadius: '99px' }}>
+                <span className="radar-dot" style={{ width: 8, height: 8 }}></span>
+                <span style={{ color: '#60a5fa', fontSize: '12px', fontWeight: 700 }}>
+                  {req.status?.replace('_', ' ').toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Large ETA Display */}
+          <div
+            style={{
+              background: '#020617',
+              border: '1px solid #1e293b',
+              borderRadius: '12px',
+              padding: '18px 20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '14px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: 42, height: 42, borderRadius: '10px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa' }}>
+                <Icons.Clock />
+              </div>
+              <div>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Live Status & ETA
+                </span>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#f8fafc' }}>
+                  {etaText}
+                </div>
+              </div>
+            </div>
+
+            <a href={mapsUrl} target="_blank" rel="noreferrer">
+              <button
+                type="button"
                 style={{
-                  display: 'inline-block',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
+                  background: '#2563eb',
+                  color: '#ffffff',
                   fontSize: '13px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  background: isComplete ? '#ecfdf5' : '#eff6ff',
-                  color: isComplete ? '#065f46' : '#1d4ed8',
-                  border: isComplete ? '1px solid #a7f3d0' : '1px solid #bfdbfe',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  margin: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
               >
-                {req.status.replace('_', ' ')}
-              </span>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>
-                Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </div>
-            </div>
+                <Icons.Pin />
+                <span>Open in Maps</span>
+              </button>
+            </a>
           </div>
+        </div>
 
-          {/* Stepper Progress Indicator */}
-          <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-              {STAGES.map((s, idx) => {
-                const stepNum = idx + 1;
-                const isPassed = currentStageNum >= stepNum;
-                const isCurrent = currentStageNum === stepNum;
-                return (
-                  <div key={s.key} style={{ textAlign: 'center' }}>
+        {/* Visual 5-Stage Live Timeline Tracker */}
+        <div className="card" style={{ marginBottom: '20px', padding: '24px' }}>
+          <h3 style={{ margin: '0 0 18px', fontSize: '16px', fontWeight: 700 }}>
+            Live Dispatch Milestones
+          </h3>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+            {STAGES.map((st, idx) => {
+              const isPastOrCurrent = currentStageNum >= idx + 1;
+              const isCurrent = currentStageNum === idx + 1;
+
+              return (
+                <div key={st.key} style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
+                  {/* Connecting Line */}
+                  {idx < STAGES.length - 1 && (
                     <div
                       style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        margin: '0 auto 8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: isPassed ? '#2563eb' : isCurrent ? '#dbeafe' : '#f1f5f9',
-                        color: isPassed ? '#ffffff' : isCurrent ? '#1d4ed8' : '#94a3b8',
-                        fontWeight: 700,
+                        position: 'absolute',
+                        top: '16px',
+                        left: '50%',
+                        width: '100%',
+                        height: '3px',
+                        background: currentStageNum > idx + 1 ? '#2563eb' : '#e2e8f0',
+                        zIndex: 1,
+                        transition: 'background 0.3s ease',
+                      }}
+                    />
+                  )}
+
+                  {/* Step Circle */}
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: isCurrent ? '#2563eb' : isPastOrCurrent ? '#059669' : '#f1f5f9',
+                      color: isPastOrCurrent ? '#ffffff' : '#94a3b8',
+                      border: isCurrent ? '3px solid #bfdbfe' : isPastOrCurrent ? 'none' : '2px solid #cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 8px',
+                      position: 'relative',
+                      zIndex: 2,
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none',
+                    }}
+                  >
+                    {isPastOrCurrent ? <Icons.Check /> : idx + 1}
+                  </div>
+
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: isCurrent ? 800 : 600,
+                      color: isCurrent ? '#2563eb' : isPastOrCurrent ? '#0f172a' : '#94a3b8',
+                      display: 'block',
+                    }}
+                  >
+                    {st.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Assigned Technician Profile & Direct Contact Card */}
+        {tech && (
+          <div className="card" style={{ marginBottom: '20px', padding: '22px' }}>
+            <span className="mini-tile-label" style={{ marginBottom: '12px' }}>
+              ASSIGNED FIELD SPECIALIST
+            </span>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    fontSize: '18px',
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                  }}
+                >
+                  {tech.full_name?.slice(0, 2).toUpperCase() || 'SP'}
+                </div>
+
+                <div>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '18px' }}>{tech.full_name}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#059669', fontWeight: 600 }}>
+                    <Icons.Shield />
+                    <span>Verified Professional · {tech.skills || 'Certified Field Technician'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="row" style={{ margin: 0, gap: '8px' }}>
+                {tech.phone && (
+                  <a href={`tel:${tech.phone}`}>
+                    <button
+                      type="button"
+                      className="ghost"
+                      style={{
+                        padding: '9px 16px',
                         fontSize: '13px',
-                        border: isCurrent ? '2px solid #2563eb' : 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        margin: 0,
                       }}
                     >
-                      {isPassed ? <Icons.Check /> : stepNum}
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: isPassed || isCurrent ? 700 : 500, color: isPassed || isCurrent ? '#0f172a' : '#94a3b8' }}>
-                      {s.label}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+                      <Icons.Phone />
+                      <span>Call</span>
+                    </button>
+                  </a>
+                )}
 
-        {/* Live Technician Card */}
-        {tech && (
-          <div className="card" style={{ padding: '24px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Assigned Specialist
-            </span>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#0f172a', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700 }}>
-                  {tech.full_name?.charAt(0) || 'T'}
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 4px', color: '#0f172a' }}>
-                    {tech.full_name}
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '12px', color: '#475569', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
-                      Certified Specialist
-                    </span>
-                    {tech.skills && (
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
-                        {tech.skills}
-                      </span>
+                {tech.phone && (
+                  <a
+                    href={formatWhatsAppUrl(
+                      tech.phone,
+                      `Hello ${tech.full_name}, this is regarding service order #${req.request_no}:`
                     )}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <a
-                  href={`tel:${technicianPhone}`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    color: '#0f172a',
-                    textDecoration: 'none',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                  }}
-                >
-                  <Icons.Phone />
-                  <span>Call</span>
-                </a>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    background: '#16a34a',
-                    color: '#ffffff',
-                    textDecoration: 'none',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                  }}
-                >
-                  <Icons.WhatsApp />
-                  <span>WhatsApp</span>
-                </a>
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <button
+                      type="button"
+                      style={{
+                        background: '#059669',
+                        color: '#fff',
+                        padding: '9px 16px',
+                        fontSize: '13px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        margin: 0,
+                      }}
+                    >
+                      <Icons.WhatsApp />
+                      <span>WhatsApp</span>
+                    </button>
+                  </a>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* GPS Arrival & Diagnostic Telemetry Card */}
-        <div className="card" style={{ padding: '24px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Live Dispatch Telemetry
-          </span>
-          <div style={{ marginTop: '14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', marginBottom: '6px' }}>
-                <Icons.Clock />
-                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase' }}>Arrival Status</span>
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
-                {etaText}
-              </div>
-            </div>
+        {/* Live Diagnostic & Operational Notes Feed */}
+        {(req.tech_notes || req.work_done) && (
+          <div className="card" style={{ marginBottom: '20px', padding: '22px' }}>
+            <h3 style={{ margin: '0 0 14px', fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Icons.Wrench />
+              <span>Real-Time Diagnostic & Field Activity Log</span>
+            </h3>
 
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', marginBottom: '6px' }}>
-                <Icons.Pin />
-                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase' }}>Service Location</span>
+            {req.tech_notes && (
+              <div style={{ background: '#f8fafc', borderLeft: '3px solid #2563eb', padding: '12px 16px', borderRadius: '0 8px 8px 0', marginBottom: '12px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>
+                  Technician Active Notes
+                </span>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
+                  {req.tech_notes}
+                </p>
               </div>
-              <div style={{ fontSize: '14px', color: '#334155', fontWeight: 600, lineHeight: 1.4 }}>
-                {req.address || 'Client Facility Site'}
+            )}
+
+            {req.work_done && (
+              <div style={{ background: '#f0fdf4', borderLeft: '3px solid #059669', padding: '12px 16px', borderRadius: '0 8px 8px 0' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
+                  Work Verification & Diagnostic Sign-Off
+                </span>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#166534', lineHeight: 1.5 }}>
+                  {req.work_done}
+                </p>
               </div>
-            </div>
+            )}
           </div>
+        )}
 
-          {req.tech_notes && (
-            <div style={{ marginTop: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
-                Technician Field Activity Notes
-              </div>
-              <p style={{ margin: 0, fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
-                {req.tech_notes}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Completed Work Order & Invoicing */}
-        {isComplete && invoice && (
-          <div className="card" style={{ padding: '24px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Service Completed & Billed
-            </span>
-            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        {/* Real-Time Live Settlement & Invoice Summary */}
+        {invoice && (
+          <div className="card" style={{ padding: '24px' }}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <div style={{ fontSize: '14px', color: '#64748b' }}>Invoice #{invoice.invoice_no || 'INV-2026-001'}</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-                  ₦{Number(invoice.total || invoice.amount || 0).toLocaleString()}
-                </div>
+                <span className="mini-tile-label">COMMERCIAL SETTLEMENT</span>
+                <h3 style={{ margin: '2px 0 0', fontSize: '18px' }}>
+                  Invoice #{invoice.invoice_no || req.request_no}
+                </h3>
               </div>
-              <span style={{ padding: '6px 12px', borderRadius: '6px', background: '#ecfdf5', color: '#065f46', fontSize: '12px', fontWeight: 700 }}>
-                {invoice.status === 'paid' ? 'Paid & Settled' : 'Invoice Dispatched'}
+              <span
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  background: invoice.status === 'paid' ? '#ecfdf5' : '#eff6ff',
+                  color: invoice.status === 'paid' ? '#065f46' : '#1d4ed8',
+                  border: invoice.status === 'paid' ? '1px solid #a7f3d0' : '1px solid #bfdbfe',
+                }}
+              >
+                {invoice.status?.toUpperCase() || 'DISPATCHED'}
               </span>
             </div>
+
+            <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '16px', border: '1px solid #e2e8f0' }}>
+              <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                <span className="muted">Work Performed:</span>
+                <span style={{ fontWeight: 600 }}>{req.service_type}</span>
+              </div>
+              <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                <span className="muted">Diagnostic & Repair Labour:</span>
+                <span style={{ fontWeight: 600 }}>₦{Number(invoice.labour_cost || invoice.amount || 0).toLocaleString()}</span>
+              </div>
+              {invoice.parts_cost > 0 && (
+                <div className="row" style={{ justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                  <span className="muted">Certified Replacement Parts:</span>
+                  <span style={{ fontWeight: 600 }}>₦{Number(invoice.parts_cost).toLocaleString()}</span>
+                </div>
+              )}
+              <div className="row" style={{ justifyContent: 'space-between', fontSize: '17px', fontWeight: 800, borderTop: '1px solid #cbd5e1', paddingTop: '10px', marginTop: '10px' }}>
+                <span>Total Settlement:</span>
+                <span style={{ color: '#2563eb' }}>
+                  ₦{Number(invoice.total || invoice.amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
         )}
-
-      </div>
+      </main>
     </div>
   );
 }
 
 export default function TrackPage() {
   return (
-    <Suspense fallback={<div className="wrap" style={{ textAlign: 'center', padding: '80px 20px' }}>Loading Live Telemetry Radar...</div>}>
+    <Suspense fallback={<div className="wrap" style={{ textAlign: 'center', padding: '60px' }}><p className="muted">Loading FieldOps 360 live radar...</p></div>}>
       <LiveTrackingContent />
     </Suspense>
   );
