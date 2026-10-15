@@ -38,29 +38,71 @@ export async function POST(req) {
     const finalTechId = technicianId || job?.technician_id;
     const finalCompId = companyId || job?.company_id;
 
-    // Upsert rating (insert new or update existing rating)
-    const { data, error } = await sb
+    // Check if rating already exists for this work order to prevent duplicate key constraint violations
+    const { data: existingRating } = await sb
       .from('ratings')
-      .upsert(
-        {
+      .select('id')
+      .eq('request_id', requestId)
+      .maybeSingle();
+
+    let savedData = null;
+    let saveError = null;
+
+    if (existingRating?.id) {
+      // Record exists: update it cleanly
+      const { data, error } = await sb
+        .from('ratings')
+        .update({
+          stars: numericStars,
+          feedback: feedback ? String(feedback).trim() : null,
+          technician_id: finalTechId,
+          company_id: finalCompId,
+        })
+        .eq('id', existingRating.id)
+        .select()
+        .maybeSingle();
+      savedData = data;
+      saveError = error;
+    } else {
+      // Record does not exist: try inserting
+      const { data, error } = await sb
+        .from('ratings')
+        .insert({
           request_id: requestId,
           customer_id: finalCustId,
           technician_id: finalTechId,
           company_id: finalCompId,
           stars: numericStars,
           feedback: feedback ? String(feedback).trim() : null,
-        },
-        { onConflict: 'request_id' }
-      )
-      .select()
-      .maybeSingle();
+        })
+        .select()
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error saving rating via API:', error);
-      return Response.json({ error: error.message }, { status: 400 });
+      // If duplicate key error occurs due to concurrent insert, update existing record
+      if (error && (error.code === '23505' || String(error.message).includes('unique constraint') || String(error.message).includes('ratings_request_id_key'))) {
+        const { data: updateData, error: updateError } = await sb
+          .from('ratings')
+          .update({
+            stars: numericStars,
+            feedback: feedback ? String(feedback).trim() : null,
+          })
+          .eq('request_id', requestId)
+          .select()
+          .maybeSingle();
+        savedData = updateData;
+        saveError = updateError;
+      } else {
+        savedData = data;
+        saveError = error;
+      }
     }
 
-    return Response.json({ ok: true, rating: data });
+    if (saveError) {
+      console.error('Error saving rating via API:', saveError);
+      return Response.json({ error: saveError.message }, { status: 400 });
+    }
+
+    return Response.json({ ok: true, rating: savedData });
   } catch (err) {
     console.error('Rating server handler exception:', err);
     return Response.json({ error: err.message }, { status: 500 });
