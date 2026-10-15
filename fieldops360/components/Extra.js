@@ -24,7 +24,7 @@ export function Rating({ request }) {
     setSubmitting(true);
     setErr('');
     try {
-      // 1. Try server API route first (safely bypasses client RLS restrictions)
+      // 1. Try server API route first (safely bypasses client RLS restrictions and manages duplicate keys)
       const res = await fetch('/api/ratings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,13 +41,16 @@ export function Rating({ request }) {
       if (res.ok) {
         setStars(n);
         setSubmitting(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('extras-changed'));
+        }
         return;
       }
     } catch (e) {
-      // Fall through to client direct insert
+      // Fall through to client direct query
     }
 
-    // 2. Direct client fallback with session authentication
+    // 2. Direct client fallback with check-then-update to prevent duplicate key constraint error
     try {
       let currentUid = request.customer_id;
       const { data: authData } = await supabase.auth.getUser();
@@ -55,25 +58,61 @@ export function Rating({ request }) {
         currentUid = authData.user.id;
       }
 
-      const { error } = await supabase.from('ratings').upsert(
-        {
-          request_id: request.id,
-          customer_id: currentUid,
-          technician_id: request.technician_id,
-          company_id: request.company_id || null,
-          stars: n,
-          feedback: fb ? fb.trim() : null,
-        },
-        { onConflict: 'request_id' }
-      );
+      // Check if rating already exists for this work order
+      const { data: existing } = await supabase
+        .from('ratings')
+        .select('id')
+        .eq('request_id', request.id)
+        .maybeSingle();
 
-      if (error) {
-        setErr(error.message);
+      let clientError = null;
+
+      if (existing?.id) {
+        const { error } = await supabase
+          .from('ratings')
+          .update({
+            stars: n,
+            feedback: fb ? fb.trim() : null,
+          })
+          .eq('id', existing.id);
+        clientError = error;
+      } else {
+        const { error } = await supabase
+          .from('ratings')
+          .insert({
+            request_id: request.id,
+            customer_id: currentUid,
+            technician_id: request.technician_id,
+            company_id: request.company_id || null,
+            stars: n,
+            feedback: fb ? fb.trim() : null,
+          });
+
+        if (error && (error.code === '23505' || String(error.message).includes('unique constraint') || String(error.message).includes('ratings_request_id_key'))) {
+          // If already exists, update instead
+          const { error: updErr } = await supabase
+            .from('ratings')
+            .update({
+              stars: n,
+              feedback: fb ? fb.trim() : null,
+            })
+            .eq('request_id', request.id);
+          clientError = updErr;
+        } else {
+          clientError = error;
+        }
+      }
+
+      if (clientError) {
+        setErr(clientError.message);
         setSubmitting(false);
         return;
       }
 
       setStars(n);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('extras-changed'));
+      }
     } catch (errFallback) {
       setErr(errFallback.message);
     } finally {
