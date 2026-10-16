@@ -107,7 +107,7 @@ export function RequestForm({ me, onCreated }) {
           <label>Which equipment is this about? (optional)</label>
           <select value={f.asset_id} onChange={set('asset_id')}>
             <option value="">Not listed</option>
-            {assets.map((a) => <option key={a.id} value={a.id}>{a.name}{a.serial_number ? ` (${a.serial_number})` : ''} - {warrantyStatus(a).label}</option>)}
+            {assets.map((a) => <option key={a.id} value={a.id}>{a.name}{a.serial_number ? ` (${a.serial_number})` : ''} ({warrantyStatus(a).label})</option>)}
           </select>
           {assets.find((a) => a.id === f.asset_id)?.warranty_until >= new Date().toISOString().slice(0, 10) && (
             <p style={{ color: '#0f766e', fontWeight: 600 }}>WARRANTY ACTIVE: this request will be flagged as a warranty claim.</p>
@@ -170,10 +170,10 @@ export function Overview({ reqs, invs, assets }) {
             Technician: <b>{r.tech?.full_name || 'Assigned'}</b>
             {r.status === 'en_route' && r.eta_minutes ? <><br />ETA: <b>{r.eta_minutes} minutes</b></> : null}
           </p>
-          <Link href={`/track?no=${r.request_no}`}>
+          <Link href={`/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`}>
             <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
               <span className="radar-dot" style={{ width: 7, height: 7, background: '#fff', borderRadius: '50%' }}></span>
-              <span>Open Live Radar Tracking</span>
+              <span>Track Work Order</span>
             </button>
           </Link>
         </div>
