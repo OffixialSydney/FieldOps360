@@ -312,7 +312,7 @@ export function AssetsAdmin({ readOnly }) {
           <div className="row" style={{ justifyContent: 'space-between' }}><h3>{a.name}</h3><WarrantyBadge a={a} /></div>
           <p className="muted">
             {a.serial_number ? `Serial ${a.serial_number} · ` : ''}{a.customer?.full_name}{a.tech?.full_name ? ` · Technician ${a.tech.full_name}` : ''}<br />
-            Installed {a.installation_date || '-'} · Warranty {a.warranty_months ? `${a.warranty_months} months, until ${a.warranty_until}` : 'none'} · {a.status.toUpperCase()}
+            Installed {a.installation_date || 'N/A'} · Warranty {a.warranty_months ? `${a.warranty_months} months, until ${a.warranty_until}` : 'none'} · {a.status.toUpperCase()}
           </p>
           {a.warranty_until && <DocButton type="warranty" id={a.id} label="Warranty certificate" />}
           <select value={a.status} disabled={readOnly} style={{ width: 'auto' }} onChange={(e) => setStatus(a.id, e.target.value)}>
