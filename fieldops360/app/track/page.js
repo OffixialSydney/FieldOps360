@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
+// Clean SVG Icons (Zero emojis)
 // Self-contained phone and WhatsApp builders (Zero external import dependency)
 function cleanPhone(rawPhone) {
   if (!rawPhone) return '';
@@ -91,8 +92,8 @@ const STAGES = [
   { key: 'assigned', label: 'Dispatched', desc: 'Technician assigned to work order' },
   { key: 'en_route', label: 'En Route', desc: 'Technician on the way to location' },
   { key: 'arrived', label: 'Arrived', desc: 'Technician arrived on-site' },
-  { key: 'in_progress', label: 'In Progress', desc: 'Active diagnostic and repairs' },
-  { key: 'completed', label: 'Completed', desc: 'Service completed and verified' },
+  { key: 'in_progress', label: 'In Progress', desc: 'Active diagnostic & repairs' },
+  { key: 'completed', label: 'Completed', desc: 'Service completed & verified' },
 ];
 
 const STAGE_ORDER = {
@@ -312,7 +313,7 @@ function LiveTrackingContent() {
 
   useEffect(() => {
     loadData();
-    // Live satellite telemetry polling every 6 seconds
+    // Live polling every 6 seconds
     const interval = setInterval(loadData, 6000);
     return () => clearInterval(interval);
   }, [loadData]);
@@ -323,8 +324,8 @@ function LiveTrackingContent() {
         <div className="brand-icon-box" style={{ margin: '0 auto 16px', width: 44, height: 44 }}>
           <Icons.Logo />
         </div>
-        <h3>Connecting to live dispatch radar...</h3>
-        <p className="muted">Retrieving specialist GPS telemetry and active job status.</p>
+        <h3>Loading work order status...</h3>
+        <p className="muted">Retrieving technician arrival updates and active job status.</p>
       </div>
     );
   }
@@ -345,10 +346,10 @@ function LiveTrackingContent() {
               <Icons.Logo />
             </div>
             <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>
-              Live Customer Tracking Radar
+              Work Order Tracking
             </h1>
             <p className="muted" style={{ fontSize: '15px', margin: 0 }}>
-              Track real-time technician GPS coordinates, arrival ETA, and service logs.
+              Track technician arrival updates, job status, and service notes in real time.
             </p>
           </div>
 
@@ -412,7 +413,7 @@ function LiveTrackingContent() {
                 }}
               >
                 <Icons.Radar />
-                <span>Launch Interactive Demo Radar (REQ-DEMO-4109)</span>
+                <span>Launch Interactive Demo (REQ-DEMO-4109)</span>
               </button>
             </div>
 
@@ -505,7 +506,7 @@ function LiveTrackingContent() {
             </div>
             <div>
               <span style={{ fontWeight: 800, fontSize: '16px' }}>FieldOps 360</span>
-              <span className="brand-glow-tag" style={{ marginLeft: '8px' }}>LIVE RADAR</span>
+              <span className="badge" style={{ marginLeft: '8px', fontSize: '11px', padding: '2px 8px' }}>LIVE TRACKING</span>
             </div>
           </Link>
         </div>
@@ -875,10 +876,10 @@ function LiveTrackingContent() {
           </div>
         )}
 
-        {/* Telemetry Refresh Footer */}
+        {/* Live Status Refresh Footer */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <p className="muted" style={{ fontSize: '12px' }}>
-            Auto-refreshing via real-time satellite telemetry · Last updated at {lastRefreshed.toLocaleTimeString()}
+            Auto-refreshing live work order status · Last updated at {lastRefreshed.toLocaleTimeString()}
           </p>
         </div>
       </main>
@@ -888,7 +889,7 @@ function LiveTrackingContent() {
 
 export default function TrackPage() {
   return (
-    <Suspense fallback={<div className="wrap" style={{ textAlign: 'center', padding: '60px' }}><p className="muted">Loading FieldOps 360 live radar...</p></div>}>
+    <Suspense fallback={<div className="wrap" style={{ textAlign: 'center', padding: '60px' }}><p className="muted">Loading FieldOps 360 work order status...</p></div>}>
       <LiveTrackingContent />
     </Suspense>
   );
