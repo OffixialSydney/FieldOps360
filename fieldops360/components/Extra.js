@@ -427,7 +427,7 @@ export function Assets() {
     <div className="card" key={a.id}>
       <div className="row" style={{ justifyContent: 'space-between' }}><h3>{a.name}</h3><WarrantyBadge a={a} /></div>
       <p className="muted">
-        {a.serial_number ? `Serial ${a.serial_number} · ` : ''}Installed {a.installation_date || '-'} · {a.warranty_until ? `Warranty until ${a.warranty_until}` : 'No warranty'}
+        {a.serial_number ? `Serial ${a.serial_number} · ` : ''}Installed {a.installation_date || 'N/A'} · {a.warranty_until ? `Warranty until ${a.warranty_until}` : 'No warranty'}
       </p>
       {a.warranty_until && <DocButton type="warranty" id={a.id} label="Warranty certificate" />}
     </div>
@@ -450,7 +450,7 @@ export function Audit() {
 
 /* Basic analytics */
 export function Stats() {
-  const [s, setS] = useState({ total: 0, open: 0, done: 0, avg: '-' });
+  const [s, setS] = useState({ total: 0, open: 0, done: 0, avg: 'N/A' });
   useEffect(() => {
     (async () => {
       const { data: r } = await supabase.from('requests').select('status').not('company_id', 'is', null);
@@ -460,7 +460,7 @@ export function Stats() {
         total: rs.length,
         done: rs.filter((x) => ['completed', 'invoiced', 'paid', 'closed'].includes(x.status)).length,
         open: rs.filter((x) => !['completed', 'invoiced', 'paid', 'closed', 'cancelled', 'rejected'].includes(x.status)).length,
-        avg: gs.length ? (gs.reduce((a, b) => a + b.stars, 0) / gs.length).toFixed(1) : '-',
+        avg: gs.length ? (gs.reduce((a, b) => a + b.stars, 0) / gs.length).toFixed(1) : 'N/A',
       });
     })();
   }, []);
