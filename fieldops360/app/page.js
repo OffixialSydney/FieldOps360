@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-// Purposeful SVG vector icons (Zero emojis, zero decorative AI glyphs)
+// Consistent, purposeful SVG icons (Zero emojis, zero decorative AI glyphs)
 const Icons = {
   Logo: () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -79,10 +79,23 @@ const Icons = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
-  Clock: () => (
+  Bell: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
+  BarChart: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  ),
+  MapPin: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
     </svg>
   ),
   Menu: () => (
@@ -96,11 +109,6 @@ const Icons = {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  ),
-  ChevronDown: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
     </svg>
   ),
   Lock: () => (
@@ -119,152 +127,125 @@ const Icons = {
   ),
 };
 
-const TARGET_INDUSTRIES = [
-  'Solar installation and maintenance',
-  'Electrical contracting',
-  'Commercial HVAC servicing',
-  'Generator repair and overhaul',
-  'Plumbing and facilities',
-  'CCTV and network cabling',
-  'Commercial engineering',
-  'Equipment maintenance',
-];
-
-const PRINCIPAL_CAPABILITIES = [
+// 8 Core Features (Strictly matching prompt)
+const CORE_FEATURES = [
   {
     icon: Icons.ClipboardList,
-    title: 'Service Requests and Work Orders',
-    desc: 'Centralize inbound requests from commercial clients. Capture site addresses, job scopes, preferred dates, and convert approved tickets into scheduled work orders.',
+    title: 'Work Order Management',
+    desc: 'Capture inbound customer requests, log site locations, prioritize critical repairs, and track jobs from initial inquiry to final completion sign-off.',
   },
   {
     icon: Icons.Calendar,
     title: 'Technician Scheduling and Dispatch',
-    desc: 'Match jobs to available specialists by trade certifications and location. Balance team workloads and reduce scheduling friction from one unified board.',
+    desc: 'Match service orders to certified specialists by trade qualifications, current availability, and geographic distance with intelligent scoring.',
+  },
+  {
+    icon: Icons.MapPin,
+    title: 'Customer Tracking and ETA',
+    desc: 'Provide clients with real-time status updates, arrival estimates, technician verification profiles, and Google Maps location references.',
   },
   {
     icon: Icons.Smartphone,
-    title: 'Mobile Job Execution',
-    desc: 'Empower field crews with digital work briefs, diagnostic checklists, parts usage logging, and touch signatures captured directly on mobile devices.',
+    title: 'Mobile Technician Workflows',
+    desc: 'Empower field crews with mobile work briefs, offline diagnostic logs, parts usage recording, before/after photos, and touch signatures.',
   },
   {
     icon: Icons.Box,
-    title: 'Inventory and Materials',
-    desc: 'Track parts stock across warehouse shelves and service vehicles. Link consumed materials to work orders to prevent inventory shrinkage and reconcile costs.',
+    title: 'Equipment and Inventory Management',
+    desc: 'Monitor replacement parts inventory across warehouse shelves and service vehicles with automatic deduction upon job completion.',
   },
   {
     icon: Icons.CreditCard,
     title: 'Invoicing and Payments',
-    desc: 'Generate itemized commercial invoices immediately upon job completion. Support corporate wallet deductions, card transactions, and bank transfer settlements.',
+    desc: 'Generate itemized commercial invoices directly from logged labor and materials, supporting corporate wallets, cards, and bank transfers.',
   },
   {
-    icon: Icons.Wrench,
-    title: 'Equipment and Warranty Management',
-    desc: 'Maintain complete service histories organized by customer asset serial numbers. Automatically detect active warranty coverage before dispatching repairs.',
+    icon: Icons.Bell,
+    title: 'Customer Notifications',
+    desc: 'Keep clients informed automatically with instant milestone alerts and WhatsApp/SMS updates whenever job status progresses.',
+  },
+  {
+    icon: Icons.BarChart,
+    title: 'Reports and Operational History',
+    desc: 'Maintain complete service audit logs, asset warranty histories, technician utilization metrics, and financial performance summaries.',
   },
 ];
 
+// 5-Step Workflow (Strictly matching prompt)
 const WORKFLOW_STEPS = [
-  { step: '1', title: 'Customer Submits Request', desc: 'Customer enters job scope, site address, preferred schedule, and equipment details.' },
-  { step: '2', title: 'Manager Schedules Job', desc: 'Operations manager reviews request details, verifies trade skills, and assigns a specialist.' },
-  { step: '3', title: 'Technician Receives Job', desc: 'Field technician accesses job brief, customer contacts, and site navigation on mobile.' },
-  { step: '4', title: 'Diagnosis and Work Done', desc: 'Technician arrives on site, performs diagnostic checks, and records operational findings.' },
-  { step: '5', title: 'Materials and Sign-Off', desc: 'Replacement parts and photos are logged, followed by customer digital confirmation.' },
-  { step: '6', title: 'Invoice Generated', desc: 'Invoice compiles automatically from logged labor, materials, and standard service rates.' },
-  { step: '7', title: 'Payment Collected', desc: 'Customer settles invoice through pre-funded corporate balance, card, or transfer.' },
-  { step: '8', title: 'History Preserved', desc: 'Completed work order and warranty records update permanently for future reference.' },
+  { step: '1', title: 'Request submitted.', desc: 'Customer or manager enters service requirements, location details, preferred timing, and asset references.' },
+  { step: '2', title: 'Job reviewed and scheduled.', desc: 'Operations manager confirms project scope, verifies trade requirements, and assigns a qualified specialist.' },
+  { step: '3', title: 'Technician dispatched.', desc: 'Technician receives job specifications, customer contact, and driving directions directly on their mobile device.' },
+  { step: '4', title: 'Work completed and approved.', desc: 'Specialist conducts diagnosis, records parts used, captures customer signature, and marks the visit complete.' },
+  { step: '5', title: 'Invoice issued and payment recorded.', desc: 'Itemized invoice compiles automatically from completed work order data for immediate digital settlement.' },
 ];
 
-const ROLE_PREVIEWS = [
+// 6 Solutions / Commercial Verticals (Strictly matching prompt)
+const SOLUTIONS = [
   {
-    id: 'manager',
-    label: 'Operations Manager',
-    title: 'Centralized Dispatch and Team Allocation',
-    summary: 'Coordinate incoming service requests, check technician availability, and review work order progress.',
-    data: [
-      { id: 'WO-4812', client: 'Sterling Logistics Facility', service: 'Commercial Solar Inverter Repair', tech: 'Marcus Vance', status: 'En Route', priority: 'Urgent' },
-      { id: 'WO-4815', client: 'Apex Cold Chain Systems', service: 'Industrial Chiller Diagnostics', tech: 'David Kalu', status: 'In Progress', priority: 'High' },
-      { id: 'WO-4818', client: 'Northgate Medical Complex', service: 'Backup Generator Overhaul', tech: 'Aisha Bello', status: 'Assigned', priority: 'Normal' },
-      { id: 'WO-4821', client: 'Continental Commercial Towers', service: '3-Phase Switchgear Calibration', tech: 'Emeka Obi', status: 'Reviewing', priority: 'Normal' },
-    ],
+    title: 'Commercial HVAC',
+    desc: 'Schedule seasonal filter inspections, compressor overhauls, refrigerant pressure checks, and emergency chiller repairs for facilities.',
   },
   {
-    id: 'technician',
-    label: 'Technician',
-    title: 'Mobile Job Execution on Site',
-    summary: 'View assigned jobs, navigate to customer sites, enter diagnostic notes, and record digital sign-offs.',
-    checklist: [
-      'Site arrival confirmed and customer contacted',
-      'Diagnostic checklist completed and voltage readings recorded',
-      'Van inventory materials deducted from work order ledger',
-      'Customer sign-off signature captured on mobile glass',
-    ],
+    title: 'Electrical Contracting',
+    desc: 'Manage 3-phase switchgear calibrations, panel installations, circuit load balancing, and emergency outage restoration with certified technicians.',
   },
   {
-    id: 'customer',
-    label: 'Customer',
-    title: 'Self-Service Tracking and Approval',
-    summary: 'Submit new service requests, check arrival status, inspect completed work reports, and settle invoices.',
-    milestones: [
-      { title: 'Request Accepted', detail: 'Work order approved by operations team' },
-      { title: 'Technician Assigned', detail: 'Certified specialist allocated to ticket' },
-      { title: 'On the Way', detail: 'Technician traveling to service location' },
-      { title: 'Work in Progress', detail: 'Diagnosis and repairs actively under way' },
-      { title: 'Completed and Invoiced', detail: 'Sign-off captured and invoice ready' },
-    ],
+    title: 'Solar Maintenance',
+    desc: 'Track inverter diagnostic codes, string voltage performance, battery storage overhauls, and solar panel cleaning cadences with warranty tracking.',
   },
   {
-    id: 'accountant',
-    label: 'Accountant',
-    title: 'Commercial Billing and Payment Reconciliation',
-    summary: 'Review itemized labor, verify parts billing, track corporate balances, and reconcile bank transfers.',
-    invoice: {
-      orderNo: 'WO-4812',
-      invoiceNo: 'INV-4812',
-      items: [
-        { label: 'Solar Inverter Diagnostic & Calibration', amount: '₦35,000' },
-        { label: '50A High-Voltage DC Circuit Breaker', amount: '₦28,500' },
-        { label: 'Certified On-Site Labour Charge', amount: '₦20,000' },
-      ],
-      total: '₦83,500',
-      settlement: 'Settled via Corporate Account',
-    },
+    title: 'Plumbing Businesses',
+    desc: 'Dispatch crews for commercial pipe repairs, backflow testing, industrial booster pump maintenance, and wastewater valve servicing.',
+  },
+  {
+    title: 'Generator Servicing',
+    desc: 'Organize routine oil and fuel filter replacements, automatic transfer switch (ATS) testing, load bank tests, and diesel generator overhauls.',
+  },
+  {
+    title: 'Equipment Maintenance',
+    desc: 'Maintain historical service records by equipment serial number, detect active manufacturer warranties, and plan preventative maintenance.',
   },
 ];
 
-const FAQS = [
-  {
-    q: 'Can technicians use FieldOps 360 when mobile connectivity drops?',
-    a: 'Yes. The technician interface records diagnosis notes, parts deductions, and touch signatures into a persistent local queue. Once cellular service resumes, changes synchronize cleanly with the database.',
-  },
-  {
-    q: 'How is company data separated between different contracting businesses?',
-    a: 'Multi-tenant isolation is enforced at the database level using PostgreSQL Row Level Security. Queries execute within isolated company boundaries, guaranteeing that no organization can access another contractor’s data.',
-  },
-  {
-    q: 'Can customers track job progress without creating an account?',
-    a: 'Yes. Customers receive a secure direct tracking link via WhatsApp or SMS. Opening the link provides job milestones, technician details, and status updates without requiring account registration.',
-  },
-  {
-    q: 'How does equipment warranty tracking work?',
-    a: 'Every completed job links to customer equipment records by serial number and asset tag. When a customer requests service for an existing unit, active warranty coverage is automatically indicated.',
-  },
-  {
-    q: 'What payment options are supported for invoice settlement?',
-    a: 'Clients can settle work orders directly through pre-funded corporate balances, online card payments, or verified corporate bank transfer reconciliation upon signature approval.',
-  },
+// Believable Sample Data for Interactive Demonstration Console
+const DEMO_WORK_ORDERS = [
+  { id: 'WO-4812', client: 'Sterling Logistics Facility', service: 'Solar Inverter Calibration', tech: 'Marcus Vance', status: 'In Progress', priority: 'High', cost: '₦84,500' },
+  { id: 'WO-4815', client: 'Apex Cold Chain Systems', service: 'Commercial HVAC Chiller Repair', tech: 'David Kalu', status: 'En Route', priority: 'Urgent', cost: '₦142,000' },
+  { id: 'WO-4818', client: 'Northgate Medical Complex', service: '250kVA Generator Maintenance', tech: 'Aisha Bello', status: 'Assigned', priority: 'Normal', cost: '₦68,000' },
+  { id: 'WO-4821', client: 'Continental Commercial Towers', service: '3-Phase Switchgear Inspection', tech: 'Emeka Obi', status: 'Reviewing', priority: 'Normal', cost: '₦45,000' },
+  { id: 'WO-4826', client: 'Harbor Point Facilities', service: 'Booster Pump Seal Replacement', tech: 'Unassigned', status: 'New Request', priority: 'Normal', cost: '₦52,000' },
+];
+
+const DEMO_TECHNICIANS = [
+  { name: 'Marcus Vance', role: 'Solar & Electrical Specialist', status: 'Active on Job', location: 'Lekki Phase 1', score: '98%', jobs: 2 },
+  { name: 'David Kalu', role: 'Commercial HVAC Engineer', status: 'En Route (14 min)', location: 'Ikeja Industrial', score: '94%', jobs: 1 },
+  { name: 'Aisha Bello', role: 'Generator Overhaul Lead', status: 'Dispatched', location: 'Victoria Island', score: '91%', jobs: 1 },
+  { name: 'Emeka Obi', role: 'Plumbing & Mechanical Tech', status: 'Available', location: 'Marina Central', score: '88%', jobs: 0 },
+];
+
+const DEMO_INVOICES = [
+  { id: 'INV-4812', client: 'Sterling Logistics Facility', job: 'WO-4812', amount: '₦84,500', status: 'Paid via Wallet', date: 'Oct 16, 2026' },
+  { id: 'INV-4809', client: 'Heritage Commercial Bank', job: 'WO-4809', amount: '₦126,000', status: 'Pending Accountant Review', date: 'Oct 15, 2026' },
+  { id: 'INV-4802', client: 'Prime Plaza Offices', job: 'WO-4802', amount: '₦58,000', status: 'Settled via Transfer', date: 'Oct 14, 2026' },
+  { id: 'INV-4798', client: 'Apex Cold Chain Systems', job: 'WO-4798', amount: '₦210,000', status: 'Paid via Card', date: 'Oct 13, 2026' },
+];
+
+const DEMO_ASSETS = [
+  { name: '50kW Hybrid Solar Inverter', serial: 'SN-INV-99201', client: 'Sterling Logistics Facility', install: '2025-04-12', warranty: 'Active (18 months left)' },
+  { name: '250kVA Perkins Diesel Generator', serial: 'SN-GEN-44102', client: 'Northgate Medical Complex', install: '2024-11-20', warranty: 'Active (5 months left)' },
+  { name: 'Industrial Water Booster Unit', serial: 'SN-PMP-88310', client: 'Harbor Point Facilities', install: '2023-08-15', warranty: 'Warranty Expired' },
 ];
 
 export default function LandingPage() {
-  const [activeRoleTab, setActiveRoleTab] = useState(0);
-  const [trackQuery, setTrackQuery] = useState('');
+  const [demoTab, setDemoTab] = useState('orders');
+  const [trackInput, setTrackInput] = useState('');
+  const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'annual'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState(null);
-
-  const currentRole = ROLE_PREVIEWS[activeRoleTab];
 
   const handleTrackSubmit = (e) => {
     e.preventDefault();
-    const query = trackQuery.trim();
+    const query = trackInput.trim();
     if (query) {
       window.location.href = `/track?no=${encodeURIComponent(query)}`;
     } else {
@@ -272,25 +253,21 @@ export default function LandingPage() {
     }
   };
 
-  const toggleFaq = (idx) => {
-    setOpenFaq(openFaq === idx ? null : idx);
-  };
-
   return (
     <div style={{ background: '#ffffff', color: '#0f172a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif' }}>
       
-      {/* Navigation Bar */}
+      {/* 1. Header & Navigation */}
       <header style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', height: 70, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#0f172a' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 8, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 7, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icons.Logo />
               </div>
               <div>
-                <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', display: 'block', lineHeight: 1.1 }}>FIELDOPS 360</span>
-                <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, letterSpacing: '0.03em', textTransform: 'uppercase' }}>Field Service Management</span>
+                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', display: 'block', lineHeight: 1.1 }}>FIELDOPS 360</span>
+                <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Field Service SaaS</span>
               </div>
             </Link>
 
@@ -298,23 +275,23 @@ export default function LandingPage() {
               <a href="#product" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Product</a>
               <a href="#solutions" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Solutions</a>
               <a href="#features" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Features</a>
-              <a href="#workflow" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Workflow</a>
+              <a href="#workflow" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>How It Works</a>
+              <a href="#pricing" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Pricing</a>
               <a href="#security" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Security</a>
-              <a href="#tracking" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Order Lookup</a>
             </nav>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 14px' }}>
                 Sign In
               </Link>
-              <Link href="/login?mode=signup" style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', background: '#2563eb', textDecoration: 'none', padding: '9px 18px', borderRadius: 8 }}>
+              <Link href="/login?mode=signup" style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', background: '#2563eb', textDecoration: 'none', padding: '8px 16px', borderRadius: 7 }}>
                 Start Free Trial
               </Link>
             </div>
 
-            {/* Mobile Hamburger Button */}
+            {/* Mobile Hamburger Toggle */}
             <button
               type="button"
               className="mobile-menu-btn"
@@ -329,7 +306,7 @@ export default function LandingPage() {
                 cursor: 'pointer',
                 margin: 0,
               }}
-              aria-label="Toggle navigation menu"
+              aria-label="Toggle navigation"
             >
               {mobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
             </button>
@@ -340,17 +317,17 @@ export default function LandingPage() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div style={{ borderTop: '1px solid #e2e8f0', background: '#ffffff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <a href="#product" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Product</a>
-            <a href="#solutions" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Solutions</a>
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Features</a>
-            <a href="#workflow" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Workflow</a>
-            <a href="#security" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Security</a>
-            <a href="#tracking" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 15, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Order Lookup</a>
+            <a href="#product" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Product</a>
+            <a href="#solutions" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Solutions</a>
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Features</a>
+            <a href="#workflow" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>How It Works</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Pricing</a>
+            <a href="#security" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Security</a>
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '10px', borderRadius: 8, border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '9px', borderRadius: 6, border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
                 Sign In
               </Link>
-              <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '10px', borderRadius: 8, background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 700, fontSize: 14 }}>
+              <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '9px', borderRadius: 6, background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
                 Start Free Trial
               </Link>
             </div>
@@ -358,216 +335,244 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* Hero Section */}
-      <section style={{ padding: '64px 20px 48px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+      {/* 2. Hero Section */}
+      <section style={{ padding: '68px 24px 56px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 1040, margin: '0 auto', textAlign: 'center' }}>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 20 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb' }}></span>
-            <span>Commercial Field Service Management</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 20 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563eb' }}></span>
+            <span>Commercial Field Service Management Platform</span>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(28px, 4.4vw, 52px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: '#0f172a', margin: '0 0 20px' }}>
+          <h1 style={{ fontSize: 'clamp(32px, 4.6vw, 54px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: '#0f172a', margin: '0 0 18px' }}>
             Manage every service job from request to completion.
           </h1>
 
           <p style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: '#475569', lineHeight: 1.6, maxWidth: 740, margin: '0 auto 32px' }}>
-            FIELDOPS 360 helps service companies schedule technicians, manage customer requests, track jobs, control inventory, and collect payments from one connected platform.
+            Schedule technicians, manage work orders, track service visits, control inventory, and manage invoicing from one connected platform.
           </p>
 
-          {/* Restrained Action Pair */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-            <Link href="/login?mode=signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 26px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
+          {/* Action Pair */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+            <Link href="/login?mode=signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
               <span>Start Free Trial</span>
               <Icons.ArrowRight />
             </Link>
-            <a href="#product" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#f8fafc', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
+            <a href="#product" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', background: '#f8fafc', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
               <span>Explore the Platform</span>
             </a>
           </div>
 
-          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 40px' }}>
-            Designed for commercial contractors · Multi-tenant security · Instant setup
+          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 44px' }}>
+            Built for service contractors · Multi-tenant isolation · Role-based security
           </p>
 
-          {/* Realistic Product Preview */}
-          <div id="product" style={{ textAlign: 'left', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 12, overflow: 'hidden', boxShadow: '0 12px 36px rgba(15, 23, 42, 0.08)' }}>
+          {/* 3. Product Demonstration (Realistic Operations Dashboard) */}
+          <div id="product" style={{ textAlign: 'left', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 12, overflow: 'hidden', boxShadow: '0 16px 40px -12px rgba(15, 23, 42, 0.08)' }}>
             
-            {/* Dashboard Title Bar */}
-            <div style={{ background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            {/* Top Operational Bar */}
+            <div style={{ background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>FieldOps 360 Operations Dashboard</span>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontWeight: 600 }}>Sample Demonstration Data</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>FieldOps 360 Operations Console</span>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontWeight: 600 }}>Interactive Demonstration Data</span>
               </div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>Company: SolarTech Services Ltd</div>
+              <div style={{ fontSize: 12, color: '#64748b' }}>Organization: SolarTech Engineering Ltd</div>
             </div>
 
-            {/* Application Mockup Layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 0 }}>
+            {/* Navigation Tabs for Preview */}
+            <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '0 16px', display: 'flex', gap: 4, overflowX: 'auto' }}>
+              {[
+                { key: 'orders', label: 'Active Work Orders (5)' },
+                { key: 'dispatch', label: 'Technician Dispatch (4)' },
+                { key: 'invoices', label: 'Invoices & Settlements (4)' },
+                { key: 'assets', label: 'Equipment & Warranties (3)' },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setDemoTab(tab.key)}
+                  style={{
+                    padding: '12px 16px',
+                    border: 'none',
+                    borderBottom: demoTab === tab.key ? '2px solid #2563eb' : '2px solid transparent',
+                    background: 'transparent',
+                    color: demoTab === tab.key ? '#2563eb' : '#64748b',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    margin: 0,
+                    borderRadius: 0,
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dashboard Workspace */}
+            <div style={{ padding: '20px' }}>
               
-              {/* Compact Sidebar Mockup */}
-              <div style={{ padding: '18px', background: '#f8fafc', borderRight: '1px solid #e2e8f0', maxWidth: 220 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Navigation</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 600 }}>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, background: '#e2e8f0', color: '#0f172a' }}>Work Orders</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Dispatch Board</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Customers</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Technicians</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Inventory & Parts</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Invoices & Billing</div>
-                  <div style={{ padding: '8px 10px', borderRadius: 6, color: '#475569' }}>Settings</div>
+              {/* Summary Metrics Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 18 }}>
+                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Active Jobs</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>24</div>
+                </div>
+                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Scheduled Today</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#2563eb', marginTop: 2 }}>12</div>
+                </div>
+                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Awaiting Dispatch</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309', marginTop: 2 }}>5</div>
+                </div>
+                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Invoiced Month</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#15803d', marginTop: 2 }}>₦1.84M</div>
                 </div>
               </div>
 
-              {/* Main Table and Operations Area */}
-              <div style={{ padding: '20px', flex: 1, minWidth: 0, overflowX: 'auto' }}>
-                
-                {/* Metric Summary Strip */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 18 }}>
-                  <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Active Jobs</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>24</div>
-                  </div>
-                  <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Scheduled Today</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#2563eb', marginTop: 2 }}>12</div>
-                  </div>
-                  <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Awaiting Assignment</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309', marginTop: 2 }}>5</div>
-                  </div>
-                  <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Pending Review</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#475569', marginTop: 2 }}>3</div>
-                  </div>
+              {/* Tab 1: Work Orders */}
+              {demoTab === 'orders' && (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 640 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#64748b', background: '#f8fafc' }}>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Work Order</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Client & Facility</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Service Requested</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Technician</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Status</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Priority</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {DEMO_WORK_ORDERS.map((r) => (
+                        <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'ui-monospace, monospace' }}>{r.id}</td>
+                          <td style={{ padding: '12px', color: '#0f172a', fontWeight: 600 }}>{r.client}</td>
+                          <td style={{ padding: '12px', color: '#475569' }}>{r.service}</td>
+                          <td style={{ padding: '12px', color: '#0f172a' }}>{r.tech}</td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ padding: '3px 8px', borderRadius: 4, background: r.status === 'In Progress' ? '#eff6ff' : r.status === 'En Route' ? '#eff6ff' : '#f8fafc', color: r.status.includes('Route') || r.status.includes('Progress') ? '#2563eb' : '#475569', fontSize: 12, fontWeight: 600 }}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ padding: '3px 8px', borderRadius: 4, background: r.priority === 'Urgent' ? '#fffbeb' : r.priority === 'High' ? '#fef2f2' : '#f8fafc', color: r.priority === 'Urgent' ? '#b45309' : r.priority === 'High' ? '#b91c1c' : '#475569', fontSize: 12, fontWeight: 600 }}>
+                              {r.priority}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              )}
 
-                {/* Work Orders Table */}
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 620 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Work Order</th>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Customer & Facility</th>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Service Type</th>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Technician</th>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Status</th>
-                      <th style={{ padding: '10px 12px', fontWeight: 600 }}>Priority</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'monospace' }}>WO-4812</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Northfield Medical Center</td>
-                      <td style={{ padding: '12px', color: '#475569' }}>HVAC Filter & Diagnostics</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>David Kalu</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontSize: 12, fontWeight: 600 }}>In Progress</span>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#fef2f2', color: '#b91c1c', fontSize: 12, fontWeight: 600 }}>High</span>
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'monospace' }}>WO-4815</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Sterling Logistics Hub</td>
-                      <td style={{ padding: '12px', color: '#475569' }}>Solar Inverter Inspection</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Marcus Vance</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontSize: 12, fontWeight: 600 }}>En Route</span>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#fffbeb', color: '#b45309', fontSize: 12, fontWeight: 600 }}>Urgent</span>
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'monospace' }}>WO-4818</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Apex Manufacturing</td>
-                      <td style={{ padding: '12px', color: '#475569' }}>3-Phase Switchgear Test</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Aisha Bello</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 600 }}>Assigned</span>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 600 }}>Normal</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'monospace' }}>WO-4821</td>
-                      <td style={{ padding: '12px', color: '#0f172a' }}>Continental Office Park</td>
-                      <td style={{ padding: '12px', color: '#475569' }}>250kVA Generator Service</td>
-                      <td style={{ padding: '12px', color: '#64748b' }}>Unassigned</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#fffbeb', color: '#b45309', fontSize: 12, fontWeight: 600 }}>Reviewing</span>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 600 }}>Normal</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Tab 2: Dispatch Scheduling */}
+              {demoTab === 'dispatch' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+                  {DEMO_TECHNICIANS.map((t, idx) => (
+                    <div key={idx} style={{ padding: '14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>{t.name}</div>
+                        <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: t.status === 'Available' ? '#ecfdf5' : '#eff6ff', color: t.status === 'Available' ? '#15803d' : '#2563eb', fontWeight: 600 }}>
+                          {t.status}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>{t.role}</div>
+                      <div style={{ fontSize: 12, color: '#475569', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
+                        <span>Sector: <strong>{t.location}</strong></span>
+                        <span>Match: <strong>{t.score}</strong></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-              </div>
+              {/* Tab 3: Invoicing */}
+              {demoTab === 'invoices' && (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 620 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#64748b', background: '#f8fafc' }}>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Invoice #</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Client</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Work Order</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Amount</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Settlement Status</th>
+                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {DEMO_INVOICES.map((i) => (
+                        <tr key={i.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'ui-monospace, monospace' }}>{i.id}</td>
+                          <td style={{ padding: '12px', color: '#0f172a', fontWeight: 600 }}>{i.client}</td>
+                          <td style={{ padding: '12px', color: '#64748b', fontFamily: 'ui-monospace, monospace' }}>{i.job}</td>
+                          <td style={{ padding: '12px', fontWeight: 700, color: '#0f172a' }}>{i.amount}</td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ padding: '3px 8px', borderRadius: 4, background: i.status.includes('Paid') || i.status.includes('Settled') ? '#ecfdf5' : '#fffbeb', color: i.status.includes('Paid') || i.status.includes('Settled') ? '#15803d' : '#b45309', fontSize: 12, fontWeight: 600 }}>
+                              {i.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px', color: '#64748b' }}>{i.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Tab 4: Assets & Warranties */}
+              {demoTab === 'assets' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+                  {DEMO_ASSETS.map((a, idx) => (
+                    <div key={idx} style={{ padding: '14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 4 }}>{a.name}</div>
+                      <div style={{ fontSize: 12, color: '#64748b', fontFamily: 'ui-monospace, monospace', marginBottom: 8 }}>Serial: {a.serial}</div>
+                      <div style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>Facility: {a.client}</div>
+                      <div style={{ fontSize: 11, padding: '3px 8px', borderRadius: 4, background: a.warranty.includes('Active') ? '#ecfdf5' : '#fef2f2', color: a.warranty.includes('Active') ? '#15803d' : '#b91c1c', fontWeight: 600, display: 'inline-block' }}>
+                        {a.warranty}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
             </div>
-
           </div>
 
         </div>
       </section>
 
-      {/* Trust & Target Industries Section */}
-      <section id="solutions" style={{ padding: '64px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Industries Served
-            </span>
-            <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-              Built for commercial service and contracting businesses
-            </h2>
-            <p style={{ fontSize: 15, color: '#475569', maxWidth: 680, margin: '0 auto' }}>
-              FieldOps 360 supports specialized trade teams with scheduling, job execution, materials tracking, and customer accountability.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-            {TARGET_INDUSTRIES.map((ind, idx) => (
-              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: '#2563eb' }}><Icons.Check /></div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>{ind}</span>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* Six Principal Capabilities */}
-      <section id="features" style={{ padding: '80px 20px', maxWidth: 1200, margin: '0 auto' }}>
+      {/* 4. Features Section (8 Core Capabilities) */}
+      <section id="features" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Core Platform Modules
+            Core Platform Capabilities
           </span>
-          <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Everything needed to run field operations
+          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+            Built for everyday field service operations
           </h2>
-          <p style={{ fontSize: 15, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-            Connect managers, technicians, customers, and accounting in one reliable operational system.
+          <p style={{ fontSize: 15, color: '#475569', maxWidth: 620, margin: '0 auto' }}>
+            A single connected software system for dispatch managers, mobile field technicians, corporate customers, and accounting.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
-          {PRINCIPAL_CAPABILITIES.map((cap, idx) => {
-            const CapIcon = cap.icon;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 20 }}>
+          {CORE_FEATURES.map((feat, idx) => {
+            const FeatureIcon = feat.icon;
             return (
-              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ width: 40, height: 40, borderRadius: 8, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                    <CapIcon />
+                  <div style={{ width: 36, height: 36, borderRadius: 7, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                    <FeatureIcon />
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 10px' }}>{cap.title}</h3>
-                  <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.6, margin: 0 }}>{cap.desc}</p>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>{feat.title}</h3>
+                  <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>{feat.desc}</p>
                 </div>
               </div>
             );
@@ -575,26 +580,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Workflow Section */}
-      <section id="workflow" style={{ padding: '80px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+      {/* 5. How It Works (5 Clear Steps) */}
+      <section id="workflow" style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Business Workflow
+              Operational Lifecycle
             </span>
-            <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-              How jobs progress through FieldOps 360
+            <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+              How jobs progress from request to payment
             </h2>
-            <p style={{ fontSize: 15, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-              A disciplined, traceable lifecycle from first customer contact to payment reconciliation.
+            <p style={{ fontSize: 15, color: '#475569', maxWidth: 600, margin: '0 auto' }}>
+              A disciplined, traceable workflow connecting your office and field crew in real time.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             {WORKFLOW_STEPS.map((wf, idx) => (
               <div key={idx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '20px' }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#2563eb', marginBottom: 8 }}>STAGE {wf.step}</div>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, marginBottom: 12 }}>
+                  {wf.step}
+                </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>{wf.title}</div>
                 <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, margin: 0 }}>{wf.desc}</p>
               </div>
@@ -604,243 +611,264 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Role-Based Product Previews */}
-      <section style={{ padding: '80px 20px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+      {/* 6. Solutions by Trade */}
+      <section id="solutions" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Role-Specific Interfaces
+            Commercial Verticals
           </span>
-          <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Tailored experiences for every operational team member
+          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+            Engineered for specialized service businesses
           </h2>
           <p style={{ fontSize: 15, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-            Inspect how the platform presents relevant data for managers, technicians, customers, and accounting.
+            Supporting commercial contractors with trade-specific workflows, technician certifications, and parts ledgers.
           </p>
         </div>
 
-        {/* Tab Controls */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 28, flexWrap: 'wrap' }}>
-          {ROLE_PREVIEWS.map((role, idx) => (
-            <button
-              key={role.id}
-              type="button"
-              onClick={() => setActiveRoleTab(idx)}
-              style={{
-                padding: '9px 18px',
-                borderRadius: 7,
-                border: activeRoleTab === idx ? '1px solid #2563eb' : '1px solid #cbd5e1',
-                background: activeRoleTab === idx ? '#eff6ff' : '#ffffff',
-                color: activeRoleTab === idx ? '#2563eb' : '#475569',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                margin: 0,
-              }}
-            >
-              {role.label}
-            </button>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 18 }}>
+          {SOLUTIONS.map((sol, idx) => (
+            <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ color: '#2563eb' }}><Icons.Check /></div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>{sol.title}</h3>
+              </div>
+              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>{sol.desc}</p>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Role Content Card */}
-        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 10, padding: '24px' }}>
-          <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: 16, marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role Interface Preview</span>
-              <h3 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '4px 0 0' }}>{currentRole.title}</h3>
+      {/* 7. Pricing Section */}
+      <section id="pricing" style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          
+          <div style={{ textAlign: 'center', marginBottom: 36 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+              Subscription Plans
+            </span>
+            <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+              Transparent commercial pricing
+            </h2>
+            <p style={{ fontSize: 15, color: '#475569', maxWidth: 600, margin: '0 auto 20px' }}>
+              Straightforward monthly or annual plans. No hidden dispatch surcharges or setup penalties.
+            </p>
+
+            {/* Monthly / Annual Toggle */}
+            <div style={{ display: 'inline-flex', background: '#e2e8f0', padding: 3, borderRadius: 8 }}>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('monthly')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: billingCycle === 'monthly' ? '#ffffff' : 'transparent',
+                  color: billingCycle === 'monthly' ? '#0f172a' : '#64748b',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  margin: 0,
+                }}
+              >
+                Monthly Billing
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('annual')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: billingCycle === 'annual' ? '#ffffff' : 'transparent',
+                  color: billingCycle === 'annual' ? '#0f172a' : '#64748b',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  margin: 0,
+                }}
+              >
+                Annual (Save 15%)
+              </button>
             </div>
-            <p style={{ fontSize: 13, color: '#475569', maxWidth: 460, margin: 0 }}>{currentRole.summary}</p>
           </div>
 
-          {/* Manager Role Preview */}
-          {currentRole.id === 'manager' && (
-            <div style={{ overflowX: 'auto', background: '#ffffff', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 620 }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b', background: '#f8fafc' }}>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Work Order</th>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Customer Facility</th>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Service Requested</th>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Technician</th>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Status</th>
-                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>Priority</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentRole.data.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: 700 }}>{row.id}</td>
-                      <td style={{ padding: '12px 14px', color: '#0f172a', fontWeight: 600 }}>{row.client}</td>
-                      <td style={{ padding: '12px 14px', color: '#475569' }}>{row.service}</td>
-                      <td style={{ padding: '12px 14px', color: '#0f172a' }}>{row.tech}</td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontSize: 12, fontWeight: 600 }}>{row.status}</span>
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, background: row.priority === 'Urgent' ? '#fffbeb' : '#f8fafc', color: row.priority === 'Urgent' ? '#b45309' : '#475569', fontSize: 12, fontWeight: 600 }}>
-                          {row.priority}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Technician Role Preview */}
-          {currentRole.id === 'technician' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
-              {currentRole.checklist.map((item, idx) => (
-                <div key={idx} style={{ padding: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <div style={{ color: '#15803d', marginTop: 2 }}><Icons.Check /></div>
-                  <span style={{ fontSize: 14, color: '#334155', lineHeight: 1.5 }}>{item}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch' }}>
+            
+            {/* Starter Plan */}
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Starter</div>
+                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For independent contractors and small maintenance teams.</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$41' : '$49'}</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Customer Role Preview */}
-          {currentRole.id === 'customer' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-              {currentRole.milestones.map((m, idx) => (
-                <div key={idx} style={{ padding: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
-                    {idx + 1}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>{m.detail}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Up to 3 field technicians</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Unlimited work orders</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Mobile technician execution app</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Basic parts inventory ledger</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Digital invoices and signatures</div>
                 </div>
-              ))}
+              </div>
+              <Link href="/login?mode=signup" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+                Start Free Trial
+              </Link>
             </div>
-          )}
 
-          {/* Accountant Role Preview */}
-          {currentRole.id === 'accountant' && (
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 8 }}>
-                <span style={{ fontSize: 14, color: '#64748b' }}>Work Order: <strong style={{ color: '#0f172a' }}>{currentRole.invoice.orderNo}</strong></span>
-                <span style={{ fontSize: 14, color: '#64748b' }}>Invoice Reference: <strong style={{ color: '#0f172a' }}>{currentRole.invoice.invoiceNo}</strong></span>
+            {/* Professional Plan (Highlighted) */}
+            <div style={{ background: '#ffffff', border: '2px solid #2563eb', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', boxShadow: '0 8px 24px -4px rgba(37, 99, 235, 0.1)' }}>
+              <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#2563eb', color: '#ffffff', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase' }}>
+                Most Popular
               </div>
-              {currentRole.invoice.items.map((it, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f8fafc', fontSize: 14 }}>
-                  <span style={{ color: '#334155' }}>{it.label}</span>
-                  <span style={{ fontWeight: 600, color: '#0f172a' }}>{it.amount}</span>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Professional</div>
+                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For established service companies managing active fleets.</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$125' : '$149'}</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
                 </div>
-              ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, paddingTop: 12, borderTop: '2px solid #e2e8f0' }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>Total Invoice Amount</span>
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#2563eb' }}>{currentRole.invoice.total}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Up to 15 field technicians</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Smart technician dispatch scoring</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Real-time customer tracking portal</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> WhatsApp and SMS dispatch alerts</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Warehouse and van inventory deductions</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Asset warranty tracking register</div>
+                </div>
               </div>
-              <div style={{ marginTop: 12, padding: '6px 12px', background: '#ecfdf5', borderRadius: 6, fontSize: 12, color: '#15803d', fontWeight: 600, display: 'inline-block' }}>
-                {currentRole.invoice.settlement}
-              </div>
+              <Link href="/login?mode=signup" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+                Start Free Trial
+              </Link>
             </div>
-          )}
+
+            {/* Enterprise Plan */}
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Enterprise</div>
+                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For regional contractors requiring custom controls and SLAs.</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$339' : '$399'}</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Unlimited technicians and managers</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Multi-branch organizational isolation</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Custom rate cards and commission rules</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Dedicated database backup policies</div>
+                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Priority support with dedicated onboarding</div>
+                </div>
+              </div>
+              <Link href="/login" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+                Contact Sales
+              </Link>
+            </div>
+
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#64748b' }}>
+            All plans include database-level tenant isolation, encrypted sessions, and full access to web and mobile portals.
+          </div>
 
         </div>
       </section>
 
-      {/* Security and Architecture Section */}
-      <section id="security" style={{ padding: '80px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      {/* 8. Security and Trust Section */}
+      <section id="security" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 44 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+            Architecture and Data Integrity
+          </span>
+          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+            Enterprise security without compromise
+          </h2>
+          <p style={{ fontSize: 15, color: '#475569', maxWidth: 620, margin: '0 auto' }}>
+            Accurate, reliable data partitioning protecting contractor operational files, technician identities, and commercial billing.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
           
-          <div style={{ textAlign: 'center', marginBottom: 44 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Security and Data Integrity
-            </span>
-            <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-              Built for commercial accountability
-            </h2>
-            <p style={{ fontSize: 15, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-              FieldOps 360 secures customer information, job histories, and financial records with proven database controls.
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ color: '#2563eb' }}><Icons.Shield /></div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Row Level Security (RLS)</h3>
+            </div>
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+              Multi-tenant isolation enforced directly at the PostgreSQL layer. All queries partition by organization identifier, ensuring zero data leakage between different contracting businesses.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-            
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ color: '#2563eb' }}><Icons.Lock /></div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>Authentication and Encryption</h4>
-              </div>
-              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                Encrypted password storage and verified session handling prevent unauthorized account access.
-              </p>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ color: '#2563eb' }}><Icons.Users /></div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Role-Based Access (RBAC)</h3>
             </div>
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+              Dedicated interfaces and API barriers for Operations Managers, Field Technicians, Customers, and Accountants prevent unauthorized modifications to pricing and job assignments.
+            </p>
+          </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ color: '#2563eb' }}><Icons.Users /></div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>Role-Based Access Control</h4>
-              </div>
-              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                Dedicated interfaces strictly limit capabilities for Super Admins, Operations Managers, Field Technicians, Accountants, and Customers.
-              </p>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ color: '#2563eb' }}><Icons.FileText /></div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Permanent Audit Logs</h3>
             </div>
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+              Immutable activity records document all status transitions, technician reassignment events, and payment approvals with actor identification and timestamps.
+            </p>
+          </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ color: '#2563eb' }}><Icons.Shield /></div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>Organization Data Isolation</h4>
-              </div>
-              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                PostgreSQL Row Level Security partitions database records by company ID, ensuring zero data leakage between different contracting businesses.
-              </p>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ color: '#2563eb' }}><Icons.Lock /></div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Secure Credential Handling</h3>
             </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ color: '#2563eb' }}><Icons.FileText /></div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>Immutable Audit Logging</h4>
-              </div>
-              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                Every status update, technician reassignment, and financial transaction creates an append-only audit trail with timestamps and user identifiers.
-              </p>
-            </div>
-
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+              Encrypted session management, standard bcrypt password hashing, and tokenized email verification guard against account compromise and session hijacking.
+            </p>
           </div>
 
         </div>
       </section>
 
-      {/* Customer Tracking Lookup */}
-      <section id="tracking" style={{ padding: '80px 20px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+      {/* Customer Tracking Demonstration Tool */}
+      <section style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
           
           <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Customer Experience
+            Self-Service Tracking Tool
           </span>
           <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Work Order Tracking Lookup
+            Test customer order tracking
           </h2>
-          <p style={{ fontSize: 15, color: '#475569', margin: '0 0 28px' }}>
-            Check the status of an active job, view technician details, and review arrival estimates using your work order reference.
+          <p style={{ fontSize: 15, color: '#475569', margin: '0 0 24px' }}>
+            Experience how customers inspect live work order milestones, view technician arrival estimates, and review service notes.
           </p>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 10, padding: '20px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 10, padding: '20px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
             <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 240, display: 'flex', alignItems: 'center', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 12px' }}>
+              <div style={{ flex: 1, minWidth: 240, display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 7, padding: '0 12px' }}>
                 <div style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
                   <Icons.Search />
                 </div>
                 <input
                   type="text"
-                  placeholder="Enter work order number, for example REQ-DEMO-4109"
-                  value={trackQuery}
-                  onChange={(e) => setTrackQuery(e.target.value)}
+                  placeholder="Enter order reference, e.g. REQ-DEMO-4109"
+                  value={trackInput}
+                  onChange={(e) => setTrackInput(e.target.value)}
                   style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 10px', fontSize: 14, color: '#0f172a', background: 'transparent' }}
                 />
               </div>
-              <button type="submit" style={{ margin: 0, padding: '12px 24px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <button type="submit" style={{ margin: 0, padding: '12px 22px', background: '#2563eb', color: '#ffffff', borderRadius: 7, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 Track Order
               </button>
             </form>
 
-            <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#64748b' }}>Need to test tracking?</span>
-              <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 13, fontWeight: 700, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span>Launch Demonstration Tracking (REQ-DEMO-4109)</span>
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>Need an instant demonstration?</span>
+              <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 13, fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span>Launch Interactive Demo Tracking (REQ-DEMO-4109)</span>
                 <Icons.ArrowRight />
               </Link>
             </div>
@@ -849,86 +877,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Frequently Asked Questions */}
-      <section id="faq" style={{ padding: '80px 20px', maxWidth: 860, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Frequently Asked Questions
-          </span>
-          <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-            Questions about using FieldOps 360
-          </h2>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {FAQS.map((faq, idx) => (
-            <div
-              key={idx}
-              style={{
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                background: '#ffffff',
-                overflow: 'hidden',
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => toggleFaq(idx)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 20px',
-                  background: openFaq === idx ? '#f8fafc' : '#ffffff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: '#0f172a',
-                  margin: 0,
-                }}
-              >
-                <span>{faq.q}</span>
-                <span style={{ transform: openFaq === idx ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', color: '#64748b' }}>
-                  <Icons.ChevronDown />
-                </span>
-              </button>
-              {openFaq === idx && (
-                <div style={{ padding: '0 20px 18px', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
-                  <p style={{ margin: 0, paddingTop: 12, fontSize: 14, color: '#475569', lineHeight: 1.6 }}>
-                    {faq.a}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Final Conversion Section */}
-      <section style={{ padding: '64px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 880, margin: '0 auto', textAlign: 'center', border: '1px solid #cbd5e1', borderRadius: 12, padding: '44px 24px', background: '#ffffff' }}>
-          <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 800, color: '#0f172a', margin: '0 0 14px' }}>
-            Ready to streamline your field service operations?
+      {/* 9. Final Call to Action */}
+      <section style={{ padding: '76px 24px', background: '#ffffff' }}>
+        <div style={{ maxWidth: 880, margin: '0 auto', textAlign: 'center', border: '1px solid #cbd5e1', borderRadius: 12, padding: '48px 24px', background: '#f8fafc' }}>
+          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 14px' }}>
+            Elevate your field service operations today
           </h2>
           <p style={{ fontSize: 15, color: '#475569', maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.6 }}>
-            Set up your organization, schedule your technicians, and manage customer service requests with FieldOps 360.
+            Set up your organization, schedule technicians, and manage customer service requests from one connected platform.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link href="/login?mode=signup" style={{ padding: '12px 26px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            <Link href="/login?mode=signup" style={{ padding: '12px 24px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
               Start Free Trial
             </Link>
-            <Link href="/login" style={{ padding: '12px 24px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+            <Link href="/login" style={{ padding: '12px 22px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
               Sign In to Portal
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid #e2e8f0', padding: '52px 20px 32px', background: '#ffffff', fontSize: 13, color: '#64748b' }}>
+      {/* 10. Footer */}
+      <footer style={{ borderTop: '1px solid #e2e8f0', padding: '52px 24px 32px', background: '#ffffff', fontSize: 13, color: '#64748b' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 32, marginBottom: 40 }}>
@@ -941,28 +911,29 @@ export default function LandingPage() {
                 <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>FIELDOPS 360</span>
               </div>
               <p style={{ lineHeight: 1.6, margin: '0 0 12px' }}>
-                Field service management software for contracting and maintenance companies. Work order dispatch, technician execution, and customer invoicing.
+                Commercial field service management software. Work order dispatch, technician execution, inventory control, and customer invoicing.
               </p>
             </div>
 
             <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Product Modules</div>
+              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Platform Capabilities</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Service Requests & Work Orders</a>
+                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Work Order Management</a>
                 <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Technician Scheduling</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Mobile Job Execution</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Inventory and Materials</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Invoicing and Payments</a>
+                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Mobile Execution</a>
+                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Equipment & Warranties</a>
+                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Invoicing & Billing</a>
               </div>
             </div>
 
             <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Portals & Access</div>
+              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Solutions by Trade</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Operations Manager</Link>
-                <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Technician Access</Link>
-                <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Customer Portal</Link>
-                <Link href="/track?no=REQ-DEMO-4109" style={{ color: '#475569', textDecoration: 'none' }}>Track Work Order</Link>
+                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Commercial HVAC</a>
+                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Electrical Contracting</a>
+                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Solar Maintenance</a>
+                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Plumbing Businesses</a>
+                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Generator Servicing</a>
               </div>
             </div>
 
@@ -971,8 +942,8 @@ export default function LandingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Link href="/login?mode=signup" style={{ color: '#475569', textDecoration: 'none' }}>Start Free Trial</Link>
                 <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Sign In to Portal</Link>
-                <Link href="/reset" style={{ color: '#475569', textDecoration: 'none' }}>Password Recovery</Link>
-                <a href="#security" style={{ color: '#475569', textDecoration: 'none' }}>Security Overview</a>
+                <Link href="/track?no=REQ-DEMO-4109" style={{ color: '#475569', textDecoration: 'none' }}>Order Tracking</Link>
+                <a href="#security" style={{ color: '#475569', textDecoration: 'none' }}>Security Architecture</a>
               </div>
             </div>
 
@@ -983,9 +954,9 @@ export default function LandingPage() {
               © 2026 FieldOps 360. All rights reserved.
             </div>
             <div style={{ display: 'flex', gap: 18 }}>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Data Isolation</a>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Access Controls</a>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Audit Trail</a>
+              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>PostgreSQL RLS Isolation</a>
+              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Role-Based Access</a>
+              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Audit Logs</a>
             </div>
           </div>
 
