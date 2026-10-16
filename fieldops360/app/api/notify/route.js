@@ -42,7 +42,7 @@ export async function POST(req) {
     const phone = cleanPhone(customerPhone);
 
     if (type === 'job_completed') {
-      title = `Work Completed - Invoice #${invoiceNo || 'Pending'}`;
+      title = `Work Completed · Invoice #${invoiceNo || 'Pending'}`;
       messageText = 
 `FieldOps 360 Notification:
 Hello ${customerName || 'Customer'},
@@ -54,7 +54,7 @@ Invoice Amount: ₦${Number(invoiceAmount || 0).toLocaleString()}
 Review your itemized invoice, sign off, and settle directly on your portal:
 ${trackingLink}`;
     } else if (type === 'job_log') {
-      title = `Service Log Update - #${requestNo || 'REQ'}`;
+      title = `Service Log Update · #${requestNo || 'REQ'}`;
       messageText = 
 `FieldOps 360 Live Update:
 Hello ${customerName || 'Customer'},
@@ -66,7 +66,7 @@ Current Status: ${status || 'In Progress'}
 Track live job details, technician location & ETA:
 ${trackingLink}`;
     } else {
-      title = `Status Update - #${requestNo || 'REQ'}`;
+      title = `Status Update · #${requestNo || 'REQ'}`;
       messageText = 
 `FieldOps 360 Status Alert:
 Hello ${customerName || 'Customer'},
