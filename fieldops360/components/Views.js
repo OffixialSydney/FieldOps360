@@ -12,7 +12,34 @@ import { JobFilters, jobPasses, emptyJobFilter, useInvoiceFilter, CustomersList 
 import { updateOrQueue } from '../lib/offline';
 import { useLive } from '../lib/live';
 import { STATUS, RANK, Prio, Timeline, RequestForm, Overview, Suggestions, getPos, ActionNeeded, GoAhead } from './Jobs';
-import { sendDispatchAlert } from '../lib/notify';
+import { sendDispatchAlert, formatWhatsAppUrl as notifyFormatWhatsAppUrl, cleanPhone as notifyCleanPhone } from '../lib/notify';
+
+function cleanPhone(rawPhone) {
+  if (typeof notifyCleanPhone === 'function') return notifyCleanPhone(rawPhone);
+  if (!rawPhone) return '';
+  let p = String(rawPhone).trim().replace(/[\s\-\(\)\+]/g, '');
+  if (p.startsWith('0') && p.length === 11) {
+    p = '234' + p.slice(1);
+  } else if (p.startsWith('2340') && p.length === 14) {
+    p = '234' + p.slice(4);
+  } else if (p.length === 10 && (p.startsWith('80') || p.startsWith('70') || p.startsWith('90') || p.startsWith('81'))) {
+    p = '234' + p;
+  }
+  return p;
+}
+
+function formatWhatsAppUrl(rawPhone, text = '') {
+  if (typeof notifyFormatWhatsAppUrl === 'function') {
+    try { return notifyFormatWhatsAppUrl(rawPhone, text); } catch (e) {}
+  }
+  const p = cleanPhone(rawPhone);
+  const encodedText = encodeURIComponent(text);
+  const isFictional = !p || p.includes('5550000') || p.startsWith('000') || p.length < 10;
+  if (!isFictional && /^\d{10,15}$/.test(p)) {
+    return `https://api.whatsapp.com/send?phone=${p}&text=${encodedText}`;
+  }
+  return `https://api.whatsapp.com/send?text=${encodedText}`;
+}
 
 function WhatsAppIcon() {
   return (
@@ -115,10 +142,10 @@ export function Customer({ me }) {
 
           {['assigned', 'accepted', 'en_route', 'arrived', 'diagnosing', 'in_progress', 'waiting_parts', 'waiting_customer'].includes(r.status) && (
             <div style={{ margin: '8px 0 12px' }}>
-              <Link href={`/track?no=${r.request_no}`}>
+              <Link href={`/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`}>
                 <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px', margin: 0 }}>
                   <span className="radar-dot" style={{ width: 7, height: 7, background: '#fff', borderRadius: '50%' }}></span>
-                  <span>View Live Radar Tracking & ETA</span>
+                  <span>View Live Tracking & ETA</span>
                 </button>
               </Link>
             </div>
@@ -126,9 +153,9 @@ export function Customer({ me }) {
 
           {['completed', 'invoiced'].includes(r.status) && (
             <div style={{ margin: '8px 0 12px' }}>
-              <Link href={`/track?no=${r.request_no}`}>
+              <Link href={`/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`}>
                 <button type="button" className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px', margin: 0 }}>
-                  <span>View Completed Work Order & Telemetry</span>
+                  <span>View Completed Work Order</span>
                 </button>
               </Link>
             </div>
@@ -228,17 +255,24 @@ export function Manager({ readOnly, me, only }) {
         <p>{r.description}</p>
         {r.notes && <p className="muted">Notes: {r.notes}</p>}
         <p className="muted">{r.customer?.full_name} · {r.customer?.phone} · {r.address}</p>
-        {(r.scheduled_date || r.preferred_date) && <p className="muted">Preferred: {r.preferred_date || '-'} {r.preferred_time || ''}</p>}
+        {(r.scheduled_date || r.preferred_date) && <p className="muted">Preferred: {r.preferred_date || 'Not specified'} {r.preferred_time || ''}</p>}
         <div className="row">
           <a href={`https://www.google.com/maps/search/?api=1&query=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Open location</button></a>
-          <Link href={`/track?no=${r.request_no}`}>
+          <Link href={`/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`}>
             <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span className="radar-dot" style={{ width: 6, height: 6 }}></span>
-              <span>Live Radar</span>
+              <span>Track Job</span>
             </button>
           </Link>
           {r.customer?.phone && (
-            <a href={`https://wa.me/${r.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${r.customer.full_name || ''}, regarding your FieldOps 360 service order #${r.request_no}:`)}`} target="_blank" rel="noreferrer">
+            <a
+              href={formatWhatsAppUrl(
+                r.customer.phone,
+                `Hello ${r.customer.full_name || 'Valued Customer'}, regarding your FieldOps 360 service order #${r.request_no || 'REQ'}:\nTrack service order: ${typeof window !== 'undefined' ? window.location.origin : ''}/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
               <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <WhatsAppIcon />
                 <span>WhatsApp Customer</span>
@@ -260,7 +294,7 @@ export function Manager({ readOnly, me, only }) {
         <Materials requestId={r.id} />
         <Extras requestId={r.id} mode="view" />
         <Files requestId={r.id} />
-        {readOnly && r.technician_id && <p className="muted">Assigned technician: {techs.find((t) => t.id === r.technician_id)?.full_name || '-'}</p>}
+        {readOnly && r.technician_id && <p className="muted">Assigned technician: {techs.find((t) => t.id === r.technician_id)?.full_name || 'Unassigned'}</p>}
         {live && !readOnly && (
           <div className="row">
             <span className="muted">Scheduled for (change to reschedule)</span>
@@ -616,10 +650,10 @@ export function Technician({ me }) {
             <div className="row">
               {r.customer?.phone && <a href={`tel:${r.customer.phone}`}><button className="ghost">Call customer</button></a>}
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`} target="_blank" rel="noreferrer"><button className="ghost">Navigate</button></a>
-              <Link href={`/track?no=${r.request_no}`}>
+              <Link href={`/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`}>
                 <button className="ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <span className="radar-dot" style={{ width: 6, height: 6 }}></span>
-                  <span>Live Radar Screen</span>
+                  <span>Tracking Screen</span>
                 </button>
               </Link>
               {r.customer?.phone && (
@@ -628,17 +662,18 @@ export function Technician({ me }) {
                   className="ghost"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   onClick={async () => {
-                    const notif = await sendDispatchAlert({
+                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                    const message = `FieldOps 360 Update: Hello ${r.customer?.full_name || 'Valued Customer'}, regarding your service order #${r.request_no}:\n${form[r.id]?.notes || r.tech_notes || 'Technician is actively working on your request.'}\n\nTrack work order: ${origin}/track?no=${encodeURIComponent(r.request_no || '')}&id=${r.id}`;
+                    const waUrl = formatWhatsAppUrl(r.customer?.phone, message);
+                    setWaAlerts((prev) => ({ ...prev, [r.id]: waUrl }));
+                    sendDispatchAlert({
                       type: 'job_log',
                       request: r,
                       customer: r.customer,
                       technician: me,
                       notes: form[r.id]?.notes || r.tech_notes || 'Technician is actively working on your request.',
                     });
-                    if (notif?.waLink) {
-                      setWaAlerts((prev) => ({ ...prev, [r.id]: notif.waLink }));
-                      window.open(notif.waLink, '_blank');
-                    }
+                    window.open(waUrl, '_blank');
                   }}
                 >
                   <WhatsAppIcon />
