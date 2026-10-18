@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-// Purposeful SVG icons tailored for FieldOps 360 (Zero emojis, zero decorative AI glyphs)
+// Consistent SVG icons tailored for FieldOps 360 (Zero emojis, zero decorative AI glyphs)
 const Icons = {
   Logo: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -111,46 +111,46 @@ const Icons = {
   ),
 };
 
-// 8 Popular Services tailored to FieldOps 360
+// 8 Popular Services matching FieldOps 360's supported project trades
 const POPULAR_SERVICES = [
   {
-    title: 'Solar & Inverter Setup',
+    title: 'Solar Installation',
     image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
   {
-    title: 'Commercial HVAC & AC',
-    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
-    link: '/dashboard',
-  },
-  {
-    title: 'Diesel Generator Maintenance',
+    title: 'Generator Repair & Servicing',
     image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
   {
-    title: 'Industrial & Home Plumbing',
-    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    title: 'Air-Conditioner Servicing',
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
   {
-    title: 'Heavy Logistics & Truck Hire',
-    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
-    link: '/dashboard',
-  },
-  {
-    title: 'Electrical Panel & Wiring',
+    title: 'Electrical Contracting',
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
   {
-    title: 'Borehole & Water Treatment',
-    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=600&q=80',
+    title: 'Plumbing Services',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
   {
-    title: 'Facility Deep Cleaning',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    title: 'Solar Maintenance',
+    image: 'https://images.unsplash.com/photo-1508873696983-2df57046475b?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
+  },
+  {
+    title: 'CCTV Installation',
+    image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
+  },
+  {
+    title: 'Equipment Maintenance',
+    image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=600&q=80',
     link: '/dashboard',
   },
 ];
@@ -161,85 +161,60 @@ const CLIENT_REVIEWS = [
     name: 'Chief Adeleke O.',
     role: 'Facility Director · Lekki Phase 1',
     featured: false,
-    text: 'FieldOps 360 resolved our estate generator overhaul within 24 hours. The dispatched technician arrived with verified credentials, diagnostics were clear, and digital sign-off made billing seamless.',
+    text: 'FieldOps 360 resolved our estate generator breakdown within 24 hours. The dispatched technician arrived with verified credentials, diagnostics were clear, and digital sign-off made billing seamless.',
   },
   {
     name: 'Engr. David Chukwu',
     role: 'Solar Project Lead · Ikeja Industrial Estate',
     featured: true,
-    text: 'The best field contractor platform we have used in Nigeria. Comparing quotes and tracking specialist arrival in real time took all the guesswork out of maintenance for our cold storage plants.',
+    text: 'The most reliable field contractor platform in Nigeria. Comparing quotes and tracking technician arrival in real time took all the guesswork out of maintenance for our solar inverter arrays.',
   },
   {
     name: 'Amina Bello',
     role: 'Operations Manager · Victoria Island',
     featured: false,
-    text: 'Finding certified commercial HVAC technicians used to take days of calling around. With FieldOps 360, we received 3 vetted proposals within minutes and got our chiller running ahead of schedule.',
+    text: 'Finding certified commercial AC technicians used to take days of calling around. With FieldOps 360, we dispatched vetted technicians directly to our offices and got cooling restored ahead of schedule.',
   },
 ];
 
-// Free Cost Estimates tailored to FieldOps 360
+// Free Cost Estimates strictly tailored to actual FieldOps 360 project services
 const COST_ESTIMATES = [
   {
-    title: 'Solar Inverter System (5kVA)',
+    title: 'Solar Inverter Installation (3kVA to 5kVA)',
     range: '₦180,000 to ₦350,000',
-    detail: '(full wiring, rack mounting & battery testing)',
+    detail: '(rack mounting, inverter setup, battery balancing & cabling)',
     image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Diesel Generator Maintenance (20-100kVA)',
-    range: '₦45,000 to ₦95,000',
-    detail: '(oil, fuel filters & ATS calibration)',
+    title: 'Generator Routine Servicing (15kVA to 50kVA)',
+    range: '₦35,000 to ₦75,000',
+    detail: '(oil change, fuel filter replacement & ATS calibration)',
     image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Commercial AC Installation & Top-Up',
-    range: '₦18,000 to ₦35,000',
-    detail: '(mounting, vacuuming & R410A gas refill)',
+    title: 'Air-Conditioner Servicing & Gas Refill',
+    range: '₦15,000 to ₦30,000',
+    detail: '(deep coil cleaning, gas recharge & leak audit)',
     image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Industrial Borehole & Pump Installation',
-    range: '₦350,000 to ₦750,000',
-    detail: '(geological survey, casing & submersible pump)',
-    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Commercial Truck & Equipment Hire',
-    range: '₦110,000 to ₦180,000',
-    detail: '(medium to heavy flatbed logistics)',
-    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: '3-Phase Switchgear & Load Balancing',
-    range: '₦50,000 to ₦120,000',
-    detail: '(phase breaker audit & surge protection)',
+    title: 'Electrical Panel Wiring & Distribution',
+    range: '₦40,000 to ₦90,000',
+    detail: '(distribution board audit, breaker testing & surge protection)',
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80',
   },
-];
-
-// Full Directory Categories
-const ALL_CATEGORIES = [
-  'Solar and Inverter Solutions',
-  'Commercial HVAC and AC Servicing',
-  'Diesel Generator Overhaul',
-  'Industrial and Domestic Plumbing',
-  'Borehole Drilling and Water Treatment',
-  '3-Phase Electrical Installation',
-  'Heavy Haulage and Truck Hire',
-  'Facility Janitorial and Cleaning',
-  'Cold Room and Chiller Repair',
-  'Aluminum and Steel Fabrication',
-  'CCTV and Access Control Systems',
-  'Building Construction and Renovation',
-  'Fire Safety and Extinguisher Maintenance',
-  'Commercial Kitchen and Bakery Equipment',
-  'Elevator and Lift Servicing',
-  'Telecommunications and Fiber Cabling',
-  'Industrial Automation and PLC Support',
-  'Fleet Vehicle Servicing',
-  'Waterproofing and Roof Restoration',
-  'Waste Management and Evacuation',
-  'Asset Calibration and Diagnostics',
+  {
+    title: 'Plumbing Leak Repair & Pump Servicing',
+    range: '₦20,000 to ₦50,000',
+    detail: '(pressure pipe repair, valve replacement & pump checkout)',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+  },
+  {
+    title: 'CCTV Camera Setup (4 to 8 Channels)',
+    range: '₦45,000 to ₦85,000',
+    detail: '(wiring, DVR/NVR configuration & mobile app remote setup)',
+    image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+  },
 ];
 
 // All 36 Nigerian States + FCT
@@ -296,14 +271,6 @@ export default function LandingPage() {
             linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
           background-size: 36px 36px;
         }
-        .service-category-pill {
-          transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-        }
-        .service-category-pill:hover {
-          background-color: #f8fafc;
-          border-color: #2563eb;
-          transform: translateX(2px);
-        }
         .popular-service-card {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -328,7 +295,7 @@ export default function LandingPage() {
         }
       `}</style>
 
-      {/* 1. Header & Navigation (Distinct FieldOps 360 Branding) */}
+      {/* 1. Header & Navigation (FieldOps 360 Branding) */}
       <header style={{ borderBottom: '1px solid #e2e8f0', background: 'rgba(255, 255, 255, 0.96)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
@@ -339,7 +306,7 @@ export default function LandingPage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#0f172a', lineHeight: 1.1 }}>FieldOps 360</span>
-              <span style={{ fontSize: 10, color: '#2563eb', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Verified Service Pros</span>
+              <span style={{ fontSize: 10, color: '#2563eb', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Field Service Operations</span>
             </div>
           </Link>
 
@@ -425,7 +392,7 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. Hero Section (High-Converting Layout with FieldOps 360 Copy) */}
+      {/* 2. Hero Section (FieldOps 360 Value Proposition) */}
       <section className="hero-pattern-bg" style={{ padding: '72px 24px 44px', position: 'relative', textAlign: 'center' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', position: 'relative', zIndex: 2 }}>
           
@@ -460,7 +427,7 @@ export default function LandingPage() {
           </h1>
 
           <p style={{ fontSize: 'clamp(16px, 1.9vw, 20px)', color: '#475569', lineHeight: 1.55, maxWidth: 680, margin: '0 auto 36px' }}>
-            From commercial repairs and emergency installations to facility maintenance: FieldOps 360 delivers vetted, high-performing service technicians directly to your site.
+            From commercial repairs and emergency installations to equipment maintenance: FieldOps 360 delivers vetted, high-performing service technicians directly to your site.
           </p>
 
           {/* Pill Search Box */}
@@ -472,7 +439,7 @@ export default function LandingPage() {
                 <span style={{ color: '#64748b' }}><Icons.Search /></span>
                 <input
                   type="text"
-                  placeholder="What service do you need? (e.g. Solar, Generator, HVAC)"
+                  placeholder="What service do you need? (e.g. Solar, Generator, AC, Electrical)"
                   value={serviceQuery}
                   onChange={(e) => setServiceQuery(e.target.value)}
                   style={{ width: '100%', border: 'none', outline: 'none', fontSize: 15, color: '#0f172a', background: 'transparent' }}
@@ -487,7 +454,7 @@ export default function LandingPage() {
                 <span style={{ color: '#64748b' }}><Icons.MapPin /></span>
                 <input
                   type="text"
-                  placeholder="Location (e.g. Lagos, Abuja, Rivers)"
+                  placeholder="Location (e.g. Lagos, Abuja, Port Harcourt)"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                   style={{ width: '100%', border: 'none', outline: 'none', fontSize: 15, color: '#0f172a', background: 'transparent' }}
@@ -520,32 +487,32 @@ export default function LandingPage() {
 
         </div>
 
-        {/* Tilted Photo Showcase (Field Specialists) */}
+        {/* Tilted Photo Showcase (Field Specialists for Project Trades) */}
         <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden', padding: '10px 0 30px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             
             <div className="showcase-pro-card" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80" alt="Certified Electrical Specialist" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=400&q=80" alt="Solar Installation Specialist" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
             <div className="showcase-pro-card" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=400&q=80" alt="Solar Inverter Engineer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80" alt="Generator Repair Engineer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
             <div className="showcase-pro-card" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=400&q=80" alt="Commercial HVAC Technician" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=400&q=80" alt="Air-Conditioner Technician" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
             <div className="showcase-pro-card" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=400&q=80" alt="Industrial Plumbing Lead" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=400&q=80" alt="Certified Electrician" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
             <div className="showcase-pro-card" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80" alt="Heavy Fleet Haulage Operator" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=400&q=80" alt="Master Plumber" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
             <div className="showcase-pro-card" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
-              <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80" alt="Facility Maintenance Supervisor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80" alt="CCTV & Security Technician" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
 
           </div>
@@ -603,10 +570,10 @@ export default function LandingPage() {
               <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>
                 2
               </div>
-              <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#ffffff' }}>Get Matched</h3>
+              <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#ffffff' }}>Technician Dispatched</h3>
             </div>
             <p style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.92)', lineHeight: 1.5, margin: 0 }}>
-              Receive verified quotes and availability schedules from certified specialists in your sector.
+              Get matched with a verified trade specialist certified in your required service vertical.
             </p>
           </div>
 
@@ -626,7 +593,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Popular Services Grid */}
+      {/* 4. Popular Services Grid (Exclusively Supported Project Services) */}
       <section id="services" style={{ padding: '84px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           
@@ -635,7 +602,7 @@ export default function LandingPage() {
               Popular services
             </h2>
             <p style={{ fontSize: 18, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-              Discover the most requested commercial and residential service categories across Nigeria.
+              Specialized field service trades managed across commercial and residential sites in Nigeria.
             </p>
           </div>
 
@@ -732,7 +699,7 @@ export default function LandingPage() {
 
       </section>
 
-      {/* 6. Transparent Cost Estimates */}
+      {/* 6. Transparent Cost Estimates (Real Project Jobs) */}
       <section id="estimates" style={{ padding: '84px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           
@@ -741,7 +708,7 @@ export default function LandingPage() {
               Transparent cost estimates
             </h2>
             <p style={{ fontSize: 18, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-              Compare benchmark pricing across top-rated Nigerian contractors before hiring.
+              Compare benchmark pricing across top-rated Nigerian contractors before dispatching.
             </p>
           </div>
 
@@ -771,34 +738,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. Browse All Categories (Directory) */}
-      <section id="categories" style={{ padding: '88px 24px', maxWidth: 1240, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 'clamp(28px, 3.8vw, 40px)', fontWeight: 800, color: '#0f172a', margin: '0 0 36px', textAlign: 'center', letterSpacing: '-0.025em' }}>
-          Browse All Service Categories
-        </h2>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-          {ALL_CATEGORIES.map((cat, idx) => (
-            <Link key={idx} href="/dashboard" style={{ textDecoration: 'none' }}>
-              <div className="service-category-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', border: '1px solid #e2e8f0', borderRadius: 10, background: '#ffffff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ color: '#2563eb' }}><Icons.Wrench /></span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                    {cat}
-                  </span>
-                </div>
-                <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}><Icons.ArrowRight /></span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 8. Dual Action Call-To-Action Cards */}
+      {/* 7. Dual Action Call-To-Action Cards */}
       <section style={{ padding: '72px 24px', maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
           
-          {/* Card 1: Dark Slate Card */}
+          {/* Card 1: Dark Slate Card (For Facility Managers & Clients) */}
           <div style={{ background: '#0f172a', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 380, boxShadow: '0 20px 40px rgba(15, 23, 42, 0.25)' }}>
             <div style={{ position: 'relative', zIndex: 2 }}>
               <h3 style={{ fontSize: 'clamp(26px, 3.2vw, 36px)', fontWeight: 800, margin: '0 0 14px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
@@ -827,7 +771,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Card 2: Electric Blue Card */}
+          {/* Card 2: Electric Blue Card (For Specialists) */}
           <div style={{ background: '#2563eb', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 380, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.35)' }}>
             <div style={{ position: 'relative', zIndex: 2 }}>
               <h3 style={{ fontSize: 'clamp(26px, 3.2vw, 36px)', fontWeight: 800, margin: '0 0 14px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
@@ -859,7 +803,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. Find Pros Everywhere In Nigeria */}
+      {/* 8. Find Pros Everywhere In Nigeria */}
       <section style={{ padding: '0 24px 84px', maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ background: '#2563eb', borderRadius: 28, padding: '52px 36px', color: '#ffffff', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 40px rgba(37, 99, 235, 0.3)' }}>
           
@@ -879,7 +823,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 10. Footer */}
+      {/* 9. Footer */}
       <footer style={{ borderTop: '1px solid #e2e8f0', padding: '64px 24px 36px', background: '#ffffff' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           
@@ -968,7 +912,7 @@ export default function LandingPage() {
                 <span style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>FieldOps 360</span>
               </div>
               <span style={{ fontSize: 13, color: '#64748b' }}>
-                © 2026 FieldOps 360. All rights reserved. Built for Nigerian Field Services.
+                © 2026 FieldOps 360. All rights reserved. Field Service &amp; Operations Management.
               </span>
             </div>
 
