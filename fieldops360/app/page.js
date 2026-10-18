@@ -1,297 +1,382 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// Consistent, purposeful SVG icons (Zero emojis, zero decorative AI glyphs)
+// Purposeful SVG icons matching VisCorner design system (Zero emojis, zero decorative AI glyphs)
 const Icons = {
   Logo: () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 4l7 16L20 4" />
+      <path d="M8 4l3 7 3-7" />
     </svg>
   ),
   Search: () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
-  Check: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  ),
-  ArrowRight: () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  ),
-  Shield: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  ),
-  Calendar: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  ),
-  ClipboardList: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-      <path d="M9 12h6" />
-      <path d="M9 16h6" />
-    </svg>
-  ),
-  Smartphone: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-      <line x1="12" y1="18" x2="12.01" y2="18" />
-    </svg>
-  ),
-  Box: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-      <line x1="12" y1="22.08" x2="12" y2="12" />
-    </svg>
-  ),
-  CreditCard: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-      <line x1="1" y1="10" x2="23" y2="10" />
-    </svg>
-  ),
-  Wrench: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-    </svg>
-  ),
-  Users: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  ),
-  Bell: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  ),
-  BarChart: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  ),
   MapPin: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
   ),
+  Crosshair: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="22" y1="12" x2="18" y2="12" />
+      <line x1="6" y1="12" x2="2" y2="12" />
+      <line x1="12" y1="6" x2="12" y2="2" />
+      <line x1="12" y1="22" x2="12" y2="18" />
+    </svg>
+  ),
+  ArrowRight: () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  ),
+  ChevronLeft: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  ),
+  ChevronUp: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  ),
+  Star: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#EAB308" stroke="#EAB308" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  Mail: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  ),
   Menu: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="6" x2="21" y2="6" />
       <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   ),
   Close: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
-  Lock: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  Twitter: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   ),
-  FileText: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
+  Facebook: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  ),
+  Instagram: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  ),
+  Linkedin: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
     </svg>
   ),
 };
 
-// 8 Core Features (Strictly matching prompt)
-const CORE_FEATURES = [
+// 8 Popular Services (Matching VisCorner Section 5)
+const POPULAR_SERVICES = [
   {
-    icon: Icons.ClipboardList,
-    title: 'Work Order Management',
-    desc: 'Capture inbound customer requests, log site locations, prioritize critical repairs, and track jobs from initial inquiry to final completion sign-off.',
+    title: 'Borehole Drilling',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.Calendar,
-    title: 'Technician Scheduling and Dispatch',
-    desc: 'Match service orders to certified specialists by trade qualifications, current availability, and geographic distance with intelligent scoring.',
+    title: 'AC Installation',
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.MapPin,
-    title: 'Customer Tracking and ETA',
-    desc: 'Provide clients with real-time status updates, arrival estimates, technician verification profiles, and Google Maps location references.',
+    title: 'Truck Hire and Rental',
+    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.Smartphone,
-    title: 'Mobile Technician Workflows',
-    desc: 'Empower field crews with mobile work briefs, offline diagnostic logs, parts usage recording, before/after photos, and touch signatures.',
+    title: 'Event Planning',
+    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.Box,
-    title: 'Equipment and Inventory Management',
-    desc: 'Monitor replacement parts inventory across warehouse shelves and service vehicles with automatic deduction upon job completion.',
+    title: 'Makeup & Beauty',
+    image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.CreditCard,
-    title: 'Invoicing and Payments',
-    desc: 'Generate itemized commercial invoices directly from logged labor and materials, supporting corporate wallets, cards, and bank transfers.',
+    title: 'Dispatch Rider & Delivery',
+    image: 'https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.Bell,
-    title: 'Customer Notifications',
-    desc: 'Keep clients informed automatically with instant milestone alerts and WhatsApp/SMS updates whenever job status progresses.',
+    title: 'Solar & Inverter Service',
+    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
   {
-    icon: Icons.BarChart,
-    title: 'Reports and Operational History',
-    desc: 'Maintain complete service audit logs, asset warranty histories, technician utilization metrics, and financial performance summaries.',
+    title: 'Generator Maintenance',
+    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+    link: '/dashboard',
   },
 ];
 
-// 5-Step Workflow (Strictly matching prompt)
-const WORKFLOW_STEPS = [
-  { step: '1', title: 'Request submitted.', desc: 'Customer or manager enters service requirements, location details, preferred timing, and asset references.' },
-  { step: '2', title: 'Job reviewed and scheduled.', desc: 'Operations manager confirms project scope, verifies trade requirements, and assigns a qualified specialist.' },
-  { step: '3', title: 'Technician dispatched.', desc: 'Technician receives job specifications, customer contact, and driving directions directly on their mobile device.' },
-  { step: '4', title: 'Work completed and approved.', desc: 'Specialist conducts diagnosis, records parts used, captures customer signature, and marks the visit complete.' },
-  { step: '5', title: 'Invoice issued and payment recorded.', desc: 'Itemized invoice compiles automatically from completed work order data for immediate digital settlement.' },
+// Client Testimonials (Matching VisCorner Section 6)
+const CLIENT_REVIEWS = [
+  {
+    name: 'Oluchi',
+    role: 'Hired House Cleaner',
+    featured: false,
+    text: 'I was honestly surprised by how easy the whole process was. Within a day, I had multiple quotes and found someone who nailed exactly what I needed. I will definitely be using this platform again!',
+  },
+  {
+    name: 'Obi C.',
+    role: 'Photographer',
+    featured: true,
+    text: 'From start to finish, everything was smooth and super organized. I loved being able to compare different service providers without any pressure. It saved me so much time and stress!',
+  },
+  {
+    name: 'Jonathan',
+    role: 'Hired Web Developer',
+    featured: false,
+    text: 'I was worried about finding someone reliable, but this made it so simple. The provider I chose was professional, communicative, and delivered top-notch work ahead of schedule. Highly recommend!',
+  },
 ];
 
-// 6 Solutions / Commercial Verticals (Strictly matching prompt)
-const SOLUTIONS = [
+// Free Cost Estimates (Matching VisCorner Section 10)
+const COST_ESTIMATES = [
   {
-    title: 'Commercial HVAC',
-    desc: 'Schedule seasonal filter inspections, compressor overhauls, refrigerant pressure checks, and emergency chiller repairs for facilities.',
+    title: 'House Cleaning',
+    range: '₦27,000 to ₦37,000',
+    detail: '(for a 2 bedroom flat)',
+    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Electrical Contracting',
-    desc: 'Manage 3-phase switchgear calibrations, panel installations, circuit load balancing, and emergency outage restoration with certified technicians.',
+    title: 'Truck Hire and Rental',
+    range: '₦100,000 to ₦150,000',
+    detail: '(for medium trucks moving interstate)',
+    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Solar Maintenance',
-    desc: 'Track inverter diagnostic codes, string voltage performance, battery storage overhauls, and solar panel cleaning cadences with warranty tracking.',
+    title: 'Website Development',
+    range: '₦100,000 to ₦200,000',
+    detail: '(for basic commercial websites)',
+    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Plumbing Businesses',
-    desc: 'Dispatch crews for commercial pipe repairs, backflow testing, industrial booster pump maintenance, and wastewater valve servicing.',
+    title: 'Swimming Pool Maintenance',
+    range: '₦45,000 to ₦85,000',
+    detail: '(monthly chemical treatment & pump care)',
+    image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=600&q=80',
   },
   {
     title: 'Generator Servicing',
-    desc: 'Organize routine oil and fuel filter replacements, automatic transfer switch (ATS) testing, load bank tests, and diesel generator overhauls.',
+    range: '₦35,000 to ₦70,000',
+    detail: '(oil, fuel filters & ATS calibration)',
+    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
   },
   {
-    title: 'Equipment Maintenance',
-    desc: 'Maintain historical service records by equipment serial number, detect active manufacturer warranties, and plan preventative maintenance.',
+    title: 'AC Installation & Repair',
+    range: '₦18,000 to ₦35,000',
+    detail: '(indoor unit mounting & gas refill)',
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
   },
 ];
 
-// Believable Sample Data for Interactive Demonstration Console
-const DEMO_WORK_ORDERS = [
-  { id: 'WO-4812', client: 'Sterling Logistics Facility', service: 'Solar Inverter Calibration', tech: 'Marcus Vance', status: 'In Progress', priority: 'High', cost: '₦84,500' },
-  { id: 'WO-4815', client: 'Apex Cold Chain Systems', service: 'Commercial HVAC Chiller Repair', tech: 'David Kalu', status: 'En Route', priority: 'Urgent', cost: '₦142,000' },
-  { id: 'WO-4818', client: 'Northgate Medical Complex', service: '250kVA Generator Maintenance', tech: 'Aisha Bello', status: 'Assigned', priority: 'Normal', cost: '₦68,000' },
-  { id: 'WO-4821', client: 'Continental Commercial Towers', service: '3-Phase Switchgear Inspection', tech: 'Emeka Obi', status: 'Reviewing', priority: 'Normal', cost: '₦45,000' },
-  { id: 'WO-4826', client: 'Harbor Point Facilities', service: 'Booster Pump Seal Replacement', tech: 'Unassigned', status: 'New Request', priority: 'Normal', cost: '₦52,000' },
+// Full Directory Categories (Matching VisCorner Section 8)
+const ALL_CATEGORIES = [
+  'AC and Fridge (Cooling Appliances)',
+  'Accounting Auditing and Tax Support',
+  'Air Quality Check',
+  'Aluminum Works',
+  'Aquarium Installation',
+  'Architectural Works',
+  'Beauty Services',
+  'Borehole and Water Solutions',
+  'Bridal Accessories',
+  'Building and Construction',
+  'Business Services',
+  'Cable TV Installation',
+  'Cakes and Pastries',
+  'Camera Rental',
+  'Camera Repairs',
+  'Career Coaching',
+  'Car Hire and Rental',
+  'Car Repair and Maintenance',
+  'Catering Services',
+  'Cleaning Services',
+  'Clothing Rentals',
 ];
 
-const DEMO_TECHNICIANS = [
-  { name: 'Marcus Vance', role: 'Solar & Electrical Specialist', status: 'Active on Job', location: 'Lekki Phase 1', score: '98%', jobs: 2 },
-  { name: 'David Kalu', role: 'Commercial HVAC Engineer', status: 'En Route (14 min)', location: 'Ikeja Industrial', score: '94%', jobs: 1 },
-  { name: 'Aisha Bello', role: 'Generator Overhaul Lead', status: 'Dispatched', location: 'Victoria Island', score: '91%', jobs: 1 },
-  { name: 'Emeka Obi', role: 'Plumbing & Mechanical Tech', status: 'Available', location: 'Marina Central', score: '88%', jobs: 0 },
+// All 36 Nigerian States + FCT (Matching VisCorner Section 9)
+const NIGERIA_STATES = [
+  'Abia', 'Abuja', 'Adamawa', 'Akwa Ibom', 'Anambra',
+  'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River',
+  'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu',
+  'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano',
+  'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
+  'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun',
+  'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba',
+  'Yobe', 'Zamfara'
 ];
 
-const DEMO_INVOICES = [
-  { id: 'INV-4812', client: 'Sterling Logistics Facility', job: 'WO-4812', amount: '₦84,500', status: 'Paid via Wallet', date: 'Oct 16, 2026' },
-  { id: 'INV-4809', client: 'Heritage Commercial Bank', job: 'WO-4809', amount: '₦126,000', status: 'Pending Accountant Review', date: 'Oct 15, 2026' },
-  { id: 'INV-4802', client: 'Prime Plaza Offices', job: 'WO-4802', amount: '₦58,000', status: 'Settled via Transfer', date: 'Oct 14, 2026' },
-  { id: 'INV-4798', client: 'Apex Cold Chain Systems', job: 'WO-4798', amount: '₦210,000', status: 'Paid via Card', date: 'Oct 13, 2026' },
-];
-
-const DEMO_ASSETS = [
-  { name: '50kW Hybrid Solar Inverter', serial: 'SN-INV-99201', client: 'Sterling Logistics Facility', install: '2025-04-12', warranty: 'Active (18 months left)' },
-  { name: '250kVA Perkins Diesel Generator', serial: 'SN-GEN-44102', client: 'Northgate Medical Complex', install: '2024-11-20', warranty: 'Active (5 months left)' },
-  { name: 'Industrial Water Booster Unit', serial: 'SN-PMP-88310', client: 'Harbor Point Facilities', install: '2023-08-15', warranty: 'Warranty Expired' },
-];
-
-export default function LandingPage() {
-  const [demoTab, setDemoTab] = useState('orders');
-  const [trackInput, setTrackInput] = useState('');
-  const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'annual'
+export default function VisCornerLandingPage() {
+  const [serviceQuery, setServiceQuery] = useState('');
+  const [locationQuery, setLocationQuery] = useState('Lagos');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  const handleTrackSubmit = (e) => {
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    const query = trackInput.trim();
-    if (query) {
-      window.location.href = `/track?no=${encodeURIComponent(query)}`;
+    const service = serviceQuery.trim();
+    if (service) {
+      window.location.href = `/dashboard?search=${encodeURIComponent(service)}&loc=${encodeURIComponent(locationQuery)}`;
     } else {
-      window.location.href = '/track?no=REQ-DEMO-4109';
+      window.location.href = '/dashboard';
     }
   };
 
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (subscribeEmail.trim()) {
+      setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 4000);
+      setSubscribeEmail('');
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div style={{ background: '#ffffff', color: '#0f172a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif' }}>
+    <div style={{ background: '#ffffff', color: '#111319', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif' }}>
       
-      {/* 1. Header & Navigation */}
-      <header style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* VisCorner Global Scoped Styles */}
+      <style>{`
+        :root {
+          --viscorner-primary: #1a6dff;
+          --viscorner-primary-hover: #1058d9;
+          --viscorner-light: #f8fafc;
+        }
+        .hero-grid-bg {
+          background-image: 
+            linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+        .category-row {
+          transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+        .category-row:hover {
+          background-color: #f8fafc;
+          border-color: #cbd5e1;
+        }
+        .popular-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .popular-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+        }
+        .tilted-hero-img {
+          transition: transform 0.25s ease;
+        }
+        .tilted-hero-img:hover {
+          transform: scale(1.04) rotate(0deg) !important;
+          z-index: 10;
+        }
+        @keyframes pulse-ring {
+          0% { transform: scale(0.95); opacity: 0.8; }
+          50% { transform: scale(1.3); opacity: 0; }
+          100% { transform: scale(0.95); opacity: 0; }
+        }
+        .pulse-ping {
+          animation: pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+      `}</style>
+
+      {/* 1. Header & Navigation (Matching VisCorner Screenshot 3) */}
+      <header style={{ borderBottom: '1px solid #f1f5f9', background: '#ffffff', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#0f172a' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 7, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icons.Logo />
-              </div>
-              <div>
-                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', display: 'block', lineHeight: 1.1 }}>FIELDOPS 360</span>
-                <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Field Service SaaS</span>
-              </div>
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#111319' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: '#1a6dff', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(26, 109, 255, 0.35)' }}>
+              <Icons.Logo />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: '#111319' }}>VisCorner</span>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1a6dff' }}></span>
+            </div>
+          </Link>
+
+          {/* Center Navigation Links */}
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="desktop-nav">
+            
+            {/* Jobs Pill with Live Pulsing Dot */}
+            <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'rgba(26, 109, 255, 0.08)', color: '#1a6dff', fontWeight: 700, fontSize: 14 }}>
+                <span>Jobs</span>
+                <span style={{ position: 'relative', display: 'flex', width: 8, height: 8 }}>
+                  <span className="pulse-ping" style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', background: '#1a6dff' }}></span>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1a6dff' }}></span>
+                </span>
+              </span>
             </Link>
 
-            <nav style={{ display: 'flex', gap: 24 }} className="desktop-nav">
-              <a href="#product" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Product</a>
-              <a href="#solutions" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Solutions</a>
-              <a href="#features" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Features</a>
-              <a href="#workflow" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>How It Works</a>
-              <a href="#pricing" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Pricing</a>
-              <a href="#security" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Security</a>
-            </nav>
-          </div>
+            <a href="#popular" style={{ fontSize: 15, fontWeight: 500, color: '#334155', textDecoration: 'none' }}>Popular Services</a>
+            <a href="#how-it-works" style={{ fontSize: 15, fontWeight: 500, color: '#334155', textDecoration: 'none' }}>How It Works</a>
+            <a href="#estimates" style={{ fontSize: 15, fontWeight: 500, color: '#334155', textDecoration: 'none' }}>Cost Estimates</a>
+            <Link href="/login?mode=signup" style={{ fontSize: 15, fontWeight: 500, color: '#334155', textDecoration: 'none' }}>Offer Your Service</Link>
+          </nav>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '8px 14px' }}>
-                Sign In
-              </Link>
-              <Link href="/login?mode=signup" style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', background: '#2563eb', textDecoration: 'none', padding: '8px 16px', borderRadius: 7 }}>
-                Start Free Trial
-              </Link>
-            </div>
+          {/* Right Action: Login Outline Pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Link
+              href="/login"
+              className="desktop-actions"
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#1a6dff',
+                textDecoration: 'none',
+                padding: '8px 26px',
+                borderRadius: 9999,
+                border: '2px solid #1a6dff',
+                background: 'transparent',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              Login
+            </Link>
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile Hamburger Button */}
             <button
               type="button"
               className="mobile-menu-btn"
@@ -299,14 +384,12 @@ export default function LandingPage() {
               style={{
                 display: 'none',
                 background: 'transparent',
-                border: '1px solid #cbd5e1',
-                borderRadius: 6,
-                padding: '6px 8px',
-                color: '#0f172a',
+                border: 'none',
+                padding: 6,
                 cursor: 'pointer',
-                margin: 0,
+                color: '#111319',
               }}
-              aria-label="Toggle navigation"
+              aria-label="Toggle Navigation"
             >
               {mobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
             </button>
@@ -316,294 +399,359 @@ export default function LandingPage() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div style={{ borderTop: '1px solid #e2e8f0', background: '#ffffff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <a href="#product" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Product</a>
-            <a href="#solutions" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Solutions</a>
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Features</a>
-            <a href="#workflow" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>How It Works</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Pricing</a>
-            <a href="#security" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, fontWeight: 600, color: '#334155', textDecoration: 'none', padding: '6px 0' }}>Security</a>
-            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '9px', borderRadius: 6, border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-                Sign In
+          <div style={{ borderTop: '1px solid #e2e8f0', background: '#ffffff', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#1a6dff', textDecoration: 'none' }}>Jobs</Link>
+            <a href="#popular" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>Popular Services</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>How It Works</a>
+            <a href="#estimates" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>Cost Estimates</a>
+            <a href="#categories" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>All Categories</a>
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '10px', borderRadius: 9999, border: '2px solid #1a6dff', color: '#1a6dff', textDecoration: 'none', fontWeight: 600, fontSize: 15 }}>
+                Login
               </Link>
-              <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '9px', borderRadius: 6, background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-                Start Free Trial
+              <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ textAlign: 'center', padding: '10px', borderRadius: 9999, background: '#1a6dff', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: 15 }}>
+                Offer Your Service
               </Link>
             </div>
           </div>
         )}
       </header>
 
-      {/* 2. Hero Section */}
-      <section style={{ padding: '68px 24px 56px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1040, margin: '0 auto', textAlign: 'center' }}>
+      {/* 2. Hero Section (Matching VisCorner Screenshot 3 & 4) */}
+      <section className="hero-grid-bg" style={{ padding: '72px 24px 40px', position: 'relative', textAlign: 'center' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative', zIndex: 2 }}>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 20 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563eb' }}></span>
-            <span>Commercial Field Service Management Platform</span>
+          {/* Tilted Blue Pill Tag */}
+          <div style={{ display: 'inline-block', position: 'relative' }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: -16,
+                left: -20,
+                transform: 'rotate(-16deg)',
+                background: '#1a6dff',
+                color: '#ffffff',
+                fontSize: 12,
+                fontWeight: 700,
+                padding: '6px 14px',
+                borderRadius: 12,
+                boxShadow: '0 4px 12px rgba(26, 109, 255, 0.3)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Verified Professionals
+            </div>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(32px, 4.6vw, 54px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: '#0f172a', margin: '0 0 18px' }}>
-            Manage every service job from request to completion.
+          <h1 style={{ fontSize: 'clamp(38px, 5.2vw, 64px)', fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.2, color: '#111319', margin: '20px 0 16px' }}>
+            Find local professionals for everything you need
           </h1>
 
-          <p style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: '#475569', lineHeight: 1.6, maxWidth: 740, margin: '0 auto 32px' }}>
-            Schedule technicians, manage work orders, track service visits, control inventory, and manage invoicing from one connected platform.
+          <p style={{ fontSize: 'clamp(17px, 2vw, 21px)', color: '#475569', lineHeight: 1.5, maxWidth: 640, margin: '0 auto 36px' }}>
+            From cleaning to car repairs to equipment servicing: VisCorner connects you with the right pros, fast.
           </p>
 
-          {/* Action Pair */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-            <Link href="/login?mode=signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
-              <span>Start Free Trial</span>
-              <Icons.ArrowRight />
-            </Link>
-            <a href="#product" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', background: '#f8fafc', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
-              <span>Explore the Platform</span>
-            </a>
+          {/* Pill Search Box (Matching VisCorner exactly) */}
+          <div style={{ maxWidth: 740, margin: '0 auto 52px', background: '#ffffff', borderRadius: 9999, padding: '8px 10px', boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05)', border: '1px solid #e2e8f0' }}>
+            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              
+              {/* Input 1: Service */}
+              <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px' }}>
+                <span style={{ color: '#64748b' }}><Icons.Search /></span>
+                <input
+                  type="text"
+                  placeholder="What service do you need?"
+                  value={serviceQuery}
+                  onChange={(e) => setServiceQuery(e.target.value)}
+                  style={{ width: '100%', border: 'none', outline: 'none', fontSize: 15, color: '#111319', background: 'transparent' }}
+                />
+              </div>
+
+              {/* Vertical divider */}
+              <span className="search-divider" style={{ width: 1, height: 32, background: '#cbd5e1' }}></span>
+
+              {/* Input 2: Location */}
+              <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px' }}>
+                <span style={{ color: '#64748b' }}><Icons.MapPin /></span>
+                <input
+                  type="text"
+                  placeholder="Where do you need it?"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  style={{ width: '100%', border: 'none', outline: 'none', fontSize: 15, color: '#111319', background: 'transparent' }}
+                />
+                <span style={{ color: '#64748b', cursor: 'pointer' }} title="Use current location"><Icons.Crosshair /></span>
+              </div>
+
+              {/* Action Button: Get Started */}
+              <button
+                type="submit"
+                style={{
+                  padding: '13px 30px',
+                  borderRadius: 9999,
+                  background: '#1a6dff',
+                  color: '#ffffff',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  margin: 0,
+                  boxShadow: '0 2px 8px rgba(26, 109, 255, 0.35)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Get Started
+              </button>
+
+            </form>
           </div>
 
-          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 44px' }}>
-            Built for service contractors · Multi-tenant isolation · Role-based security
-          </p>
+        </div>
 
-          {/* 3. Product Demonstration (Realistic Operations Dashboard) */}
-          <div id="product" style={{ textAlign: 'left', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 12, overflow: 'hidden', boxShadow: '0 16px 40px -12px rgba(15, 23, 42, 0.08)' }}>
+        {/* Tilted Photo Carousel Strip (Matching VisCorner Screenshot 4) */}
+        <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden', padding: '10px 0 30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             
-            {/* Top Operational Bar */}
-            <div style={{ background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>FieldOps 360 Operations Console</span>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#eff6ff', color: '#2563eb', fontWeight: 600 }}>Interactive Demonstration Data</span>
+            <div className="tilted-hero-img" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?auto=format&fit=crop&w=400&q=80" alt="Dispatch Rider" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div className="tilted-hero-img" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80" alt="Certified Electrician" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div className="tilted-hero-img" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=400&q=80" alt="Catering Chef" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div className="tilted-hero-img" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&q=80" alt="Healthcare Professional" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div className="tilted-hero-img" style={{ transform: 'rotate(-8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=400&q=80" alt="IT Specialist" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div className="tilted-hero-img" style={{ transform: 'rotate(8deg)', width: 175, height: 180, borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=400&q=80" alt="Photographer and Event Specialist" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Floating Electric Blue Stats Bar (Matching VisCorner Screenshot 4) */}
+        <div style={{ maxWidth: 840, margin: '-24px auto 0', position: 'relative', zIndex: 5 }}>
+          <div style={{ background: '#1a6dff', borderRadius: 24, padding: '26px 20px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 16px 40px -10px rgba(26, 109, 255, 0.45)' }}>
+            
+            <div style={{ flex: '1 1 200px', padding: '12px', borderRight: '1px solid rgba(255, 255, 255, 0.25)', textAlign: 'center' }}>
+              <div style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', fontWeight: 800, lineHeight: 1.1 }}>₦150M+</div>
+              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', marginTop: 6 }}>Worth of Services delivered in the past 12 months</div>
+            </div>
+
+            <div style={{ flex: '1 1 200px', padding: '12px', borderRight: '1px solid rgba(255, 255, 255, 0.25)', textAlign: 'center' }}>
+              <div style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', fontWeight: 800, lineHeight: 1.1 }}>2,500+</div>
+              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', marginTop: 6 }}>Customer requests in the past 7 days</div>
+            </div>
+
+            <div style={{ flex: '1 1 200px', padding: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', fontWeight: 800, lineHeight: 1.1 }}>17,000+</div>
+              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', marginTop: 6 }}>Professionals including individuals and companies</div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      {/* 3. How It Works (Matching VisCorner Screenshot 1) */}
+      <section id="how-it-works" style={{ padding: '96px 24px 72px', maxWidth: 1040, margin: '0 auto' }}>
+        <h2 style={{ fontSize: 'clamp(32px, 4.4vw, 48px)', fontWeight: 800, textAlign: 'center', color: '#111319', margin: '0 0 36px', letterSpacing: '-0.025em' }}>
+          How it works?
+        </h2>
+
+        {/* Big Blue 3-Step Card */}
+        <div style={{ background: '#1a6dff', borderRadius: 28, padding: '36px 28px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 0, boxShadow: '0 16px 40px -10px rgba(26, 109, 255, 0.35)' }}>
+          
+          {/* Step 1 */}
+          <div style={{ flex: '1 1 260px', padding: '16px 24px', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#e2e8f0', color: '#111319', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>
+                1
               </div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>Organization: SolarTech Engineering Ltd</div>
+              <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#ffffff' }}>Make a request</h3>
             </div>
+            <p style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.5, margin: 0 }}>
+              Tell us what you need to get done, and we will inform suitable pros around you.
+            </p>
+          </div>
 
-            {/* Navigation Tabs for Preview */}
-            <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '0 16px', display: 'flex', gap: 4, overflowX: 'auto' }}>
-              {[
-                { key: 'orders', label: 'Active Work Orders (5)' },
-                { key: 'dispatch', label: 'Technician Dispatch (4)' },
-                { key: 'invoices', label: 'Invoices & Settlements (4)' },
-                { key: 'assets', label: 'Equipment & Warranties (3)' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setDemoTab(tab.key)}
-                  style={{
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderBottom: demoTab === tab.key ? '2px solid #2563eb' : '2px solid transparent',
-                    background: 'transparent',
-                    color: demoTab === tab.key ? '#2563eb' : '#64748b',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    margin: 0,
-                    borderRadius: 0,
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Dashboard Workspace */}
-            <div style={{ padding: '20px' }}>
-              
-              {/* Summary Metrics Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 18 }}>
-                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Active Jobs</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>24</div>
-                </div>
-                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Scheduled Today</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#2563eb', marginTop: 2 }}>12</div>
-                </div>
-                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Awaiting Dispatch</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309', marginTop: 2 }}>5</div>
-                </div>
-                <div style={{ padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Invoiced Month</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#15803d', marginTop: 2 }}>₦1.84M</div>
-                </div>
+          {/* Step 2 */}
+          <div style={{ flex: '1 1 260px', padding: '16px 24px', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#e2e8f0', color: '#111319', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>
+                2
               </div>
-
-              {/* Tab 1: Work Orders */}
-              {demoTab === 'orders' && (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 640 }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#64748b', background: '#f8fafc' }}>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Work Order</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Client & Facility</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Service Requested</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Technician</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Status</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Priority</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {DEMO_WORK_ORDERS.map((r) => (
-                        <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'ui-monospace, monospace' }}>{r.id}</td>
-                          <td style={{ padding: '12px', color: '#0f172a', fontWeight: 600 }}>{r.client}</td>
-                          <td style={{ padding: '12px', color: '#475569' }}>{r.service}</td>
-                          <td style={{ padding: '12px', color: '#0f172a' }}>{r.tech}</td>
-                          <td style={{ padding: '12px' }}>
-                            <span style={{ padding: '3px 8px', borderRadius: 4, background: r.status === 'In Progress' ? '#eff6ff' : r.status === 'En Route' ? '#eff6ff' : '#f8fafc', color: r.status.includes('Route') || r.status.includes('Progress') ? '#2563eb' : '#475569', fontSize: 12, fontWeight: 600 }}>
-                              {r.status}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px' }}>
-                            <span style={{ padding: '3px 8px', borderRadius: 4, background: r.priority === 'Urgent' ? '#fffbeb' : r.priority === 'High' ? '#fef2f2' : '#f8fafc', color: r.priority === 'Urgent' ? '#b45309' : r.priority === 'High' ? '#b91c1c' : '#475569', fontSize: 12, fontWeight: 600 }}>
-                              {r.priority}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Tab 2: Dispatch Scheduling */}
-              {demoTab === 'dispatch' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-                  {DEMO_TECHNICIANS.map((t, idx) => (
-                    <div key={idx} style={{ padding: '14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>{t.name}</div>
-                        <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, background: t.status === 'Available' ? '#ecfdf5' : '#eff6ff', color: t.status === 'Available' ? '#15803d' : '#2563eb', fontWeight: 600 }}>
-                          {t.status}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>{t.role}</div>
-                      <div style={{ fontSize: 12, color: '#475569', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
-                        <span>Sector: <strong>{t.location}</strong></span>
-                        <span>Match: <strong>{t.score}</strong></span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Tab 3: Invoicing */}
-              {demoTab === 'invoices' && (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left', minWidth: 620 }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#64748b', background: '#f8fafc' }}>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Invoice #</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Client</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Work Order</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Amount</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Settlement Status</th>
-                        <th style={{ padding: '10px 12px', fontWeight: 600 }}>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {DEMO_INVOICES.map((i) => (
-                        <tr key={i.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '12px', fontWeight: 700, color: '#2563eb', fontFamily: 'ui-monospace, monospace' }}>{i.id}</td>
-                          <td style={{ padding: '12px', color: '#0f172a', fontWeight: 600 }}>{i.client}</td>
-                          <td style={{ padding: '12px', color: '#64748b', fontFamily: 'ui-monospace, monospace' }}>{i.job}</td>
-                          <td style={{ padding: '12px', fontWeight: 700, color: '#0f172a' }}>{i.amount}</td>
-                          <td style={{ padding: '12px' }}>
-                            <span style={{ padding: '3px 8px', borderRadius: 4, background: i.status.includes('Paid') || i.status.includes('Settled') ? '#ecfdf5' : '#fffbeb', color: i.status.includes('Paid') || i.status.includes('Settled') ? '#15803d' : '#b45309', fontSize: 12, fontWeight: 600 }}>
-                              {i.status}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', color: '#64748b' }}>{i.date}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Tab 4: Assets & Warranties */}
-              {demoTab === 'assets' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
-                  {DEMO_ASSETS.map((a, idx) => (
-                    <div key={idx} style={{ padding: '14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 4 }}>{a.name}</div>
-                      <div style={{ fontSize: 12, color: '#64748b', fontFamily: 'ui-monospace, monospace', marginBottom: 8 }}>Serial: {a.serial}</div>
-                      <div style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>Facility: {a.client}</div>
-                      <div style={{ fontSize: 11, padding: '3px 8px', borderRadius: 4, background: a.warranty.includes('Active') ? '#ecfdf5' : '#fef2f2', color: a.warranty.includes('Active') ? '#15803d' : '#b91c1c', fontWeight: 600, display: 'inline-block' }}>
-                        {a.warranty}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+              <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#ffffff' }}>Get responses</h3>
             </div>
+            <p style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.5, margin: 0 }}>
+              In no time, you will receive up to 4 quotes from pros that match your needs.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div style={{ flex: '1 1 260px', padding: '16px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#e2e8f0', color: '#111319', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>
+                3
+              </div>
+              <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#ffffff' }}>Compare &amp; hire</h3>
+            </div>
+            <p style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.5, margin: 0 }}>
+              Compare prices and read reviews to hire the right pro for you.
+            </p>
           </div>
 
         </div>
       </section>
 
-      {/* 4. Features Section (8 Core Capabilities) */}
-      <section id="features" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Core Platform Capabilities
-          </span>
-          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Built for everyday field service operations
-          </h2>
-          <p style={{ fontSize: 15, color: '#475569', maxWidth: 620, margin: '0 auto' }}>
-            A single connected software system for dispatch managers, mobile field technicians, corporate customers, and accounting.
-          </p>
+      {/* 4. Popular Services (Matching VisCorner Screenshot 5) */}
+      <section id="popular" style={{ padding: '84px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          
+          <div style={{ textAlign: 'center', marginBottom: 44 }}>
+            <h2 style={{ fontSize: 'clamp(30px, 4vw, 44px)', fontWeight: 800, color: '#111319', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+              Popular services
+            </h2>
+            <p style={{ fontSize: 18, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
+              Discover the most in-demand services trusted by thousands of satisfied clients.
+            </p>
+          </div>
+
+          {/* 4-Column Image Cards Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {POPULAR_SERVICES.map((s, idx) => (
+              <Link key={idx} href={s.link} style={{ textDecoration: 'none' }}>
+                <div className="popular-card" style={{ position: 'relative', height: 260, borderRadius: 14, overflow: 'hidden', background: '#0f172a' }}>
+                  <img src={s.image} alt={s.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%)' }}></div>
+                  <div style={{ position: 'absolute', bottom: 16, left: 18, right: 18, color: '#ffffff' }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{s.title}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 5. What Our Clients Say (Matching VisCorner Screenshot 2) */}
+      <section style={{ padding: '88px 24px', maxWidth: 1240, margin: '0 auto' }}>
+        
+        {/* Section Header with Carousel Arrows */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 36, flexWrap: 'wrap', gap: 14 }}>
+          <div>
+            <h2 style={{ fontSize: 'clamp(30px, 4vw, 44px)', fontWeight: 800, color: '#111319', margin: 0, letterSpacing: '-0.025em' }}>
+              What our clients say
+            </h2>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setTestimonialIdx((prev) => (prev > 0 ? prev-1 : CLIENT_REVIEWS.length-1))}
+              style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid #cbd5e1', background: '#ffffff', color: '#111319', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0 }}
+              aria-label="Previous Testimonial"
+            >
+              <Icons.ChevronLeft />
+            </button>
+            <button
+              type="button"
+              onClick={() => setTestimonialIdx((prev) => (prev < CLIENT_REVIEWS.length-1 ? prev + 1 : 0))}
+              style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid #cbd5e1', background: '#ffffff', color: '#111319', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0 }}
+              aria-label="Next Testimonial"
+            >
+              <Icons.ChevronRight />
+            </button>
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 20 }}>
-          {CORE_FEATURES.map((feat, idx) => {
-            const FeatureIcon = feat.icon;
+        {/* 3-Card Carousel Display */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 24, alignItems: 'stretch' }}>
+          {CLIENT_REVIEWS.map((r, idx) => {
+            const isFeatured = r.featured;
             return (
-              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div
+                key={idx}
+                style={{
+                  background: isFeatured ? '#1a6dff' : '#ffffff',
+                  color: isFeatured ? '#ffffff' : '#111319',
+                  border: isFeatured ? 'none' : '1px solid #e2e8f0',
+                  borderRadius: 22,
+                  padding: '36px 30px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  boxShadow: isFeatured ? '0 16px 36px -8px rgba(26, 109, 255, 0.4)' : '0 4px 12px rgba(15, 23, 42, 0.04)',
+                }}
+              >
                 <div>
-                  <div style={{ width: 36, height: 36, borderRadius: 7, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                    <FeatureIcon />
+                  {/* 5 Gold Stars */}
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 18 }}>
+                    <Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star />
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>{feat.title}</h3>
-                  <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>{feat.desc}</p>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: isFeatured ? '#ffffff' : '#334155', margin: '0 0 28px' }}>
+                    {r.text}
+                  </p>
+                </div>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: isFeatured ? '#ffffff' : '#111319' }}>{r.name}</div>
+                  <div style={{ fontSize: 13, color: isFeatured ? 'rgba(255, 255, 255, 0.85)' : '#64748b', marginTop: 2 }}>{r.role}</div>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Carousel Pagination Dots */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 28 }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1a6dff', display: 'inline-block' }}></span>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }}></span>
+        </div>
+
       </section>
 
-      {/* 5. How It Works (5 Clear Steps) */}
-      <section id="workflow" style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      {/* 6. Get Free Cost Estimates (Matching VisCorner Screenshot 10) */}
+      <section id="estimates" style={{ padding: '84px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Operational Lifecycle
-            </span>
-            <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-              How jobs progress from request to payment
+          <div style={{ textAlign: 'center', marginBottom: 44 }}>
+            <h2 style={{ fontSize: 'clamp(30px, 4vw, 44px)', fontWeight: 800, color: '#111319', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+              Get free cost estimates
             </h2>
-            <p style={{ fontSize: 15, color: '#475569', maxWidth: 600, margin: '0 auto' }}>
-              A disciplined, traceable workflow connecting your office and field crew in real time.
+            <p style={{ fontSize: 18, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
+              Compare quotes from top-rated providers, to help you make smart hiring decisions.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            {WORKFLOW_STEPS.map((wf, idx) => (
-              <div key={idx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '20px' }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, marginBottom: 12 }}>
-                  {wf.step}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 24 }}>
+            {COST_ESTIMATES.map((item, idx) => (
+              <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ height: 190, overflow: 'hidden' }}>
+                    <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ padding: '20px 22px 14px' }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111319', margin: '0 0 8px' }}>{item.title}</h3>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1a6dff' }}>{item.range}</div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{item.detail}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>{wf.title}</div>
-                <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, margin: 0 }}>{wf.desc}</p>
+                <div style={{ padding: '0 22px 20px' }}>
+                  <Link href="/dashboard" style={{ fontSize: 14, fontWeight: 600, color: '#1a6dff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <span>Read more</span>
+                    <span>&gt;&gt;</span>
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -611,353 +759,235 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. Solutions by Trade */}
-      <section id="solutions" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Commercial Verticals
-          </span>
-          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Engineered for specialized service businesses
-          </h2>
-          <p style={{ fontSize: 15, color: '#475569', maxWidth: 640, margin: '0 auto' }}>
-            Supporting commercial contractors with trade-specific workflows, technician certifications, and parts ledgers.
-          </p>
-        </div>
+      {/* 7. Browse All Categories (Matching VisCorner Screenshot 6) */}
+      <section id="categories" style={{ padding: '88px 24px', maxWidth: 1240, margin: '0 auto' }}>
+        <h2 style={{ fontSize: 'clamp(28px, 3.8vw, 40px)', fontWeight: 800, color: '#111319', margin: '0 0 36px', textAlign: 'center', letterSpacing: '-0.025em' }}>
+          Browse All Categories
+        </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 18 }}>
-          {SOLUTIONS.map((sol, idx) => (
-            <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ color: '#2563eb' }}><Icons.Check /></div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>{sol.title}</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+          {ALL_CATEGORIES.map((cat, idx) => (
+            <Link key={idx} href="/dashboard" style={{ textDecoration: 'none' }}>
+              <div className="category-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', border: '1px solid #e2e8f0', borderRadius: 10, background: '#ffffff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ color: '#1a6dff' }}><Icons.MapPin /></span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#111319', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                    {cat}
+                  </span>
+                </div>
+                <span style={{ color: '#1a6dff', display: 'flex', alignItems: 'center' }}><Icons.ArrowRight /></span>
               </div>
-              <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>{sol.desc}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* 7. Pricing Section */}
-      <section id="pricing" style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      {/* 8. Dual Action Call-To-Action Cards (Matching VisCorner Screenshot 7) */}
+      <section style={{ padding: '72px 24px', maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
           
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Subscription Plans
-            </span>
-            <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-              Transparent commercial pricing
-            </h2>
-            <p style={{ fontSize: 15, color: '#475569', maxWidth: 600, margin: '0 auto 20px' }}>
-              Straightforward monthly or annual plans. No hidden dispatch surcharges or setup penalties.
-            </p>
+          {/* Card 1: Dark Slate Card */}
+          <div style={{ background: '#0b0f19', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 380, boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)' }}>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <h3 style={{ fontSize: 'clamp(26px, 3.2vw, 36px)', fontWeight: 800, margin: '0 0 14px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                Connect with Experts You Can Trust!
+              </h3>
+              <p style={{ fontSize: 16, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 36px', maxWidth: 440 }}>
+                Find qualified professionals for every project, big or small.
+              </p>
+              
+              <div style={{ display: 'flex', gap: 32, marginBottom: 40, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 800 }}>₦150M+</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Worth of Services delivered</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 800 }}>17,000+</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Professionals Available</div>
+                </div>
+              </div>
+            </div>
 
-            {/* Monthly / Annual Toggle */}
-            <div style={{ display: 'inline-flex', background: '#e2e8f0', padding: 3, borderRadius: 8 }}>
-              <button
-                type="button"
-                onClick={() => setBillingCycle('monthly')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: billingCycle === 'monthly' ? '#ffffff' : 'transparent',
-                  color: billingCycle === 'monthly' ? '#0f172a' : '#64748b',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  margin: 0,
-                }}
-              >
-                Monthly Billing
-              </button>
-              <button
-                type="button"
-                onClick={() => setBillingCycle('annual')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: billingCycle === 'annual' ? '#ffffff' : 'transparent',
-                  color: billingCycle === 'annual' ? '#0f172a' : '#64748b',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  margin: 0,
-                }}
-              >
-                Annual (Save 15%)
-              </button>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <Link href="/dashboard" style={{ display: 'inline-block', padding: '14px 34px', background: '#ffffff', color: '#0b0f19', borderRadius: 8, fontWeight: 800, fontSize: 14, textTransform: 'uppercase', textDecoration: 'none', letterSpacing: '0.04em' }}>
+                Get Started
+              </Link>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch' }}>
+          {/* Card 2: Electric Blue Card */}
+          <div style={{ background: '#1a6dff', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 380, boxShadow: '0 20px 40px rgba(26, 109, 255, 0.35)' }}>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <h3 style={{ fontSize: 'clamp(26px, 3.2vw, 36px)', fontWeight: 800, margin: '0 0 14px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                Join Our Network of Top Service Providers!
+              </h3>
+              <p style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6, margin: '0 0 36px', maxWidth: 440 }}>
+                Create your free profile and showcase your services to thousands of potential customers.
+              </p>
+              
+              <div style={{ display: 'flex', gap: 32, marginBottom: 40, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 800 }}>₦84M+</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.85)', marginTop: 4 }}>Earned by Pros</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 800 }}>2,500+</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.85)', marginTop: 4 }}>Customer Requests</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <Link href="/login?mode=signup" style={{ display: 'inline-block', padding: '14px 34px', background: '#ffffff', color: '#1a6dff', borderRadius: 8, fontWeight: 800, fontSize: 14, textTransform: 'uppercase', textDecoration: 'none', letterSpacing: '0.04em' }}>
+                Get Started
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. Find Pros Everywhere In Nigeria (Matching VisCorner Screenshot 8) */}
+      <section style={{ padding: '0 24px 84px', maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ background: '#1a6dff', borderRadius: 28, padding: '52px 36px', color: '#ffffff', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 40px rgba(26, 109, 255, 0.3)' }}>
+          
+          <h2 style={{ fontSize: 'clamp(28px, 3.8vw, 42px)', fontWeight: 800, margin: '0 0 36px', letterSpacing: '-0.025em' }}>
+            Find Pros Everywhere In Nigeria
+          </h2>
+
+          {/* 5-Column Grid of 36 States + FCT */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px 20px', fontSize: 15, fontWeight: 500 }}>
+            {NIGERIA_STATES.map((st, idx) => (
+              <Link key={idx} href={`/dashboard?loc=${encodeURIComponent(st)}`} style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.95 }}>
+                {st}
+              </Link>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 10. Footer (Matching VisCorner Screenshot 9) */}
+      <footer style={{ borderTop: '1px solid #e2e8f0', padding: '64px 24px 36px', background: '#ffffff' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 36, marginBottom: 48 }}>
             
-            {/* Starter Plan */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Starter</div>
-                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For independent contractors and small maintenance teams.</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
-                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$41' : '$49'}</span>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Up to 3 field technicians</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Unlimited work orders</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Mobile technician execution app</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Basic parts inventory ledger</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Digital invoices and signatures</div>
-                </div>
-              </div>
-              <Link href="/login?mode=signup" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-                Start Free Trial
-              </Link>
-            </div>
-
-            {/* Professional Plan (Highlighted) */}
-            <div style={{ background: '#ffffff', border: '2px solid #2563eb', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', boxShadow: '0 8px 24px -4px rgba(37, 99, 235, 0.1)' }}>
-              <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#2563eb', color: '#ffffff', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase' }}>
-                Most Popular
-              </div>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Professional</div>
-                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For established service companies managing active fleets.</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
-                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$125' : '$149'}</span>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Up to 15 field technicians</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Smart technician dispatch scoring</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Real-time customer tracking portal</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> WhatsApp and SMS dispatch alerts</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Warehouse and van inventory deductions</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Asset warranty tracking register</div>
-                </div>
-              </div>
-              <Link href="/login?mode=signup" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-                Start Free Trial
-              </Link>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Enterprise</div>
-                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 18px' }}>For regional contractors requiring custom controls and SLAs.</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
-                  <span style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>{billingCycle === 'annual' ? '$339' : '$399'}</span>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>/ month</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#334155' }}>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Unlimited technicians and managers</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Multi-branch organizational isolation</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Custom rate cards and commission rules</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Dedicated database backup policies</div>
-                  <div style={{ display: 'flex', gap: 8 }}><div style={{ color: '#2563eb' }}><Icons.Check /></div> Priority support with dedicated onboarding</div>
-                </div>
-              </div>
-              <Link href="/login" style={{ textAlign: 'center', marginTop: 24, padding: '10px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-                Contact Sales
-              </Link>
-            </div>
-
-          </div>
-
-          <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#64748b' }}>
-            All plans include database-level tenant isolation, encrypted sessions, and full access to web and mobile portals.
-          </div>
-
-        </div>
-      </section>
-
-      {/* 8. Security and Trust Section */}
-      <section id="security" style={{ padding: '76px 24px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Architecture and Data Integrity
-          </span>
-          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Enterprise security without compromise
-          </h2>
-          <p style={{ fontSize: 15, color: '#475569', maxWidth: 620, margin: '0 auto' }}>
-            Accurate, reliable data partitioning protecting contractor operational files, technician identities, and commercial billing.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
-          
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ color: '#2563eb' }}><Icons.Shield /></div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Row Level Security (RLS)</h3>
-            </div>
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-              Multi-tenant isolation enforced directly at the PostgreSQL layer. All queries partition by organization identifier, ensuring zero data leakage between different contracting businesses.
-            </p>
-          </div>
-
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ color: '#2563eb' }}><Icons.Users /></div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Role-Based Access (RBAC)</h3>
-            </div>
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-              Dedicated interfaces and API barriers for Operations Managers, Field Technicians, Customers, and Accountants prevent unauthorized modifications to pricing and job assignments.
-            </p>
-          </div>
-
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ color: '#2563eb' }}><Icons.FileText /></div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Permanent Audit Logs</h3>
-            </div>
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-              Immutable activity records document all status transitions, technician reassignment events, and payment approvals with actor identification and timestamps.
-            </p>
-          </div>
-
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ color: '#2563eb' }}><Icons.Lock /></div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 }}>Secure Credential Handling</h3>
-            </div>
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: 0 }}>
-              Encrypted session management, standard bcrypt password hashing, and tokenized email verification guard against account compromise and session hijacking.
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* Customer Tracking Demonstration Tool */}
-      <section style={{ padding: '76px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
-          
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Self-Service Tracking Tool
-          </span>
-          <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
-            Test customer order tracking
-          </h2>
-          <p style={{ fontSize: 15, color: '#475569', margin: '0 0 24px' }}>
-            Experience how customers inspect live work order milestones, view technician arrival estimates, and review service notes.
-          </p>
-
-          <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 10, padding: '20px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
-            <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 240, display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 7, padding: '0 12px' }}>
-                <div style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
-                  <Icons.Search />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter order reference, e.g. REQ-DEMO-4109"
-                  value={trackInput}
-                  onChange={(e) => setTrackInput(e.target.value)}
-                  style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 10px', fontSize: 14, color: '#0f172a', background: 'transparent' }}
-                />
-              </div>
-              <button type="submit" style={{ margin: 0, padding: '12px 22px', background: '#2563eb', color: '#ffffff', borderRadius: 7, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                Track Order
-              </button>
-            </form>
-
-            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#64748b' }}>Need an instant demonstration?</span>
-              <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 13, fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span>Launch Interactive Demo Tracking (REQ-DEMO-4109)</span>
-                <Icons.ArrowRight />
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 9. Final Call to Action */}
-      <section style={{ padding: '76px 24px', background: '#ffffff' }}>
-        <div style={{ maxWidth: 880, margin: '0 auto', textAlign: 'center', border: '1px solid #cbd5e1', borderRadius: 12, padding: '48px 24px', background: '#f8fafc' }}>
-          <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 36px)', fontWeight: 800, color: '#0f172a', margin: '0 0 14px' }}>
-            Elevate your field service operations today
-          </h2>
-          <p style={{ fontSize: 15, color: '#475569', maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.6 }}>
-            Set up your organization, schedule technicians, and manage customer service requests from one connected platform.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link href="/login?mode=signup" style={{ padding: '12px 24px', background: '#2563eb', color: '#ffffff', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
-              Start Free Trial
-            </Link>
-            <Link href="/login" style={{ padding: '12px 22px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
-              Sign In to Portal
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 10. Footer */}
-      <footer style={{ borderTop: '1px solid #e2e8f0', padding: '52px 24px 32px', background: '#ffffff', fontSize: 13, color: '#64748b' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 32, marginBottom: 40 }}>
-            
+            {/* Col 1: Company */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 6, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#111319', marginBottom: 18 }}>Company</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14, color: '#475569' }}>
+                <a href="#how-it-works" style={{ color: '#475569', textDecoration: 'none' }}>Help Center</a>
+                <a href="#how-it-works" style={{ color: '#475569', textDecoration: 'none' }}>Contact</a>
+                <a href="#how-it-works" style={{ color: '#475569', textDecoration: 'none' }}>About Us</a>
+              </div>
+            </div>
+
+            {/* Col 2: Customers */}
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#111319', marginBottom: 18 }}>Customers</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14, color: '#475569' }}>
+                <a href="#estimates" style={{ color: '#475569', textDecoration: 'none' }}>Cost Estimates</a>
+                <a href="#how-it-works" style={{ color: '#475569', textDecoration: 'none' }}>Customer Safety Tips</a>
+                <Link href="/track?no=REQ-DEMO-4109" style={{ color: '#1a6dff', fontWeight: 600, textDecoration: 'none' }}>Order Tracking</Link>
+              </div>
+            </div>
+
+            {/* Col 3: Professionals */}
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#111319', marginBottom: 18 }}>Professionals</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14, color: '#475569' }}>
+                <Link href="/login?mode=signup" style={{ color: '#475569', textDecoration: 'none' }}>Help Center</Link>
+                <Link href="/login?mode=signup" style={{ color: '#475569', textDecoration: 'none' }}>Offer Your Service</Link>
+                <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Sign In to Portal</Link>
+              </div>
+            </div>
+
+            {/* Col 4: Subscribe Form */}
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#111319', marginBottom: 12 }}>Subscribe</div>
+              <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.5, margin: '0 0 16px' }}>
+                Stay updated with the latest news and offers!
+              </p>
+              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={subscribeEmail}
+                  onChange={(e) => setSubscribeEmail(e.target.value)}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: 9999, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none' }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: 9999,
+                    background: '#1a6dff',
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    margin: 0,
+                  }}
+                >
+                  <Icons.Mail />
+                  <span>{subscribed ? 'Subscribed!' : 'Subscribe'}</span>
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          {/* Footer Bottom Bar */}
+          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+            
+            {/* Logo & Copyright */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 26, height: 26, borderRadius: 7, background: '#1a6dff', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icons.Logo />
                 </div>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>FIELDOPS 360</span>
+                <span style={{ fontSize: 18, fontWeight: 800, color: '#111319' }}>VisCorner</span>
               </div>
-              <p style={{ lineHeight: 1.6, margin: '0 0 12px' }}>
-                Commercial field service management software. Work order dispatch, technician execution, inventory control, and customer invoicing.
-              </p>
+              <span style={{ fontSize: 13, color: '#64748b' }}>
+                © 2026 VisCorner | Terms of Service | Privacy Policy
+              </span>
             </div>
 
-            <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Platform Capabilities</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Work Order Management</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Technician Scheduling</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Mobile Execution</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Equipment & Warranties</a>
-                <a href="#features" style={{ color: '#475569', textDecoration: 'none' }}>Invoicing & Billing</a>
+            {/* Social Icons & Scroll-to-top */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Twitter">
+                  <Icons.Twitter />
+                </a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Facebook">
+                  <Icons.Facebook />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Instagram">
+                  <Icons.Instagram />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="LinkedIn">
+                  <Icons.Linkedin />
+                </a>
               </div>
+
+              {/* Scroll to top floating pill button */}
+              <button
+                type="button"
+                onClick={scrollToTop}
+                style={{ width: 38, height: 38, borderRadius: '50%', background: '#1a6dff', color: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0, boxShadow: '0 4px 12px rgba(26, 109, 255, 0.4)' }}
+                aria-label="Scroll to top"
+              >
+                <Icons.ChevronUp />
+              </button>
             </div>
 
-            <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Solutions by Trade</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Commercial HVAC</a>
-                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Electrical Contracting</a>
-                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Solar Maintenance</a>
-                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Plumbing Businesses</a>
-                <a href="#solutions" style={{ color: '#475569', textDecoration: 'none' }}>Generator Servicing</a>
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Account & Security</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Link href="/login?mode=signup" style={{ color: '#475569', textDecoration: 'none' }}>Start Free Trial</Link>
-                <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Sign In to Portal</Link>
-                <Link href="/track?no=REQ-DEMO-4109" style={{ color: '#475569', textDecoration: 'none' }}>Order Tracking</Link>
-                <a href="#security" style={{ color: '#475569', textDecoration: 'none' }}>Security Architecture</a>
-              </div>
-            </div>
-
-          </div>
-
-          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              © 2026 FieldOps 360. All rights reserved.
-            </div>
-            <div style={{ display: 'flex', gap: 18 }}>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>PostgreSQL RLS Isolation</a>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Role-Based Access</a>
-              <a href="#security" style={{ color: '#64748b', textDecoration: 'none' }}>Audit Logs</a>
-            </div>
           </div>
 
         </div>
