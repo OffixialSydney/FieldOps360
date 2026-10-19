@@ -330,6 +330,48 @@ export default function LandingPage() {
         .fieldops-ping {
           animation: fieldops-pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
         }
+        .footer-4col-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.05fr 0.95fr 1.35fr;
+          gap: 36px;
+          align-items: start;
+          margin-bottom: 54px;
+        }
+        .footer-link-item {
+          color: #4b5563;
+          text-decoration: none;
+          font-size: 15px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: color 0.15s ease;
+        }
+        .footer-link-item:hover {
+          color: #1a6dff;
+        }
+        @media (max-width: 900px) {
+          .footer-4col-grid {
+            grid-template-columns: 1fr 1.05fr 0.95fr 1.35fr !important;
+            gap: 18px !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .footer-4col-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 32px 20px !important;
+          }
+          .footer-bottom-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 20px !important;
+          }
+        }
+        @media (max-width: 420px) {
+          .footer-4col-grid {
+            grid-template-columns: 1fr !important;
+            gap: 28px !important;
+          }
+        }
         @media (max-width: 860px) {
           .desktop-nav { display: none !important; }
           .desktop-actions { display: none !important; }
@@ -949,27 +991,27 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1140, margin: '0 auto' }}>
           
           {/* 4 Columns (Company, Customers, Professionals, Subscribe) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 36, marginBottom: 54 }}>
+          <div className="footer-4col-grid">
             
             {/* Column 1: Company */}
             <div>
-              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Company</h4>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 18px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Company</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <li>
-                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <Link href="/dashboard" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>Help Center</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <Link href="/dashboard" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>Contact</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <Link href="/dashboard" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>About Us</span>
                   </Link>
                 </li>
@@ -978,17 +1020,17 @@ export default function LandingPage() {
 
             {/* Column 2: Customers */}
             <div>
-              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Customers</h4>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 18px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Customers</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <li>
-                  <a href="#estimates" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <a href="#estimates" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>Cost Estimates</span>
                   </a>
                 </li>
                 <li>
-                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <Link href="/dashboard" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>Customer Safety Tips</span>
                   </Link>
                 </li>
@@ -997,11 +1039,11 @@ export default function LandingPage() {
 
             {/* Column 3: Professionals */}
             <div>
-              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Professionals</h4>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 18px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Professionals</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <li>
-                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                  <Link href="/dashboard" className="footer-link-item">
+                    <span style={{ color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>•</span>
                     <span>Help Center</span>
                   </Link>
                 </li>
@@ -1010,49 +1052,58 @@ export default function LandingPage() {
 
             {/* Column 4: Subscribe */}
             <div>
-              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 14px', letterSpacing: '-0.01em' }}>Subscribe</h4>
-              <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5, margin: '0 0 16px' }}>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 18px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Subscribe</h4>
+              <p style={{ fontSize: 14.5, color: '#4b5563', lineHeight: 1.5, margin: '0 0 16px' }}>
                 Stay updated with the latest news and offers!
               </p>
-              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start', width: '100%' }}>
                 <input
                   type="email"
                   required
                   placeholder="Enter your email address"
                   value={subscribeEmail}
                   onChange={(e) => setSubscribeEmail(e.target.value)}
-                  style={{ width: '100%', padding: '13px 20px', borderRadius: 9999, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                  style={{
+                    width: '100%',
+                    maxWidth: 240,
+                    padding: '11px 18px',
+                    borderRadius: 9999,
+                    border: '1.5px solid #d1d5db',
+                    fontSize: 14,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    color: '#111827',
+                    background: '#ffffff'
+                  }}
                 />
-                <div>
-                  <button
-                    type="submit"
-                    style={{
-                      padding: '11px 26px',
-                      borderRadius: 9999,
-                      background: '#1a6dff',
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: 14,
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      margin: 0,
-                      boxShadow: '0 2px 8px rgba(26, 109, 255, 0.25)',
-                    }}
-                  >
-                    <Icons.Mail />
-                    <span>{subscribed ? 'Subscribed!' : 'Subscribe'}</span>
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 9999,
+                    background: '#1a6dff',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    margin: 0,
+                    boxShadow: '0 2px 8px rgba(26, 109, 255, 0.25)',
+                  }}
+                >
+                  <Icons.Mail />
+                  <span>{subscribed ? 'Subscribed!' : 'Subscribe'}</span>
+                </button>
               </form>
             </div>
 
           </div>
 
           {/* Bottom Row: Logo, Copyright & Social Circles (Matching Inspiration Exactly) */}
-          <div style={{ marginTop: 44, paddingTop: 24, borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
+          <div className="footer-bottom-row" style={{ marginTop: 44, paddingTop: 24, borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
             
             {/* Left: Logo & Legal Links */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
