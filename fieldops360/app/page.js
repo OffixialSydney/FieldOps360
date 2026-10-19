@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 // Consistent SVG icons tailored for FieldOps 360 (Zero emojis, zero decorative AI glyphs)
 const Icons = {
   Logo: () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="10" />
       <polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2" />
     </svg>
@@ -49,7 +49,7 @@ const Icons = {
     </svg>
   ),
   ChevronUp: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="18 15 12 9 6 15" />
     </svg>
   ),
@@ -84,7 +84,7 @@ const Icons = {
     </svg>
   ),
   Building: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
       <line x1="9" y1="22" x2="9" y2="2" />
       <path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" />
@@ -115,7 +115,7 @@ const Icons = {
   ),
 };
 
-// Reliable fallback image URL that is 100% verified to render in all browsers
+// Reliable fallback image URL verified to render in all browsers
 const SAFE_IMAGE = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
 
 // 8 Popular Services matching FieldOps 360's supported project trades
@@ -319,8 +319,8 @@ export default function LandingPage() {
         }
         .company-registered-card:hover {
           transform: translateY(-3px);
-          border-color: #2563eb;
-          box-shadow: 0 10px 24px -4px rgba(37, 99, 235, 0.12);
+          border-color: #1a6dff;
+          box-shadow: 0 10px 24px -4px rgba(26, 109, 255, 0.12);
         }
         @keyframes fieldops-pulse {
           0% { transform: scale(0.95); opacity: 0.8; }
@@ -351,38 +351,38 @@ export default function LandingPage() {
         }
       `}</style>
 
-      {/* 1. Header Matching Inspiration Density (FieldOps 360 Logo + Name) */}
-      <header style={{ borderBottom: '1px solid #e2e8f0', background: 'rgba(255, 255, 255, 0.96)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* 1. Header (Exact Match to Inspirational Website with FieldOps 360 Logo & Name) */}
+      <header style={{ borderBottom: '1px solid #f1f5f9', background: 'rgba(255, 255, 255, 0.98)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 74, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
-          {/* Logo */}
+          {/* Logo & Project Name */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#0f172a' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: '#1a6dff', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(26, 109, 255, 0.3)' }}>
               <Icons.Logo />
             </div>
-            <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#0f172a' }}>FieldOps 360</span>
+            <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: '#0f172a' }}>FieldOps 360</span>
           </Link>
 
-          {/* Center Navigation Links (Matching Inspiration Site Layout) */}
+          {/* Navigation Links Matching Inspiration Layout */}
           <nav style={{ display: 'flex', alignItems: 'center', gap: 28 }} className="desktop-nav">
             
-            {/* Live Operations Portal Pill (Matching Jobs with Blue Dot) */}
+            {/* Live Operations Portal Pill (Matching Jobs Pill with Blue Dot) */}
             <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 9999, background: 'rgba(37, 99, 235, 0.08)', color: '#2563eb', fontWeight: 700, fontSize: 13 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 16px', borderRadius: 9999, background: '#e0edff', color: '#1a6dff', fontWeight: 600, fontSize: 14 }}>
                 <span>Operations Portal</span>
-                <span style={{ position: 'relative', display: 'flex', width: 8, height: 8 }}>
-                  <span className="fieldops-ping" style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', background: '#2563eb' }}></span>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2563eb' }}></span>
+                <span style={{ position: 'relative', display: 'flex', width: 7, height: 7 }}>
+                  <span className="fieldops-ping" style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', background: '#1a6dff' }}></span>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#1a6dff' }}></span>
                 </span>
               </span>
             </Link>
 
-            <a href="#estimates" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Cost Estimates</a>
-            <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Track Order</Link>
-            <Link href="/login?mode=signup" style={{ fontSize: 14, fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Offer Your Service</Link>
+            <a href="#estimates" style={{ fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Cost Estimates</a>
+            <Link href="/track?no=REQ-DEMO-4109" style={{ fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Track Order</Link>
+            <Link href="/login?mode=signup" style={{ fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Offer Your Service</Link>
           </nav>
 
-          {/* Right Action: Clean Pill Login Button */}
+          {/* Right Action: Clean Outline Pill Login Button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link
               href="/login"
@@ -390,11 +390,11 @@ export default function LandingPage() {
               style={{
                 fontSize: 14,
                 fontWeight: 600,
-                color: '#2563eb',
+                color: '#1a6dff',
                 textDecoration: 'none',
-                padding: '8px 26px',
+                padding: '7px 24px',
                 borderRadius: 9999,
-                border: '2px solid #2563eb',
+                border: '1.5px solid #1a6dff',
                 background: 'transparent',
                 transition: 'all 0.15s ease',
               }}
@@ -425,15 +425,15 @@ export default function LandingPage() {
 
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Responsive Mobile Drawer */}
         {mobileMenuOpen && (
-          <div style={{ borderTop: '1px solid #e2e8f0', background: '#ffffff', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>Operations Portal</Link>
-            <a href="#estimates" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>Cost Estimates</a>
-            <Link href="/track?no=REQ-DEMO-4109" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>Track Order</Link>
-            <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#334155', textDecoration: 'none' }}>Offer Your Service</Link>
-            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ display: 'block', textAlign: 'center', padding: '10px', borderRadius: 9999, border: '2px solid #2563eb', color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: 15 }}>
+          <div style={{ borderTop: '1px solid #f1f5f9', background: '#ffffff', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 600, color: '#1a6dff', textDecoration: 'none' }}>Operations Portal</Link>
+            <a href="#estimates" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Cost Estimates</a>
+            <Link href="/track?no=REQ-DEMO-4109" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Track Order</Link>
+            <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 16, fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Offer Your Service</Link>
+            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 14 }}>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ display: 'block', textAlign: 'center', padding: '10px', borderRadius: 9999, border: '1.5px solid #1a6dff', color: '#1a6dff', textDecoration: 'none', fontWeight: 600, fontSize: 15 }}>
                 Login
               </Link>
             </div>
@@ -453,13 +453,13 @@ export default function LandingPage() {
                 top: -16,
                 left: -24,
                 transform: 'rotate(-14deg)',
-                background: '#2563eb',
+                background: '#1a6dff',
                 color: '#ffffff',
                 fontSize: 12,
                 fontWeight: 700,
                 padding: '6px 14px',
                 borderRadius: 12,
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                boxShadow: '0 4px 14px rgba(26, 109, 255, 0.35)',
                 whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
@@ -518,14 +518,14 @@ export default function LandingPage() {
                 style={{
                   padding: '13px 30px',
                   borderRadius: 9999,
-                  background: '#2563eb',
+                  background: '#1a6dff',
                   color: '#ffffff',
                   fontSize: 15,
                   fontWeight: 700,
                   border: 'none',
                   cursor: 'pointer',
                   margin: 0,
-                  boxShadow: '0 2px 10px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 2px 10px rgba(26, 109, 255, 0.35)',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -600,7 +600,7 @@ export default function LandingPage() {
 
         {/* Floating FieldOps 360 Stats Bar */}
         <div style={{ maxWidth: 860, margin: '-24px auto 0', position: 'relative', zIndex: 5 }}>
-          <div className="stats-container" style={{ background: '#2563eb', borderRadius: 24, padding: '26px 20px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 18px 42px -10px rgba(37, 99, 235, 0.45)' }}>
+          <div className="stats-container" style={{ background: '#1a6dff', borderRadius: 24, padding: '26px 20px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 18px 42px -10px rgba(26, 109, 255, 0.45)' }}>
             
             <div className="stats-col" style={{ flex: '1 1 200px', padding: '12px', borderRight: '1px solid rgba(255, 255, 255, 0.25)', textAlign: 'center' }}>
               <div style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', fontWeight: 800, lineHeight: 1.1 }}>₦250M+</div>
@@ -629,7 +629,7 @@ export default function LandingPage() {
         </h2>
 
         {/* 3-Step Connected Container */}
-        <div className="how-it-works-box" style={{ background: '#2563eb', borderRadius: 28, padding: '36px 28px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 0, boxShadow: '0 16px 40px -10px rgba(37, 99, 235, 0.35)' }}>
+        <div className="how-it-works-box" style={{ background: '#1a6dff', borderRadius: 28, padding: '36px 28px', color: '#ffffff', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 0, boxShadow: '0 16px 40px -10px rgba(26, 109, 255, 0.35)' }}>
           
           {/* Step 1 */}
           <div className="how-it-works-step" style={{ flex: '1 1 260px', padding: '16px 24px', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>
@@ -747,7 +747,7 @@ export default function LandingPage() {
               <div
                 key={idx}
                 style={{
-                  background: isFeatured ? '#2563eb' : '#ffffff',
+                  background: isFeatured ? '#1a6dff' : '#ffffff',
                   color: isFeatured ? '#ffffff' : '#0f172a',
                   border: isFeatured ? 'none' : '1px solid #e2e8f0',
                   borderRadius: 22,
@@ -755,7 +755,7 @@ export default function LandingPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  boxShadow: isFeatured ? '0 16px 36px -8px rgba(37, 99, 235, 0.4)' : '0 4px 12px rgba(15, 23, 42, 0.04)',
+                  boxShadow: isFeatured ? '0 16px 36px -8px rgba(26, 109, 255, 0.4)' : '0 4px 12px rgba(15, 23, 42, 0.04)',
                 }}
               >
                 <div>
@@ -777,7 +777,7 @@ export default function LandingPage() {
 
         {/* Carousel Pagination Dots */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 28 }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#2563eb', display: 'inline-block' }}></span>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1a6dff', display: 'inline-block' }}></span>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }}></span>
         </div>
 
@@ -810,12 +810,12 @@ export default function LandingPage() {
                   </div>
                   <div style={{ padding: '20px 22px 14px' }}>
                     <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>{item.title}</h3>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#2563eb' }}>{item.range}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: '#1a6dff' }}>{item.range}</div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{item.detail}</div>
                   </div>
                 </div>
                 <div style={{ padding: '0 22px 20px' }}>
-                  <Link href="/dashboard" style={{ fontSize: 14, fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Link href="/dashboard" style={{ fontSize: 14, fontWeight: 600, color: '#1a6dff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                     <span>Request Quotation</span>
                     <span>&gt;&gt;</span>
                   </Link>
@@ -844,7 +844,7 @@ export default function LandingPage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(26, 109, 255, 0.1)', color: '#1a6dff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icons.Building />
                     </div>
                     <div>
@@ -858,7 +858,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#2563eb', margin: '10px 0 14px' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1a6dff', margin: '10px 0 14px' }}>
                   {co.trade}
                 </div>
               </div>
@@ -869,7 +869,7 @@ export default function LandingPage() {
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{co.score || '4.9'}</span>
                   <span style={{ fontSize: 12, color: '#64748b' }}>· {co.jobs}</span>
                 </div>
-                <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: '#1a6dff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   <span>Book Now</span>
                   <Icons.ArrowRight />
                 </Link>
@@ -913,7 +913,7 @@ export default function LandingPage() {
           </div>
 
           {/* Card 2: Electric Blue Card (For Specialists) */}
-          <div style={{ background: '#2563eb', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.35)' }}>
+          <div style={{ background: '#1a6dff', color: '#ffffff', borderRadius: 28, padding: '48px 36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, boxShadow: '0 20px 40px rgba(26, 109, 255, 0.35)' }}>
             <div style={{ position: 'relative', zIndex: 2 }}>
               <h3 style={{ fontSize: 'clamp(24px, 3.2vw, 34px)', fontWeight: 800, margin: '0 0 14px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Join Nigeria’s Leading Contractor Network!
@@ -935,7 +935,7 @@ export default function LandingPage() {
             </div>
 
             <div style={{ position: 'relative', zIndex: 2 }}>
-              <Link href="/login?mode=signup" style={{ display: 'inline-block', padding: '14px 34px', background: '#ffffff', color: '#2563eb', borderRadius: 8, fontWeight: 800, fontSize: 14, textTransform: 'uppercase', textDecoration: 'none', letterSpacing: '0.04em' }}>
+              <Link href="/login?mode=signup" style={{ display: 'inline-block', padding: '14px 34px', background: '#ffffff', color: '#1a6dff', borderRadius: 8, fontWeight: 800, fontSize: 14, textTransform: 'uppercase', textDecoration: 'none', letterSpacing: '0.04em' }}>
                 Register as Specialist
               </Link>
             </div>
@@ -944,126 +944,155 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. Centralized Footer (Matching Inspiration Site Exactly) */}
-      <footer style={{ borderTop: '1px solid #e2e8f0', padding: '64px 24px 32px', background: '#ffffff' }}>
+      {/* 9. Centralized Footer (Exact Match to Inspirational Screenshot) */}
+      <footer style={{ borderTop: '1px solid #f1f5f9', padding: '64px 24px 36px', background: '#ffffff' }}>
         <div style={{ maxWidth: 1140, margin: '0 auto' }}>
           
-          {/* 4 Centralized Columns */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 36, marginBottom: 54 }}>
+          {/* 4 Columns (Company, Customers, Professionals, Subscribe) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 36, marginBottom: 54 }}>
             
-            {/* Col 1: Company */}
+            {/* Column 1: Company */}
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 18 }}>Company</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
-                <li><Link href="/dashboard" style={{ color: '#475569', textDecoration: 'none' }}>• Help Center</Link></li>
-                <li><Link href="/dashboard" style={{ color: '#475569', textDecoration: 'none' }}>• Contact</Link></li>
-                <li><Link href="/dashboard" style={{ color: '#475569', textDecoration: 'none' }}>• About Us</Link></li>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Company</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <li>
+                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>Help Center</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>Contact</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>About Us</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 
-            {/* Col 2: Customers */}
+            {/* Column 2: Customers */}
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 18 }}>Customers</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
-                <li><a href="#estimates" style={{ color: '#475569', textDecoration: 'none' }}>• Cost Estimates</a></li>
-                <li><Link href="/track?no=REQ-DEMO-4109" style={{ color: '#475569', textDecoration: 'none' }}>• Track Work Order</Link></li>
-                <li><Link href="/dashboard" style={{ color: '#475569', textDecoration: 'none' }}>• Customer Safety Tips</Link></li>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Customers</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <li>
+                  <a href="#estimates" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>Cost Estimates</span>
+                  </a>
+                </li>
+                <li>
+                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>Customer Safety Tips</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 
-            {/* Col 3: Professionals */}
+            {/* Column 3: Professionals */}
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 18 }}>Professionals</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
-                <li><Link href="/login?mode=signup" style={{ color: '#475569', textDecoration: 'none' }}>• Join as Specialist</Link></li>
-                <li><Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>• Technician Login</Link></li>
-                <li><Link href="/dashboard" style={{ color: '#475569', textDecoration: 'none' }}>• Help Center</Link></li>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px', letterSpacing: '-0.01em' }}>Professionals</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <li>
+                  <Link href="/dashboard" style={{ color: '#4b5563', textDecoration: 'none', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#9ca3af', fontSize: 16 }}>•</span>
+                    <span>Help Center</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 
-            {/* Col 4: Subscribe */}
+            {/* Column 4: Subscribe */}
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 14 }}>Subscribe</div>
-              <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.5, margin: '0 0 16px' }}>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 14px', letterSpacing: '-0.01em' }}>Subscribe</h4>
+              <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5, margin: '0 0 16px' }}>
                 Stay updated with the latest news and offers!
               </p>
-              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <input
                   type="email"
                   required
                   placeholder="Enter your email address"
                   value={subscribeEmail}
                   onChange={(e) => setSubscribeEmail(e.target.value)}
-                  style={{ width: '100%', padding: '12px 18px', borderRadius: 9999, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none' }}
+                  style={{ width: '100%', padding: '13px 20px', borderRadius: 9999, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                 />
-                <button
-                  type="submit"
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 9999,
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                    margin: 0,
-                  }}
-                >
-                  <Icons.Mail />
-                  <span>{subscribed ? 'Subscribed!' : 'Subscribe'}</span>
-                </button>
+                <div>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '11px 26px',
+                      borderRadius: 9999,
+                      background: '#1a6dff',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      margin: 0,
+                      boxShadow: '0 2px 8px rgba(26, 109, 255, 0.25)',
+                    }}
+                  >
+                    <Icons.Mail />
+                    <span>{subscribed ? 'Subscribed!' : 'Subscribe'}</span>
+                  </button>
+                </div>
               </form>
             </div>
 
           </div>
 
-          {/* Bottom Bar: Logo, Copyright & Socials (Matching Inspiration Site Footer Exactly) */}
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 18 }}>
+          {/* Bottom Row: Logo, Copyright & Social Circles (Matching Inspiration Exactly) */}
+          <div style={{ marginTop: 44, paddingTop: 24, borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
             
-            {/* Logo & Copyright */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 26, height: 26, borderRadius: 7, background: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Left: Logo & Legal Links */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: '#1a6dff', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icons.Logo />
                 </div>
-                <span style={{ fontSize: 19, fontWeight: 800, color: '#0f172a' }}>FieldOps 360</span>
+                <span style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>FieldOps 360</span>
               </div>
-              <div style={{ fontSize: 13, color: '#64748b', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#6b7280', flexWrap: 'wrap' }}>
                 <span>© 2026 FieldOps 360</span>
                 <span>|</span>
-                <Link href="/dashboard" style={{ color: '#64748b', textDecoration: 'none' }}>Terms of Service</Link>
+                <Link href="/dashboard" style={{ color: '#6b7280', textDecoration: 'none' }}>Terms of Service</Link>
                 <span>|</span>
-                <Link href="/dashboard" style={{ color: '#64748b', textDecoration: 'none' }}>Privacy Policy</Link>
+                <Link href="/dashboard" style={{ color: '#6b7280', textDecoration: 'none' }}>Privacy Policy</Link>
               </div>
             </div>
 
-            {/* Social Icons & Scroll-to-top */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Twitter">
+            {/* Right: Circular Social Media Icons + Blue Scroll Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid #e5e7eb', background: '#ffffff', color: '#4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Twitter">
                   <Icons.Twitter />
                 </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Facebook">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid #e5e7eb', background: '#ffffff', color: '#4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Facebook">
                   <Icons.Facebook />
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Instagram">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid #e5e7eb', background: '#ffffff', color: '#4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Instagram">
                   <Icons.Instagram />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{ width: 34, height: 34, borderRadius: '50%', background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="LinkedIn">
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid #e5e7eb', background: '#ffffff', color: '#4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="LinkedIn">
                   <Icons.Linkedin />
                 </a>
               </div>
 
-              {/* Scroll to top button */}
+              {/* Circular Scroll-to-top Button */}
               <button
                 type="button"
                 onClick={scrollToTop}
-                style={{ width: 38, height: 38, borderRadius: '50%', background: '#2563eb', color: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)' }}
+                style={{ width: 40, height: 40, borderRadius: '50%', background: '#1a6dff', color: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0, boxShadow: '0 4px 12px rgba(26, 109, 255, 0.35)' }}
                 aria-label="Scroll to top"
               >
                 <Icons.ChevronUp />
