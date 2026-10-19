@@ -861,3 +861,45 @@ button.danger {
   .cta-mega-btn, .cta-glass-btn { width: 100%; text-align: center; }
   .auth { padding: 16px; margin: 4vh auto; }
 }
+
+
+.footer-4col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr 0.95fr 1.35fr;
+  gap: 36px;
+  align-items: start;
+  margin-bottom: 54px;
+}
+
+.footer-link-item {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.15s ease;
+}
+
+.footer-link-item:hover {
+  color: #1a6dff;
+}
+
+@media (max-width: 960px) {
+  .footer-4col-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 36px 24px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .footer-4col-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+  .footer-bottom-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+  }
+}
